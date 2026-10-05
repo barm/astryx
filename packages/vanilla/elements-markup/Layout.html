@@ -1,0 +1,24 @@
+<!-- docs: Arrange header, start, content, end, and footer regions in a bounded layout. -->
+<!-- attributes:
+height: fill, auto | fill | Fill the available container or grow with content.
+-->
+<!-- slots:
+header: Optional header region.
+start: Optional logical-start panel region.
+default: Primary content region.
+end: Optional logical-end panel region.
+footer: Optional footer region.
+-->
+<!-- variant: page-shell -->
+<ax-layout
+  ><h1 slot="header">Page title</h1>
+  <p>Page content</p>
+  <small slot="footer">Footer</small></ax-layout
+>
+
+<!-- variant: named-regions -->
+<ax-layout
+  ><nav slot="start">Navigation</nav>
+  <main>Main content</main>
+  <aside slot="end">Inspector</aside></ax-layout
+>

@@ -1,5 +1,37 @@
 /* Copyright (c) Meta Platforms, Inc. and affiliates. */
 
+/* Custom-element hosts are behavior-only wrappers. Their light-DOM native
+   controls and regions own layout through the existing ax- BEM classes. */
+:where(
+  ax-badge,
+  ax-button,
+  ax-card,
+  ax-dialog,
+  ax-layout,
+  ax-selector,
+  ax-tab,
+  ax-tab-list,
+  ax-text-input,
+  [data-ax-panel-host]
+) {
+  display: contents;
+}
+
+/* Prevent unstyled author children from flashing before registration. */
+:where(
+  ax-badge,
+  ax-button,
+  ax-card,
+  ax-dialog,
+  ax-layout,
+  ax-selector,
+  ax-tab,
+  ax-tab-list,
+  ax-text-input
+):not(:defined) {
+  visibility: hidden;
+}
+
 :where(html) {
   background: var(--color-background-body);
   color: var(--color-text-primary);

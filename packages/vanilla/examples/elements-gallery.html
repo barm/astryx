@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vanilla Astryx elements gallery</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="../dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-y2k@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+        }
+        .gallery {
+          display: grid;
+          gap: var(--spacing-6);
+          padding: var(--spacing-6);
+        }
+        .gallery__matrix {
+          display: grid;
+          grid-template-columns: repeat(
+            auto-fit,
+            minmax(min(100%, 28rem), 1fr)
+          );
+          gap: var(--spacing-4);
+        }
+        .gallery__theme {
+          display: grid;
+          gap: var(--spacing-4);
+          padding: var(--spacing-4);
+          border: var(--border-width) solid var(--color-border);
+          border-radius: var(--radius-container);
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .gallery__examples {
+          display: grid;
+          gap: var(--spacing-4);
+        }
+        .gallery__row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: var(--spacing-2);
+        }
+        .gallery__layout {
+          min-height: 18rem;
+        }
+        .gallery__theme[data-theme='light'] {
+          color-scheme: light;
+        }
+        .gallery__theme[data-theme='dark'] {
+          color-scheme: dark;
+        }
+        .gallery__theme .ax-tab {
+          color: var(--color-text-primary);
+        }
+      }
+    </style>
+    <script defer src="../dist/astryx-vanilla.js"></script>
+    <script defer src="../dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <main class="gallery">
+      <header class="ax-stack ax-stack--gap-2">
+        <h1 class="ax-heading ax-heading--1">Astryx custom elements</h1>
+        <p class="ax-text ax-text--secondary">
+          The eight reference groups rendered across neutral, butter, and Y2K in
+          light and dark modes.
+        </p>
+      </header>
+      <div class="gallery__matrix" id="gallery-matrix"></div>
+    </main>
+
+    <template id="gallery-content">
+      <div class="gallery__examples">
+        <div class="gallery__row">
+          <ax-button variant="primary">Continue</ax-button>
+          <ax-button variant="secondary">Cancel</ax-button>
+          <ax-badge variant="success">Ready</ax-badge>
+          <ax-badge variant="warning">Review</ax-badge>
+        </div>
+
+        <form class="ax-stack ax-stack--gap-3" data-gallery-form>
+          <ax-text-input
+            label="Project name"
+            html-name="project"
+            value="Astryx"
+            description="Submitted through a native form."></ax-text-input>
+          <ax-selector label="Workspace" html-name="workspace" value="tools">
+            <option value="design">Design systems</option>
+            <option value="tools">Developer tools</option>
+            <option value="business">Business platform</option>
+          </ax-selector>
+          <ax-button type="submit" variant="primary">Save project</ax-button>
+        </form>
+
+        <ax-card elevation="low">
+          <h3 class="ax-heading ax-heading--3" slot="header">Reference card</h3>
+          <p class="ax-text">Light-DOM content stays in the authored node.</p>
+          <ax-button slot="footer" variant="ghost">Details</ax-button>
+        </ax-card>
+
+        <ax-tab-list label="Project views" value="overview">
+          <ax-tab value="overview" panel-id="panel-overview">Overview</ax-tab>
+          <ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab>
+          <ax-tab value="settings" panel-id="panel-settings">Settings</ax-tab>
+          <div
+            class="ax-tab-panel"
+            id="panel-overview"
+            slot="panels"
+            role="tabpanel">
+            Overview content
+          </div>
+          <div
+            class="ax-tab-panel"
+            id="panel-activity"
+            slot="panels"
+            role="tabpanel">
+            Activity content
+          </div>
+          <div
+            class="ax-tab-panel"
+            id="panel-settings"
+            slot="panels"
+            role="tabpanel">
+            Settings content
+          </div>
+        </ax-tab-list>
+
+        <div class="gallery__row">
+          <ax-button variant="primary" data-dialog-trigger
+            >Open dialog</ax-button
+          >
+          <ax-dialog dialog-id="gallery-dialog">
+            <span slot="title">Archive project?</span>
+            <p class="ax-text">You can restore this project later.</p>
+            <ax-button slot="footer" data-dialog-close>Cancel</ax-button>
+            <ax-button slot="footer" variant="primary" data-dialog-close>
+              Archive
+            </ax-button>
+          </ax-dialog>
+        </div>
+
+        <ax-layout class="gallery__layout">
+          <strong slot="header">Layout regions</strong>
+          <nav
+            class="ax-stack ax-stack--gap-1"
+            slot="start"
+            aria-label="Example navigation">
+            <a class="ax-link" href="#overview">Overview</a>
+            <a class="ax-link" href="#activity">Activity</a>
+          </nav>
+          <p class="ax-text">Primary layout content</p>
+        </ax-layout>
+      </div>
+    </template>
+
+    <script>
+      const matrix = document.querySelector('#gallery-matrix');
+      const template = document.querySelector('#gallery-content');
+      let instance = 0;
+      for (const theme of ['neutral', 'butter', 'y2k']) {
+        for (const mode of ['light', 'dark']) {
+          instance += 1;
+          const section = document.createElement('section');
+          section.className = 'gallery__theme';
+          section.dataset.astryxTheme = theme;
+          section.dataset.theme = mode;
+          section.innerHTML = `<h2 class="ax-heading ax-heading--2">${theme} · ${mode}</h2>`;
+          section.append(template.content.cloneNode(true));
+
+          const dialog = section.querySelector('ax-dialog');
+          dialog.setAttribute('dialog-id', `gallery-dialog-${instance}`);
+          const ids = new Map();
+          for (const panel of section.querySelectorAll('[role="tabpanel"]')) {
+            const next = `${panel.id}-${instance}`;
+            ids.set(panel.id, next);
+            panel.id = next;
+          }
+          for (const tab of section.querySelectorAll('ax-tab[panel-id]')) {
+            tab.setAttribute('panel-id', ids.get(tab.getAttribute('panel-id')));
+          }
+          section
+            .querySelector('[data-dialog-trigger]')
+            .addEventListener('click', () => {
+              dialog.show();
+            });
+          for (const close of section.querySelectorAll('[data-dialog-close]')) {
+            close.addEventListener('click', () => dialog.close());
+          }
+          section
+            .querySelector('[data-gallery-form]')
+            .addEventListener('submit', event => {
+              event.preventDefault();
+            });
+          matrix.append(section);
+        }
+      }
+    </script>
+  </body>
+</html>

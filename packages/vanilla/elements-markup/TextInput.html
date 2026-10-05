@@ -1,0 +1,28 @@
+<!-- docs: Collect a single line of text with an associated visible label. -->
+<!-- attributes:
+type: text, password, email | text | Native single-line input type.
+label: string | — | Visible and accessible field label.
+value: string | — | Current value, reflected after native input events.
+size: sm, md, lg | md | Field size matching TextInput size.
+description: string | — | Supporting field description.
+status: none, error, warning, success | none | Validation state; none renders no status treatment.
+status-message: string | — | Validation message associated with the native input.
+is-required: presence | absent | Marks the native input required.
+is-disabled: presence | absent | Disables the native input.
+is-read-only: presence | absent | Makes the native input read-only.
+placeholder: string | — | Native placeholder text.
+html-name: string | — | Native form field name.
+auto-complete: string | — | Native autocomplete hint.
+-->
+<!-- variant: default -->
+<ax-text-input
+  label="Project name"
+  html-name="project"
+  placeholder="Astryx"></ax-text-input>
+
+<!-- variant: error -->
+<ax-text-input
+  type="email"
+  label="Email"
+  status="error"
+  status-message="Enter a valid email address."></ax-text-input>

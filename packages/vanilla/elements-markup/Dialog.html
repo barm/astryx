@@ -1,0 +1,24 @@
+<!-- docs: Present a focused task in a native modal dialog with managed focus return. -->
+<!-- attributes:
+open: presence | absent | Open state reflected from the native dialog.
+variant: standard, fullscreen | standard | Standard or fullscreen presentation.
+purpose: info, form, required | info | Dismissal policy for info, form, or required tasks.
+dialog-id: string | — | ID placed on the inner native dialog for trigger wiring.
+-->
+<!-- slots:
+title: Required dialog heading.
+default: Dialog body content.
+footer: Optional dialog actions.
+-->
+<!-- variant: confirmation -->
+<ax-dialog dialog-id="confirm-dialog"
+  ><span slot="title">Archive project?</span>
+  <p>You can restore this project later.</p>
+  <ax-button slot="footer">Cancel</ax-button></ax-dialog
+>
+
+<!-- variant: required -->
+<ax-dialog purpose="required"
+  ><span slot="title">Accept terms</span>
+  <p>Review and accept to continue.</p></ax-dialog
+>

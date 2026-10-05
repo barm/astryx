@@ -1,0 +1,21 @@
+<!-- docs: Group related content in a bordered or elevated surface. -->
+<!-- attributes:
+variant: default, transparent, muted, blue, cyan, gray, green, orange, pink, purple, red, teal, yellow | default | Card surface variant.
+elevation: none, low, med, high | none | Resting shadow depth.
+-->
+<!-- slots:
+header: Optional heading content.
+default: Card body content.
+footer: Optional actions or supporting content.
+-->
+<!-- variant: default -->
+<ax-card
+  ><h2 slot="header">Card title</h2>
+  <p>Card content</p></ax-card
+>
+
+<!-- variant: elevated -->
+<ax-card elevation="low"
+  ><p>Elevated card</p>
+  <ax-button slot="footer" variant="primary">Action</ax-button></ax-card
+>
