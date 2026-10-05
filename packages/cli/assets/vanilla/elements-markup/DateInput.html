@@ -1,0 +1,28 @@
+<!-- docs: DateInput custom element using native Astryx markup. -->
+<!-- attributes:
+label*:string|—|Field label.
+value:string|—|Selected ISO date.
+description:string|—|Help text.
+min:string|—|Minimum ISO date.
+max:string|—|Maximum ISO date.
+size:sm, md, lg|md|Input size.
+status:none, error, warning, success|none|Validation state.
+status-message:string|—|Validation message.
+is-required (required):boolean|absent|Marks input.
+is-disabled (disabled):boolean|absent|Disables input.
+html-name (name):string|—|Form name.
+-->
+<!-- slots:
+label*:Label.
+description:Help text.
+status-message:Validation message.
+-->
+<!-- events:
+input:Native event.
+change:Native event.
+-->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, valueAsDate, willValidate -->
+<!-- variant: default -->
+<ax-date-input label="Launch date"></ax-date-input>
+<!-- variant: error -->
+<ax-date-input label="Renewal" status="error"></ax-date-input>

@@ -1,0 +1,26 @@
+<!-- docs: DropdownMenu custom element using native Astryx markup. -->
+<!-- attributes:
+button-label:string|Menu|Visible trigger.
+is-menu-open (open):boolean|absent|Controlled menu.
+placement:above, below, start, end|below|Logical placement.
+alignment:start, center, end|start|Logical alignment.
+menu-id:string|—|ID trigger-to-menu.
+is-disabled (disabled):boolean|absent|Disables trigger.
+-->
+<!-- slots:
+button:Trigger button content; the component supplies the native button.
+default*:Native button.
+-->
+<!-- events:
+astryx:open-change:Custom event.
+astryx:select:Custom event.
+-->
+<!-- methods:
+show(): Open menu.
+close(): Close menu.
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: actions -->
+<ax-dropdown-menu button-label="Actions"><button type="button" role="menuitem">Edit</button></ax-dropdown-menu>
+<!-- variant: compact -->
+<ax-dropdown-menu button-label="More"><button type="button" role="menuitem">Move</button></ax-dropdown-menu>

@@ -1,0 +1,27 @@
+<!-- docs: RadioList custom element using native Astryx markup. -->
+<!-- attributes:
+label*:string|—|Field label.
+value:string|—|Selected child.
+description:string|—|Help text.
+orientation:vertical, horizontal|vertical|Vertical horizontal.
+size:sm, md|md|Radio size.
+status:none, error, warning, success|none|Validation state.
+status-message:string|—|Validation message.
+is-disabled (disabled):boolean|absent|Disables all.
+is-required (required):boolean|absent|Marks radio.
+html-name (name):string|—|Shared native.
+-->
+<!-- slots:
+label*:Group label.
+description:Help text.
+default*:Native radio.
+status-message:Validation message.
+-->
+<!-- events:
+change:Native event.
+-->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
+<!-- variant: default -->
+<ax-radio-list label="Plan"><label><input type="radio" value="a" />A</label></ax-radio-list>
+<!-- variant: horizontal -->
+<ax-radio-list label="Plan" orientation="horizontal"><label><input type="radio" value="b" />B</label></ax-radio-list>

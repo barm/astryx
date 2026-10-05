@@ -1,0 +1,29 @@
+<!-- docs: HoverCard custom element using native Astryx markup. -->
+<!-- attributes:
+content*:string|—|Card text.
+label:string|—|Accessible dialog name; without one the surface is a group.
+placement:above, below, start, end|above|Logical placement.
+alignment:start, center, end|center|Logical alignment.
+delay:string|300|Show delay.
+hide-delay:string|200|Hide delay.
+focus-trigger:auto, always, never|auto|Whether focus.
+touch-trigger:auto, tap, none|auto|Touch activation.
+is-enabled:boolean|absent|Enable hover-card behavior; omitted also remains enabled for HTML ergonomics.
+is-open (open):boolean|absent|Controlled open.
+-->
+<!-- slots:
+default*:Hoverable focusable.
+content*:Rich supplementary.
+-->
+<!-- events:
+astryx:open-change:Custom event.
+-->
+<!-- methods:
+show(): Show hover.
+close(): Hide hover.
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: profile -->
+<ax-hover-card content="Designer"><button type="button">Jordan</button></ax-hover-card>
+<!-- variant: link -->
+<ax-hover-card content="Roadmap" placement="below"><a href="#roadmap">View</a></ax-hover-card>

@@ -77,7 +77,7 @@
       <header class="ax-stack ax-stack--gap-2">
         <h1 class="ax-heading ax-heading--1">Astryx custom elements</h1>
         <p class="ax-text ax-text--secondary">
-          25 auto-discovered definitions rendered across neutral, butter, and
+          40 auto-discovered definitions rendered across neutral, butter, and
           Y2K in light and dark modes.
         </p>
       </header>
@@ -178,6 +178,43 @@
             </ax-card>
           </div>
         </section>
+        <section
+          class="gallery__component"
+          data-gallery-element="CheckboxInput">
+          <h3 class="ax-heading ax-heading--3">CheckboxInput</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-checkbox-input label="Updates"></ax-checkbox-input>
+          </div>
+          <div class="gallery__example" data-gallery-example="checked">
+            <ax-checkbox-input label="Usage" value></ax-checkbox-input>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Collapsible">
+          <h3 class="ax-heading ax-heading--3">Collapsible</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-collapsible trigger="Details"
+              ><span class="ax-text ax-text--primary"
+                >Content</span
+              ></ax-collapsible
+            >
+          </div>
+          <div class="gallery__example" data-gallery-example="open">
+            <ax-collapsible trigger="More" is-open
+              ><span class="ax-text ax-text--primary"
+                >Open</span
+              ></ax-collapsible
+            >
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="DateInput">
+          <h3 class="ax-heading ax-heading--3">DateInput</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-date-input label="Launch date"></ax-date-input>
+          </div>
+          <div class="gallery__example" data-gallery-example="error">
+            <ax-date-input label="Renewal" status="error"></ax-date-input>
+          </div>
+        </section>
         <section class="gallery__component" data-gallery-element="Dialog">
           <h3 class="ax-heading ax-heading--3">Dialog</h3>
           <div class="gallery__example" data-gallery-example="open-and-close">
@@ -203,6 +240,23 @@
             <ax-divider label="Or"></ax-divider>
           </div>
         </section>
+        <section class="gallery__component" data-gallery-element="DropdownMenu">
+          <h3 class="ax-heading ax-heading--3">DropdownMenu</h3>
+          <div class="gallery__example" data-gallery-example="actions">
+            <ax-dropdown-menu button-label="Actions"
+              ><button type="button" role="menuitem">
+                Edit
+              </button></ax-dropdown-menu
+            >
+          </div>
+          <div class="gallery__example" data-gallery-example="compact">
+            <ax-dropdown-menu button-label="More"
+              ><button type="button" role="menuitem">
+                Move
+              </button></ax-dropdown-menu
+            >
+          </div>
+        </section>
         <section class="gallery__component" data-gallery-element="EmptyState">
           <h3 class="ax-heading ax-heading--3">EmptyState</h3>
           <div class="gallery__example" data-gallery-example="default">
@@ -223,6 +277,19 @@
             <ax-heading level="2" color="secondary">Section title</ax-heading>
           </div>
         </section>
+        <section class="gallery__component" data-gallery-element="HoverCard">
+          <h3 class="ax-heading ax-heading--3">HoverCard</h3>
+          <div class="gallery__example" data-gallery-example="profile">
+            <ax-hover-card content="Designer"
+              ><button type="button">Jordan</button></ax-hover-card
+            >
+          </div>
+          <div class="gallery__example" data-gallery-example="link">
+            <ax-hover-card content="Roadmap" placement="below"
+              ><a href="#roadmap">View</a></ax-hover-card
+            >
+          </div>
+        </section>
         <section class="gallery__component" data-gallery-element="Layout">
           <h3 class="ax-heading ax-heading--3">Layout</h3>
           <div class="gallery__example" data-gallery-example="page-shell">
@@ -231,6 +298,22 @@
               <p>Page content</p>
               <small slot="footer">Footer</small>
             </ax-layout>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Lightbox">
+          <h3 class="ax-heading ax-heading--3">Lightbox</h3>
+          <div class="gallery__example" data-gallery-example="single">
+            <ax-lightbox
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E"
+              alt="Launch"></ax-lightbox>
+          </div>
+          <div class="gallery__example" data-gallery-example="gallery">
+            <ax-lightbox
+              ><figure class="ax-lightbox__item" data-ax-lightbox-item>
+                <img
+                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E"
+                  alt="One" /></figure
+            ></ax-lightbox>
           </div>
         </section>
         <section class="gallery__component" data-gallery-element="Link">
@@ -242,12 +325,34 @@
             <ax-link is-disabled>Unavailable</ax-link>
           </div>
         </section>
+        <section class="gallery__component" data-gallery-element="NumberInput">
+          <h3 class="ax-heading ax-heading--3">NumberInput</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-number-input label="Seats" value="12"></ax-number-input>
+          </div>
+          <div class="gallery__example" data-gallery-example="error">
+            <ax-number-input label="Days" status="error"></ax-number-input>
+          </div>
+        </section>
         <section class="gallery__component" data-gallery-element="ProgressBar">
           <h3 class="ax-heading ax-heading--3">ProgressBar</h3>
           <div class="gallery__example" data-gallery-example="indeterminate">
             <ax-progress-bar
               label="Processing report"
               is-indeterminate></ax-progress-bar>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="RadioList">
+          <h3 class="ax-heading ax-heading--3">RadioList</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-radio-list label="Plan"
+              ><label><input type="radio" value="a" />A</label></ax-radio-list
+            >
+          </div>
+          <div class="gallery__example" data-gallery-example="horizontal">
+            <ax-radio-list label="Plan" orientation="horizontal"
+              ><label><input type="radio" value="b" />B</label></ax-radio-list
+            >
           </div>
         </section>
         <section class="gallery__component" data-gallery-element="Selector">
@@ -326,6 +431,15 @@
               variant="error"
               label="Service incident"
               is-pulsing></ax-status-dot>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Switch">
+          <h3 class="ax-heading ax-heading--3">Switch</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-switch label="Alerts"></ax-switch>
+          </div>
+          <div class="gallery__example" data-gallery-example="checked">
+            <ax-switch label="Dark mode" value></ax-switch>
           </div>
         </section>
         <section class="gallery__component" data-gallery-element="Table">
@@ -413,6 +527,15 @@
             <ax-text as="code" type="code">const ready = true;</ax-text>
           </div>
         </section>
+        <section class="gallery__component" data-gallery-element="TextArea">
+          <h3 class="ax-heading ax-heading--3">TextArea</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-text-area label="Summary"></ax-text-area>
+          </div>
+          <div class="gallery__example" data-gallery-example="error">
+            <ax-text-area label="Notes" status="error"></ax-text-area>
+          </div>
+        </section>
         <section class="gallery__component" data-gallery-element="TextInput">
           <h3 class="ax-heading ax-heading--3">TextInput</h3>
           <div class="gallery__example" data-gallery-example="default">
@@ -439,6 +562,37 @@
           <div class="gallery__example" data-gallery-example="butter-dark">
             <ax-theme theme="butter" mode="dark"
               ><p class="ax-text">Butter theme</p></ax-theme
+            >
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="TimeInput">
+          <h3 class="ax-heading ax-heading--3">TimeInput</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-time-input label="Start time"></ax-time-input>
+          </div>
+          <div class="gallery__example" data-gallery-example="error">
+            <ax-time-input label="Window" status="error"></ax-time-input>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Toast">
+          <h3 class="ax-heading ax-heading--3">Toast</h3>
+          <div class="gallery__example" data-gallery-example="info">
+            <ax-toast body="Saved">Show</ax-toast>
+          </div>
+          <div class="gallery__example" data-gallery-example="error">
+            <ax-toast body="Failed" type="error"></ax-toast>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Tooltip">
+          <h3 class="ax-heading ax-heading--3">Tooltip</h3>
+          <div class="gallery__example" data-gallery-example="icon-button">
+            <ax-tooltip content="Info"
+              ><button type="button">?</button></ax-tooltip
+            >
+          </div>
+          <div class="gallery__example" data-gallery-example="below">
+            <ax-tooltip content="Copied" placement="below"
+              ><button type="button">Copy</button></ax-tooltip
             >
           </div>
         </section>
@@ -478,6 +632,19 @@
               >
               <ax-button slot="end-content" size="sm">Invite</ax-button>
             </ax-top-nav>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Typeahead">
+          <h3 class="ax-heading ax-heading--3">Typeahead</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-typeahead label="Assignee"
+              ><option value="Alex"></option
+            ></ax-typeahead>
+          </div>
+          <div class="gallery__example" data-gallery-example="error">
+            <ax-typeahead label="Owner" status="error"
+              ><option value="Design"></option
+            ></ax-typeahead>
           </div>
         </section>
       </div>

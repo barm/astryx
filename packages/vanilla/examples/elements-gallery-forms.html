@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx form and interactive elements</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="../dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <style>
+      body {
+        margin: 0;
+        background: var(--color-background-body);
+        color: var(--color-text-primary);
+      }
+      main {
+        display: grid;
+        gap: var(--spacing-6);
+        max-width: 64rem;
+        margin-inline: auto;
+        padding: var(--spacing-6);
+      }
+      section,
+      form {
+        display: grid;
+        gap: var(--spacing-4);
+      }
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+        gap: var(--spacing-4);
+        align-items: start;
+      }
+      output {
+        white-space: pre-wrap;
+      }
+    </style>
+    <script defer src="../dist/astryx-vanilla.js"></script>
+    <script defer src="../dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <main>
+      <header class="ax-stack ax-stack--gap-2">
+        <h1 class="ax-heading ax-heading--1">Form and interactive elements</h1>
+        <p class="ax-text ax-text--secondary">
+          Native form controls and light-DOM interactions rendered by Astryx
+          custom elements.
+        </p>
+      </header>
+
+      <form id="element-form">
+        <div class="gallery-grid">
+          <ax-checkbox-input
+            label="Product updates"
+            description="Receive a monthly product digest."
+            html-name="updates"
+            value></ax-checkbox-input>
+          <ax-switch
+            label="Dark mode"
+            description="Apply the setting immediately."
+            html-name="dark-mode"></ax-switch>
+          <ax-text-area
+            label="Summary"
+            description="Describe the expected outcome."
+            html-name="summary"
+            rows="4"
+            value="Build with light DOM."></ax-text-area>
+          <ax-number-input
+            label="Seats"
+            description="Choose between 1 and 100 seats."
+            html-name="seats"
+            min="1"
+            max="100"
+            value="12"
+            units="seats"></ax-number-input>
+          <ax-date-input
+            label="Launch date"
+            html-name="launch-date"
+            value="2026-10-15"></ax-date-input>
+          <ax-time-input
+            label="Start time"
+            html-name="start-time"
+            value="09:30"></ax-time-input>
+          <ax-slider
+            label="Volume"
+            html-name="volume"
+            value="65"
+            value-suffix="%"></ax-slider>
+          <ax-typeahead
+            label="Assignee"
+            html-name="assignee"
+            placeholder="Search people">
+            <option value="Alex Morgan"></option>
+            <option value="Sam Rivera"></option>
+            <option value="Taylor Chen"></option>
+          </ax-typeahead>
+        </div>
+
+        <ax-radio-list
+          label="Notification channel"
+          html-name="notification-channel"
+          value="email">
+          <label class="ax-radio-list__item">
+            <input class="ax-radio-list__input" type="radio" value="email" />
+            <span class="ax-radio-list__indicator" aria-hidden="true"></span>
+            <span class="ax-radio-list__content">
+              <span class="ax-radio-list__label">Email</span>
+            </span>
+          </label>
+          <label class="ax-radio-list__item">
+            <input class="ax-radio-list__input" type="radio" value="chat" />
+            <span class="ax-radio-list__indicator" aria-hidden="true"></span>
+            <span class="ax-radio-list__content">
+              <span class="ax-radio-list__label">Chat</span>
+            </span>
+          </label>
+        </ax-radio-list>
+
+        <ax-button type="submit" variant="primary"
+          >Submit native form</ax-button
+        >
+        <output id="form-result" class="ax-text ax-text--supporting"></output>
+      </form>
+
+      <section>
+        <h2 class="ax-heading ax-heading--2">Interactive elements</h2>
+        <div class="gallery-grid">
+          <ax-dropdown-menu button-label="Actions">
+            <button
+              class="ax-dropdown-menu__item"
+              type="button"
+              role="menuitem"
+              value="edit">
+              Edit project
+            </button>
+            <button
+              class="ax-dropdown-menu__item"
+              type="button"
+              role="menuitem"
+              value="archive">
+              Archive project
+            </button>
+          </ax-dropdown-menu>
+
+          <ax-collapsible trigger="What is Vanilla Astryx?">
+            Vanilla Astryx provides token-based styles and accessible behaviors
+            without React or a build step.
+          </ax-collapsible>
+
+          <ax-tooltip content="More information about this project" delay="0">
+            <button
+              class="ax-button ax-button--secondary"
+              type="button"
+              aria-label="Project information">
+              ?
+            </button>
+          </ax-tooltip>
+
+          <ax-hover-card
+            label="Jordan Lee profile preview"
+            delay="0"
+            hide-delay="0">
+            <button
+              class="ax-hover-card__trigger ax-hover-card__trigger--text"
+              type="button">
+              Jordan Lee
+            </button>
+            <span slot="content">
+              <strong>Jordan Lee</strong>
+              <span class="ax-text ax-text--supporting"
+                >Product designer · New York</span
+              >
+            </span>
+          </ax-hover-card>
+
+          <ax-toast body="Changes saved" is-auto-hide>Show toast</ax-toast>
+
+          <ax-lightbox
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='480'%3E%3Crect width='640' height='480' fill='%230064e0'/%3E%3C/svg%3E"
+            alt="Blue launch artwork"
+            caption="Launch day artwork"
+            trigger-label="Open launch photo"
+            label="Launch photo viewer"></ax-lightbox>
+        </div>
+      </section>
+    </main>
+    <script>
+      document
+        .querySelector('#element-form')
+        .addEventListener('submit', event => {
+          event.preventDefault();
+          const values = Object.fromEntries(new FormData(event.currentTarget));
+          document.querySelector('#form-result').value = JSON.stringify(
+            values,
+            null,
+            2,
+          );
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+<!-- docs: Tooltip custom element using native Astryx markup. -->
+<!-- attributes:
+content*:string|—|Short tooltip.
+trigger-label:string|?|Generated trigger.
+trigger-aria-label:string|More information|Accessible name.
+placement:above, below, start, end|above|Logical placement.
+alignment:start, center, end|center|Logical alignment.
+delay:string|200|Show delay.
+hide-delay:string|0|Hide delay.
+focus-trigger:auto, always, never|auto|Whether focus.
+touch-trigger:auto, tap, none|auto|Touch activation.
+is-enabled:boolean|absent|Enable tooltip behavior; omitted also remains enabled for HTML ergonomics.
+is-open (open):boolean|absent|Controlled open.
+-->
+<!-- slots:
+default*:Focusable hoverable.
+content*:Short tooltip.
+-->
+<!-- events:
+astryx:open-change:Custom event.
+-->
+<!-- methods:
+show(): Show tooltip.
+close(): Hide the tooltip.
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: icon-button -->
+<ax-tooltip content="Info"><button type="button">?</button></ax-tooltip>
+<!-- variant: below -->
+<ax-tooltip content="Copied" placement="below"><button type="button">Copy</button></ax-tooltip>

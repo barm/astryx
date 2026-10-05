@@ -1,0 +1,23 @@
+<!-- docs: Toast custom element using native Astryx markup. -->
+<!-- attributes:
+body*:string|—|Notification message.
+trigger-label:string|Show toast|Visible trigger.
+type:info, error|info|Informational error.
+is-auto-hide:boolean|absent|Automatically dismiss.
+auto-hide-duration:string|5000|Auto-hide delay.
+-->
+<!-- slots:
+body*:Notification message.
+default:Visible trigger label.
+-->
+<!-- events:
+astryx:dismiss:Custom event.
+-->
+<!-- methods:
+show(): Show configured.
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: info -->
+<ax-toast body="Saved">Show</ax-toast>
+<!-- variant: error -->
+<ax-toast body="Failed" type="error"></ax-toast>

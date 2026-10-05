@@ -5,25 +5,40 @@ import definition2 from './Banner.element.mjs';
 import definition3 from './Breadcrumbs.element.mjs';
 import definition4 from './Button.element.mjs';
 import definition5 from './Card.element.mjs';
-import definition6 from './Dialog.element.mjs';
-import definition7 from './Divider.element.mjs';
-import definition8 from './EmptyState.element.mjs';
-import definition9 from './Heading.element.mjs';
-import definition10 from './Layout.element.mjs';
-import definition11 from './Link.element.mjs';
-import definition12 from './ProgressBar.element.mjs';
-import definition13 from './Selector.element.mjs';
-import definition14 from './SideNav.element.mjs';
-import definition15 from './Skeleton.element.mjs';
-import definition16 from './Stack.element.mjs';
-import definition17 from './StatusDot.element.mjs';
-import definition18 from './Tab.element.mjs';
-import definition19 from './Table.element.mjs';
-import definition20 from './TabList.element.mjs';
-import definition21 from './Text.element.mjs';
-import definition22 from './TextInput.element.mjs';
-import definition23 from './Theme.element.mjs';
-import definition24 from './TopNav.element.mjs';
+import definition6 from './CheckboxInput.element.mjs';
+import definition7 from './Collapsible.element.mjs';
+import definition8 from './DateInput.element.mjs';
+import definition9 from './Dialog.element.mjs';
+import definition10 from './Divider.element.mjs';
+import definition11 from './DropdownMenu.element.mjs';
+import definition12 from './EmptyState.element.mjs';
+import definition13 from './Heading.element.mjs';
+import definition14 from './HoverCard.element.mjs';
+import definition15 from './Layout.element.mjs';
+import definition16 from './Lightbox.element.mjs';
+import definition17 from './Link.element.mjs';
+import definition18 from './NumberInput.element.mjs';
+import definition19 from './ProgressBar.element.mjs';
+import definition20 from './RadioList.element.mjs';
+import definition21 from './Selector.element.mjs';
+import definition22 from './SideNav.element.mjs';
+import definition23 from './Skeleton.element.mjs';
+import definition24 from './Slider.element.mjs';
+import definition25 from './Stack.element.mjs';
+import definition26 from './StatusDot.element.mjs';
+import definition27 from './Switch.element.mjs';
+import definition28 from './Tab.element.mjs';
+import definition29 from './Table.element.mjs';
+import definition30 from './TabList.element.mjs';
+import definition31 from './Text.element.mjs';
+import definition32 from './TextArea.element.mjs';
+import definition33 from './TextInput.element.mjs';
+import definition34 from './Theme.element.mjs';
+import definition35 from './TimeInput.element.mjs';
+import definition36 from './Toast.element.mjs';
+import definition37 from './Tooltip.element.mjs';
+import definition38 from './TopNav.element.mjs';
+import definition39 from './Typeahead.element.mjs';
 import {registerElement, registerElements} from './runtime.mjs';
 
 const definitions = [
@@ -52,6 +67,21 @@ const definitions = [
   definition22,
   definition23,
   definition24,
+  definition25,
+  definition26,
+  definition27,
+  definition28,
+  definition29,
+  definition30,
+  definition31,
+  definition32,
+  definition33,
+  definition34,
+  definition35,
+  definition36,
+  definition37,
+  definition38,
+  definition39,
 ];
 registerElements(definitions);
 

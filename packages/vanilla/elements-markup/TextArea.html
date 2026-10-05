@@ -1,0 +1,32 @@
+<!-- docs: TextArea custom element using native Astryx markup. -->
+<!-- attributes:
+label*:string|—|Field label.
+value:string|—|Current value.
+description:string|—|Help text.
+placeholder:string|—|Native placeholder.
+rows:string|3|Visible text rows.
+max-length:string|—|Native maximum.
+size:sm, md, lg|md|Textarea size.
+status:none, error, warning, success|none|Validation state.
+status-message:string|—|Validation message.
+is-required (required):boolean|absent|Marks textarea.
+is-disabled (disabled):boolean|absent|Disables textarea.
+is-read-only (readonly):boolean|absent|Makes textarea.
+html-name (name):string|—|Form name.
+auto-complete (autocomplete):string|—|Native autocomplete.
+has-spell-check (spellcheck):boolean|present|Enables browser.
+-->
+<!-- slots:
+label*:Label.
+description:Help text.
+status-message:Validation message.
+-->
+<!-- events:
+input:Native event.
+change:Native event.
+-->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
+<!-- variant: default -->
+<ax-text-area label="Summary"></ax-text-area>
+<!-- variant: error -->
+<ax-text-area label="Notes" status="error"></ax-text-area>

@@ -1,0 +1,28 @@
+<!-- docs: CheckboxInput custom element using native Astryx markup. -->
+<!-- attributes:
+label*:string|—|Field label.
+value (checked):boolean|absent|Checked state.
+is-indeterminate:boolean|absent|Mixed state.
+description:string|—|Help text.
+size:sm, md|md|Checkbox size.
+status:none, error, warning, success|none|Validation state.
+status-message:string|—|Validation message.
+is-disabled (disabled):boolean|absent|Disables native.
+is-read-only (readonly):boolean|absent|Read-only state.
+is-required (required):boolean|absent|Required state.
+html-name (name):string|—|Form name.
+html-value:string|on|Submit value.
+-->
+<!-- slots:
+label*:Label.
+description:Help text.
+status-message:Validation message.
+-->
+<!-- events:
+change:Native event.
+-->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
+<!-- variant: default -->
+<ax-checkbox-input label="Updates"></ax-checkbox-input>
+<!-- variant: checked -->
+<ax-checkbox-input label="Usage" value></ax-checkbox-input>

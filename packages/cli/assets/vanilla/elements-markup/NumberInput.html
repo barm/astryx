@@ -1,0 +1,34 @@
+<!-- docs: NumberInput custom element using native Astryx markup. -->
+<!-- attributes:
+label*:string|—|Field label.
+value:string|—|Current value.
+description:string|—|Help text.
+units:string|—|Visible units.
+min:string|—|Native minimum.
+max:string|—|Native maximum.
+step:string|1|Native step.
+placeholder:string|—|Native placeholder.
+size:sm, md, lg|md|Input size.
+status:none, error, warning, success|none|Validation state.
+status-message:string|—|Validation message.
+is-required (required):boolean|absent|Marks input.
+is-disabled (disabled):boolean|absent|Disables input.
+is-read-only (readonly):boolean|absent|Makes input.
+html-name (name):string|—|Form name.
+auto-complete (autocomplete):string|—|Native autocomplete.
+-->
+<!-- slots:
+label*:Label.
+description:Help text.
+units:Visible units suffix.
+status-message:Validation message.
+-->
+<!-- events:
+input:Native event.
+change:Native event.
+-->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, valueAsNumber, willValidate -->
+<!-- variant: default -->
+<ax-number-input label="Seats" value="12"></ax-number-input>
+<!-- variant: error -->
+<ax-number-input label="Days" status="error"></ax-number-input>

@@ -1,0 +1,31 @@
+<!-- docs: Slider custom element using native Astryx markup. -->
+<!-- attributes:
+label*:string|—|Field label.
+value:string|0|Current single-thumb.
+min:string|0|Native minimum.
+max:string|100|Native maximum.
+step:string|1|Native step.
+orientation:horizontal, vertical|horizontal|Slider orientation.
+value-suffix:string|—|Visible suffix.
+description:string|—|Help text.
+status:none, error, warning, success|none|Validation state.
+status-message:string|—|Validation message.
+is-disabled (disabled):boolean|absent|Disables native.
+is-required (required):boolean|absent|Marks range.
+html-name (name):string|—|Form name.
+-->
+<!-- slots:
+label*:Visible slider.
+description:Help text.
+status-message:Validation message.
+-->
+<!-- events:
+input:Native event.
+change:Native event.
+astryx:change-end:Custom event.
+-->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, valueAsNumber, willValidate -->
+<!-- variant: default -->
+<ax-slider label="Volume" value="65"></ax-slider>
+<!-- variant: error -->
+<ax-slider label="Threshold" status="error"></ax-slider>

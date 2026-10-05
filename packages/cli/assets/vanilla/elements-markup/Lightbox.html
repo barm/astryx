@@ -1,0 +1,33 @@
+<!-- docs: Lightbox custom element using native Astryx markup. -->
+<!-- attributes:
+src*:string|—|Image source.
+alt:string|—|Image alternative.
+caption:string|—|Visible image.
+thumbnail-src:string|—|Trigger thumbnail.
+trigger-label:string|Open image viewer|Accessible trigger.
+label:string|Image viewer|Accessible dialog.
+lightbox-id:string|—|Native dialog.
+is-open (open):boolean|absent|Controlled viewer.
+index:string|0|Current zero-based.
+has-zoom:boolean|absent|Reserved image.
+-->
+<!-- slots:
+thumbnail:Trigger thumbnail content.
+default*:Media figures.
+caption:Caption for generated single-image media.
+-->
+<!-- events:
+astryx:open-change:Custom event.
+astryx:index-change:Custom event.
+-->
+<!-- methods:
+show(): Open modal.
+close(): Close modal.
+next(): Move next.
+previous(): Move previous.
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: single -->
+<ax-lightbox src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Launch"></ax-lightbox>
+<!-- variant: gallery -->
+<ax-lightbox><figure class="ax-lightbox__item" data-ax-lightbox-item><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="One" /></figure></ax-lightbox>
