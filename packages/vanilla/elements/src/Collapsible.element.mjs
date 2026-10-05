@@ -7,39 +7,45 @@ export default {
   name: 'Collapsible',
   tag: 'ax-collapsible',
   attributes: {
-    trigger: {type: 'string', description: 'Always-visible disclosure.'},
+    trigger: {
+      type: 'string',
+      description: 'Always-visible disclosure trigger.',
+    },
     'is-open': {
       type: 'boolean',
       aliases: ['open'],
       aliasProperties: ['open'],
       default: false,
-      description: 'Current open.',
+      description: 'Current disclosure state.',
     },
     'default-is-open': {
       type: 'boolean',
       default: false,
-      description: 'Initial uncontrolled.',
+      description: 'Initial uncontrolled open state.',
     },
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Prevents disclosure.',
+      description: 'Prevents disclosure interaction.',
     },
     'chevron-position': {
       type: 'enum',
       values: positions,
       default: 'end',
-      description: 'Logical chevron.',
+      description: 'Logical chevron position.',
     },
     value: {
       type: 'string',
-      description: 'Optional group.',
+      description: 'Optional disclosure group value.',
     },
   },
   slots: {
-    trigger: {description: 'Always-visible disclosure.', required: true},
+    trigger: {
+      description: 'Always-visible disclosure trigger.',
+      required: true,
+    },
     default: 'Collapsible body content.',
   },
   content: [{attribute: 'trigger', slot: 'trigger', required: true}],
@@ -78,8 +84,7 @@ export default {
         const initial =
           host.hasAttribute('is-open') ||
           host.hasAttribute('open') ||
-          host.hasAttribute('default-is-open') ||
-          (!host.hasAttribute('is-open') && !host.hasAttribute('open'));
+          host.hasAttribute('default-is-open');
         details.open = initial;
         api.reflect('is-open', initial);
         initialized.add(host);
@@ -102,7 +107,7 @@ export default {
       });
     },
   },
-  docs: 'Collapsible custom element using native Astryx markup.',
+  docs: 'Show and hide authored content with a native details disclosure.',
   examples: [
     {
       name: 'default',

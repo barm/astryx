@@ -6,7 +6,12 @@
  */
 /* global Element, HTMLButtonElement, HTMLDialogElement, HTMLElement, queueMicrotask */
 
-import {dispatchAstryx, elementsMatching, ensureID} from './utils.js';
+import {
+  dispatchAstryx,
+  elementsMatching,
+  ensureID,
+  isInElementOwnedSubtree,
+} from './utils.js';
 
 const lightboxDocuments = new WeakSet();
 const lightboxState = new WeakMap();
@@ -96,10 +101,12 @@ export function closeLightbox(dialog, returnFocus = true) {
 
 export function enhanceLightboxes(root) {
   for (const dialog of elementsMatching(root, 'dialog[data-ax-lightbox]')) {
+    if (isInElementOwnedSubtree(dialog)) continue;
     ensureID(dialog, 'ax-lightbox');
     updateLightbox(dialog, currentIndex(dialog));
   }
   for (const trigger of elementsMatching(root, '[data-ax-lightbox-open]')) {
+    if (isInElementOwnedSubtree(trigger)) continue;
     const dialog = getLightbox(
       trigger.ownerDocument,
       trigger.dataset.axLightboxOpen,
@@ -116,7 +123,7 @@ export function setupLightboxes(doc) {
 
   doc.addEventListener('click', event => {
     const target = event.target;
-    if (!(target instanceof Element)) return;
+    if (!(target instanceof Element) || isInElementOwnedSubtree(target)) return;
 
     const openTrigger = target.closest('[data-ax-lightbox-open]');
     if (openTrigger instanceof HTMLElement) {
@@ -171,7 +178,8 @@ export function setupLightboxes(doc) {
       const dialog = event.target;
       if (
         !(dialog instanceof HTMLDialogElement) ||
-        !dialog.matches('[data-ax-lightbox]')
+        !dialog.matches('[data-ax-lightbox]') ||
+        isInElementOwnedSubtree(dialog)
       )
         return;
       event.preventDefault();
@@ -185,7 +193,12 @@ export function setupLightboxes(doc) {
       event.target instanceof Element
         ? event.target.closest('dialog[data-ax-lightbox]')
         : null;
-    if (!(dialog instanceof HTMLDialogElement) || !dialog.open) return;
+    if (
+      !(dialog instanceof HTMLDialogElement) ||
+      !dialog.open ||
+      isInElementOwnedSubtree(dialog)
+    )
+      return;
     if (
       event.target instanceof Element &&
       event.target.matches('input, textarea, select, video')

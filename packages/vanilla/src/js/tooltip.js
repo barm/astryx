@@ -5,6 +5,7 @@ import {
   dispatchAstryx,
   elementsMatching,
   ensureID,
+  isInElementOwnedSubtree,
   positionFloating,
 } from './utils.js';
 
@@ -19,6 +20,12 @@ function tooltipParts(wrapper) {
     wrapper.querySelector('[data-ax-tooltip-trigger]') ??
     [...wrapper.children].find(child => child !== surface);
   return {surface, trigger};
+}
+
+function tooltipWrapper(target) {
+  const wrapper =
+    target instanceof Element ? target.closest('[data-ax-tooltip]') : null;
+  return wrapper && !isInElementOwnedSubtree(wrapper) ? wrapper : null;
 }
 
 function clearTooltipTimer(wrapper) {
@@ -57,6 +64,7 @@ export function hideTooltip(wrapper) {
 
 export function enhanceTooltips(root) {
   for (const wrapper of elementsMatching(root, '[data-ax-tooltip]')) {
+    if (isInElementOwnedSubtree(wrapper)) continue;
     const {surface, trigger} = tooltipParts(wrapper);
     if (!(surface instanceof HTMLElement) || !(trigger instanceof HTMLElement))
       continue;
@@ -72,10 +80,7 @@ export function setupTooltips(doc) {
   tooltipDocuments.add(doc);
 
   doc.addEventListener('pointerover', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-tooltip]')
-        : null;
+    const wrapper = tooltipWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -86,10 +91,7 @@ export function setupTooltips(doc) {
       showTooltip(wrapper);
   });
   doc.addEventListener('pointerout', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-tooltip]')
-        : null;
+    const wrapper = tooltipWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -100,17 +102,11 @@ export function setupTooltips(doc) {
       hideTooltip(wrapper);
   });
   doc.addEventListener('focusin', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-tooltip]')
-        : null;
+    const wrapper = tooltipWrapper(event.target);
     if (wrapper) showTooltip(wrapper, true);
   });
   doc.addEventListener('focusout', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-tooltip]')
-        : null;
+    const wrapper = tooltipWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -122,7 +118,8 @@ export function setupTooltips(doc) {
   });
   doc.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
-    for (const wrapper of doc.querySelectorAll('[data-ax-tooltip]'))
-      hideTooltip(wrapper);
+    for (const wrapper of doc.querySelectorAll('[data-ax-tooltip]')) {
+      if (!isInElementOwnedSubtree(wrapper)) hideTooltip(wrapper);
+    }
   });
 }

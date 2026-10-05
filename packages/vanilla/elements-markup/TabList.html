@@ -1,10 +1,10 @@
 <!-- docs: Switch between related in-page views; non-selected slotted panels are hidden automatically. -->
 <!-- attributes:
-value:string|—|Selected child tab value, reflected after activation.
-size:sm, md, lg|md|Tab size matching TabList size.
-layout:hug, fill|hug|Tabs hug content or fill the available width.
-orientation:horizontal, vertical|horizontal|Arrow-key and ARIA orientation.
-label:string|Views|Accessible label for the native tablist.
+value:str|—|Selected child tab value, reflected after activation.
+size:sm,md,lg|md|Tab size matching TabList size.
+layout:hug,fill|hug|Tabs hug content or fill the available width.
+orientation:horizontal,vertical|horizontal|Arrow-key and ARIA orientation.
+label:str|Views|Accessible label for the native tablist.
 -->
 <!-- slots:
 default*:ax-tab children.
@@ -14,9 +14,9 @@ panels:Panel elements whose IDs match child panel-id attributes.
 astryx:tab-change:Bubbles from the activated ax-tab with detail.value.
 -->
 <!-- methods:
-select(): Select a tab by value.
+select():Select a tab by value.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: panels -->
 <ax-tab-list value="overview" label="Project views">
   <ax-tab value="overview" panel-id="panel-overview">Overview</ax-tab>

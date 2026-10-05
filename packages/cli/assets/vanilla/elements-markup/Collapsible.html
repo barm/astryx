@@ -1,14 +1,14 @@
-<!-- docs: Collapsible custom element using native Astryx markup. -->
+<!-- docs: Show and hide authored content with a native details disclosure. -->
 <!-- attributes:
-trigger*:string|—|Always-visible disclosure.
-is-open (open):boolean|absent|Current open.
-default-is-open:boolean|absent|Initial uncontrolled.
-is-disabled (disabled):boolean|absent|Prevents disclosure.
-chevron-position:start, end|end|Logical chevron.
-value:string|—|Optional group.
+trigger*:str|—|Always-visible disclosure trigger.
+is-open/open:bool|false|Current disclosure state.
+default-is-open:bool|false|Initial uncontrolled open state.
+is-disabled/disabled:bool|false|Prevents disclosure interaction.
+chevron-position:start,end|end|Logical chevron position.
+value:str|—|Optional disclosure group value.
 -->
 <!-- slots:
-trigger*:Always-visible disclosure.
+trigger*:Always-visible disclosure trigger.
 default:Collapsible body content.
 -->
 <!-- events:
@@ -16,10 +16,10 @@ toggle:Native details toggle event.
 astryx:open-change:Emitted with {isOpen} after the disclosure changes.
 -->
 <!-- methods:
-show(): Open disclosure.
-close(): Close disclosure.
+show():Open disclosure.
+close():Close disclosure.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: default -->
 <ax-collapsible trigger="Details"><span class="ax-text ax-text--primary">Content</span></ax-collapsible>
 <!-- variant: open -->

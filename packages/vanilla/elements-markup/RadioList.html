@@ -1,27 +1,28 @@
-<!-- docs: RadioList custom element using native Astryx markup. -->
+<!-- docs: Choose one value from a native radio group with shared form semantics. -->
 <!-- attributes:
-label*:string|—|Field label.
-value:string|—|Selected child.
-description:string|—|Help text.
-orientation:vertical, horizontal|vertical|Vertical horizontal.
-size:sm, md|md|Radio size.
-status:none, error, warning, success|none|Validation state.
-status-message:string|—|Validation message.
-is-disabled (disabled):boolean|absent|Disables all.
-is-required (required):boolean|absent|Marks radio.
-html-name (name):string|—|Shared native.
+label*:str|—|Visible field label.
+value:str|—|Currently selected radio value.
+description:str|—|Supporting help text.
+orientation:vertical,horizontal|vertical|Radio group orientation.
+size:sm,md|md|Visual radio size.
+status:none,error,warning,success|none|Current validation state.
+status-message:str|—|Displayed validation message.
+is-disabled/disabled:bool|false|Disables every radio option.
+is-required/required:bool|false|Marks the radio group required.
+html-name/name:str|—|Shared native radio name.
 -->
 <!-- slots:
-label*:Group label.
-description:Help text.
-default*:Native radio.
-status-message:Validation message.
+label*:Visible radio group label.
+description:Supporting help text.
+default*:Native radio options.
+status-message:Displayed validation message.
 -->
 <!-- events:
-change:Native event.
+change:Native event from the selected radio.
+astryx:change:Emitted with {value} after radio selection changes.
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
+<!-- properties:attrs→camelCase;readonly:form,validity,validationMessage,willValidate -->
 <!-- variant: default -->
-<ax-radio-list label="Plan"><label><input type="radio" value="a" />A</label></ax-radio-list>
+<ax-radio-list label="Plan"><label><input type=radio value=a>A</label><label><input type=radio value=b>B</label></ax-radio-list>
 <!-- variant: horizontal -->
-<ax-radio-list label="Plan" orientation="horizontal"><label><input type="radio" value="b" />B</label></ax-radio-list>
+<ax-radio-list label="Plan" orientation="horizontal"><label><input type=radio value=a>A</label><label><input type=radio value=b>B</label></ax-radio-list>

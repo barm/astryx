@@ -1,5 +1,4 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
-/* global globalThis */
 
 const placements = ['above', 'below', 'start', 'end'];
 const alignments = ['start', 'center', 'end'];
@@ -40,43 +39,44 @@ export default {
     'button-label': {
       type: 'string',
       default: 'Menu',
-      description: 'Visible trigger.',
+      description: 'Visible trigger label.',
     },
     'is-menu-open': {
       type: 'boolean',
       aliases: ['open'],
       aliasProperties: ['open'],
       default: false,
-      description: 'Controlled menu.',
+      description: 'Controlled menu open state.',
     },
     placement: {
       type: 'enum',
       values: placements,
       default: 'below',
-      description: 'Logical placement.',
+      description: 'Logical surface placement.',
     },
     alignment: {
       type: 'enum',
       values: alignments,
       default: 'start',
-      description: 'Logical alignment.',
+      description: 'Logical surface alignment.',
     },
-    'menu-id': {type: 'string', description: 'ID trigger-to-menu.'},
+    'menu-id': {type: 'string', description: 'Menu element identifier.'},
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Disables trigger.',
+      description: 'Disables trigger interaction.',
     },
   },
   slots: {
     button: 'Trigger button content; the component supplies the native button.',
     default: {
-      description: 'Native button.',
+      description: 'Native menu item controls.',
       required: true,
     },
   },
+  exampleItemSelector: 'button, a, [data-ax-menu-item]',
   control: '[data-ax-dropdown-trigger]',
   methods: {
     show: {
@@ -94,8 +94,9 @@ export default {
     },
   },
   events: {
-    'astryx:open-change': 'Custom event.',
-    'astryx:select': 'Custom event.',
+    'astryx:open-change':
+      'Emitted with {isOpen} whenever the menu opens or closes.',
+    'astryx:select': 'Emitted with {value,label} from the activated menu item.',
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
@@ -107,18 +108,13 @@ export default {
       const menu = api.query('[data-ax-dropdown-menu]');
       const trigger = api.control;
       const open = api.read('is-menu-open');
+      for (const item of menu.children) {
+        if (item.matches('button, a') && !item.hasAttribute('role')) {
+          item.setAttribute('role', 'menuitem');
+        }
+      }
       syncMenu(host, api, open);
       for (const item of items(api)) item.tabIndex = -1;
-      if (globalThis.astryx || globalThis.AstryxVanilla) {
-        menu.hidden = false;
-        api.listen(menu, 'astryx:dropdown-open', () =>
-          api.reflect('is-menu-open', true),
-        );
-        api.listen(menu, 'astryx:dropdown-close', () =>
-          api.reflect('is-menu-open', false),
-        );
-        return;
-      }
       api.listen(trigger, 'click', event => {
         event.preventDefault();
         if (!api.read('is-disabled'))
@@ -176,15 +172,15 @@ export default {
       });
     },
   },
-  docs: 'DropdownMenu custom element using native Astryx markup.',
+  docs: 'Open an accessible action menu with keyboard navigation and selection events.',
   examples: [
     {
       name: 'actions',
-      html: `<ax-dropdown-menu button-label="Actions"><button type="button" role="menuitem">Edit</button></ax-dropdown-menu>`,
+      html: `<ax-dropdown-menu button-label="Actions"><button type=button>Edit</button><button type=button>Archive</button></ax-dropdown-menu>`,
     },
     {
       name: 'compact',
-      html: `<ax-dropdown-menu button-label="More"><button type="button" role="menuitem">Move</button></ax-dropdown-menu>`,
+      html: `<ax-dropdown-menu button-label="More"><button type=button>Move</button><a href="#share">Share</a></ax-dropdown-menu>`,
     },
   ],
   render(_host, h) {

@@ -1,26 +1,26 @@
-<!-- docs: DropdownMenu custom element using native Astryx markup. -->
+<!-- docs: Open an accessible action menu with keyboard navigation and selection events. -->
 <!-- attributes:
-button-label:string|Menu|Visible trigger.
-is-menu-open (open):boolean|absent|Controlled menu.
-placement:above, below, start, end|below|Logical placement.
-alignment:start, center, end|start|Logical alignment.
-menu-id:string|—|ID trigger-to-menu.
-is-disabled (disabled):boolean|absent|Disables trigger.
+button-label:str|Menu|Visible trigger label.
+is-menu-open/open:bool|false|Controlled menu open state.
+placement:above,below,start,end|below|Logical surface placement.
+alignment:start,center,end|start|Logical surface alignment.
+menu-id:str|—|Menu element identifier.
+is-disabled/disabled:bool|false|Disables trigger interaction.
 -->
 <!-- slots:
 button:Trigger button content; the component supplies the native button.
-default*:Native button.
+default*:Native menu item controls.
 -->
 <!-- events:
-astryx:open-change:Custom event.
-astryx:select:Custom event.
+astryx:open-change:Emitted with {isOpen} whenever the menu opens or closes.
+astryx:select:Emitted with {value,label} from the activated menu item.
 -->
 <!-- methods:
-show(): Open menu.
-close(): Close menu.
+show():Open menu.
+close():Close menu.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: actions -->
-<ax-dropdown-menu button-label="Actions"><button type="button" role="menuitem">Edit</button></ax-dropdown-menu>
+<ax-dropdown-menu button-label="Actions"><button type=button>Edit</button><button type=button>Archive</button></ax-dropdown-menu>
 <!-- variant: compact -->
-<ax-dropdown-menu button-label="More"><button type="button" role="menuitem">Move</button></ax-dropdown-menu>
+<ax-dropdown-menu button-label="More"><button type=button>Move</button><a href="#share">Share</a></ax-dropdown-menu>

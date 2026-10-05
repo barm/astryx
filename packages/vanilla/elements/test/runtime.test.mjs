@@ -177,6 +177,51 @@ test('definitions and parity cases are auto-discovered from per-component files'
   }
 });
 
+test('definition docs reject placeholders, truncation, generic events, and one-item lists', () => {
+  for (const definition of definitions) {
+    assert.doesNotMatch(definition.docs, /custom element using native/i);
+    assert.ok(definition.docs.trim(), `${definition.name} has a docs summary`);
+    for (const [name, spec] of Object.entries(definition.attributes)) {
+      const words = String(spec.description ?? '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      assert.ok(
+        words.length >= 3,
+        `${definition.name}.${name} has an untruncated description`,
+      );
+    }
+    for (const [name, description] of Object.entries(definition.events ?? {})) {
+      assert.ok(
+        description.trim(),
+        `${definition.name}.${name} documents payload`,
+      );
+      assert.doesNotMatch(
+        description,
+        /^custom event\.?$/i,
+        `${definition.name}.${name} documents payload`,
+      );
+    }
+    for (const example of definition.examples) {
+      const body = new JSDOM(`<!doctype html><body>${example.html}</body>`)
+        .window.document.body;
+      const host = body.querySelector(definition.tag);
+      if (definition.exampleItemSelector) {
+        assert.ok(
+          host.querySelectorAll(definition.exampleItemSelector).length >= 2,
+          `${definition.name}.${example.name} shows multiple list items`,
+        );
+      }
+      if (definition.tag === 'ax-tab') {
+        assert.ok(
+          host.closest('ax-tab-list'),
+          `Tab.${example.name} is nested in ax-tab-list`,
+        );
+      }
+    }
+  }
+});
+
 test('auto-discovered parity cases match the existing BEM references', async () => {
   for (const parityCase of parityCases) {
     const element = await render(
@@ -285,10 +330,7 @@ test('generated docs expose complete API contracts', async () => {
     assert.match(content, /<!-- attributes:\n/);
     assert.match(content, /<!-- slots:\n/);
     assert.match(content, /<!-- events:\n/);
-    assert.match(
-      content,
-      /<!-- properties: attrs\/aliases: camelCase properties/,
-    );
+    assert.match(content, /<!-- properties:attrs→camelCase/);
     assert.ok((content.match(/<!-- variant:/g) ?? []).length >= 2);
   }
   const averageBytes = totalBytes / definitions.length;
@@ -301,14 +343,14 @@ test('generated docs expose complete API contracts', async () => {
     'utf8',
   );
   assert.match(button, /label\*:/);
-  assert.match(button, /is-disabled \(disabled\):/);
+  assert.match(button, /is-disabled\/disabled:/);
   assert.doesNotMatch(button, /<!-- methods:/);
   assert.doesNotMatch(button, /focus\(\):|click\(\):/);
   const dialog = await readFile(
     path.join(packageRoot, 'elements-markup/Dialog.html'),
     'utf8',
   );
-  assert.match(dialog, /is-open \(open\):/);
+  assert.match(dialog, /is-open\/open:/);
   assert.match(dialog, /show\(\):/);
   assert.match(dialog, /data-ax-dialog-open/);
 });

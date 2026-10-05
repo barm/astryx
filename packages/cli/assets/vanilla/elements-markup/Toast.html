@@ -1,23 +1,22 @@
-<!-- docs: Toast custom element using native Astryx markup. -->
+<!-- docs: Display a declarative status or error notification with optional timed dismissal. -->
 <!-- attributes:
-body*:string|—|Notification message.
-trigger-label:string|Show toast|Visible trigger.
-type:info, error|info|Informational error.
-is-auto-hide:boolean|absent|Automatically dismiss.
-auto-hide-duration:string|5000|Auto-hide delay.
+body*:str|—|Visible notification message.
+type:info,error|info|Semantic notification type.
+is-auto-hide:bool|false|Enables timed dismissal.
+auto-hide-duration:str|5000|Auto-hide delay milliseconds.
 -->
 <!-- slots:
-body*:Notification message.
-default:Visible trigger label.
+body*:Rich notification message content.
 -->
 <!-- events:
-astryx:dismiss:Custom event.
+astryx:dismiss:Emitted with {reason} when the notification is dismissed manually, automatically, or programmatically.
 -->
 <!-- methods:
-show(): Show configured.
+show():Show and restart auto-hide.
+dismiss():Dismiss programmatically.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: info -->
-<ax-toast body="Saved">Show</ax-toast>
+<ax-toast body="Saved"></ax-toast>
 <!-- variant: error -->
-<ax-toast body="Failed" type="error"></ax-toast>
+<ax-toast type="error"><span slot="body">Save failed. Try again.</span></ax-toast>

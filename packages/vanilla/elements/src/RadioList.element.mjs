@@ -1,8 +1,10 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
+/* global queueMicrotask */
 
 const orientations = ['vertical', 'horizontal'];
 const sizes = ['sm', 'md'];
 const statuses = ['none', 'error', 'warning', 'success'];
+const initializedRadios = new WeakSet();
 
 function radios(api) {
   return api.queryAll('input[type="radio"]');
@@ -14,7 +16,10 @@ function syncRadios(host, api) {
   for (const radio of radios(api)) {
     radio.name = name;
     radio.checked = radio.value === value;
-    radio.defaultChecked = radio.checked;
+    if (!initializedRadios.has(radio)) {
+      radio.defaultChecked = radio.checked;
+      initializedRadios.add(radio);
+    }
     radio.disabled =
       api.read('is-disabled') || radio.hasAttribute('data-ax-item-disabled');
     radio.required = api.read('is-required');
@@ -25,74 +30,79 @@ export default {
   name: 'RadioList',
   tag: 'ax-radio-list',
   attributes: {
-    label: {type: 'string', description: 'Field label.'},
+    label: {type: 'string', description: 'Visible field label.'},
     value: {
       type: 'string',
       default: '',
-      description: 'Selected child.',
+      description: 'Currently selected radio value.',
     },
-    description: {type: 'string', description: 'Help text.'},
+    description: {type: 'string', description: 'Supporting help text.'},
     orientation: {
       type: 'enum',
       values: orientations,
       default: 'vertical',
-      description: 'Vertical horizontal.',
+      description: 'Radio group orientation.',
     },
     size: {
       type: 'enum',
       values: sizes,
       default: 'md',
-      description: 'Radio size.',
+      description: 'Visual radio size.',
     },
     status: {
       type: 'enum',
       values: statuses,
       default: 'none',
-      description: 'Validation state.',
+      description: 'Current validation state.',
     },
-    'status-message': {type: 'string', description: 'Validation message.'},
+    'status-message': {
+      type: 'string',
+      description: 'Displayed validation message.',
+    },
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Disables all.',
+      description: 'Disables every radio option.',
     },
     'is-required': {
       type: 'boolean',
       aliases: ['required'],
       aliasProperties: ['required'],
       default: false,
-      description: 'Marks radio.',
+      description: 'Marks the radio group required.',
     },
     'html-name': {
       type: 'string',
       aliases: ['name'],
       aliasProperties: ['name'],
-      description: 'Shared native.',
+      description: 'Shared native radio name.',
     },
   },
   slots: {
-    label: {description: 'Group label.', required: true},
-    description: 'Help text.',
+    label: {description: 'Visible radio group label.', required: true},
+    description: 'Supporting help text.',
     default: {
-      description: 'Native radio.',
+      description: 'Native radio options.',
       required: true,
     },
-    'status-message': 'Validation message.',
+    'status-message': 'Displayed validation message.',
   },
   content: [
     {attribute: 'label', slot: 'label', required: true},
     {attribute: 'description', slot: 'description'},
     {attribute: 'status-message', slot: 'status-message'},
   ],
+  exampleItemSelector: 'input[type="radio"]',
   control: 'input[type="radio"]',
   delegates: {
     properties: ['form', 'validity', 'validationMessage', 'willValidate'],
     methods: ['checkValidity', 'reportValidity'],
   },
   events: {
-    change: 'Native event.',
+    change: 'Native event from the selected radio.',
+    'astryx:change': 'Emitted with {value} after radio selection changes.',
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
@@ -105,6 +115,15 @@ export default {
     },
     afterRender(host, api) {
       syncRadios(host, api);
+      const form = radios(api)[0]?.form;
+      if (form) {
+        api.listen(form, 'reset', () =>
+          queueMicrotask(() => {
+            const selected = radios(api).find(radio => radio.checked);
+            api.reflect('value', selected?.value ?? '');
+          }),
+        );
+      }
       for (const radio of radios(api)) {
         api.listen(radio, 'change', () => {
           if (!radio.checked) return;
@@ -114,15 +133,15 @@ export default {
       }
     },
   },
-  docs: 'RadioList custom element using native Astryx markup.',
+  docs: 'Choose one value from a native radio group with shared form semantics.',
   examples: [
     {
       name: 'default',
-      html: `<ax-radio-list label="Plan"><label><input type="radio" value="a" />A</label></ax-radio-list>`,
+      html: `<ax-radio-list label="Plan"><label><input type=radio value=a>A</label><label><input type=radio value=b>B</label></ax-radio-list>`,
     },
     {
       name: 'horizontal',
-      html: `<ax-radio-list label="Plan" orientation="horizontal"><label><input type="radio" value="b" />B</label></ax-radio-list>`,
+      html: `<ax-radio-list label="Plan" orientation="horizontal"><label><input type=radio value=a>A</label><label><input type=radio value=b>B</label></ax-radio-list>`,
     },
   ],
   render(_host, h) {

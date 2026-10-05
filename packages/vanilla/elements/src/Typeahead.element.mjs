@@ -8,75 +8,79 @@ export default {
   name: 'Typeahead',
   tag: 'ax-typeahead',
   attributes: {
-    label: {type: 'string', description: 'Field label.'},
+    label: {type: 'string', description: 'Visible field label.'},
     value: {
       type: 'string',
       default: '',
       liveProperty: 'value',
       reflect: {events: ['input', 'change'], property: 'value'},
-      description: 'Search value.',
+      description: 'Current search value.',
     },
-    description: {type: 'string', description: 'Help text.'},
-    placeholder: {type: 'string', description: 'Native placeholder.'},
+    description: {type: 'string', description: 'Supporting help text.'},
+    placeholder: {type: 'string', description: 'Native placeholder text.'},
     size: {
       type: 'enum',
       values: sizes,
       default: 'md',
-      description: 'Input size.',
+      description: 'Visual input size.',
     },
     status: {
       type: 'enum',
       values: statuses,
       default: 'none',
-      description: 'Validation state.',
+      description: 'Current validation state.',
     },
-    'status-message': {type: 'string', description: 'Validation message.'},
+    'status-message': {
+      type: 'string',
+      description: 'Displayed validation message.',
+    },
     'is-required': {
       type: 'boolean',
       aliases: ['required'],
       aliasProperties: ['required'],
       default: false,
-      description: 'Marks input.',
+      description: 'Marks the input required.',
     },
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Disables input.',
+      description: 'Disables the native input.',
     },
     'html-name': {
       type: 'string',
       aliases: ['name'],
       aliasProperties: ['name'],
-      description: 'Form name.',
+      description: 'Native form name.',
     },
     'list-id': {
       type: 'string',
-      description: 'ID used.',
+      description: 'Datalist element identifier.',
     },
     'auto-complete': {
       type: 'string',
       aliases: ['autocomplete'],
       aliasProperties: ['autocomplete'],
       default: 'off',
-      description: 'Native autocomplete.',
+      description: 'Native autocomplete hint.',
     },
   },
   slots: {
-    label: {description: 'Label.', required: true},
-    description: 'Help text.',
+    label: {description: 'Visible field label.', required: true},
+    description: 'Supporting help text.',
     default: {
-      description: 'Native option.',
+      description: 'Native datalist options.',
       required: true,
     },
-    'status-message': 'Validation message.',
+    'status-message': 'Displayed validation message.',
   },
   content: [
     {attribute: 'label', slot: 'label', required: true},
     {attribute: 'description', slot: 'description'},
     {attribute: 'status-message', slot: 'status-message'},
   ],
+  exampleItemSelector: 'option',
   control: 'input[list]',
   delegates: {
     properties: ['form', 'validity', 'validationMessage', 'willValidate'],
@@ -85,7 +89,7 @@ export default {
   events: {
     input: 'Native event.',
     change: 'Native event.',
-    'astryx:query': 'Custom event.',
+    'astryx:query': 'Emitted with {query} after the search text changes.',
   },
   hooks: {
     attributeChanged(_host, name, _oldValue, _newValue, api) {
@@ -110,15 +114,15 @@ export default {
       );
     },
   },
-  docs: 'Typeahead custom element using native Astryx markup.',
+  docs: 'Suggest authored datalist options while reflecting free-form query and value state.',
   examples: [
     {
       name: 'default',
-      html: `<ax-typeahead label="Assignee"><option value="Alex"></option></ax-typeahead>`,
+      html: `<ax-typeahead label="Assignee"><option>Alex</option><option>Sam</option></ax-typeahead>`,
     },
     {
       name: 'error',
-      html: `<ax-typeahead label="Owner" status="error"><option value="Design"></option></ax-typeahead>`,
+      html: `<ax-typeahead label="Owner" status="error"><option>Design</option><option>Engineering</option></ax-typeahead>`,
     },
   ],
   render(_host, h) {

@@ -1,33 +1,33 @@
-<!-- docs: Lightbox custom element using native Astryx markup. -->
+<!-- docs: Open authored images in a modal viewer with gallery navigation and focus restoration. -->
 <!-- attributes:
-src*:string|—|Image source.
-alt:string|—|Image alternative.
-caption:string|—|Visible image.
-thumbnail-src:string|—|Trigger thumbnail.
-trigger-label:string|Open image viewer|Accessible trigger.
-label:string|Image viewer|Accessible dialog.
-lightbox-id:string|—|Native dialog.
-is-open (open):boolean|absent|Controlled viewer.
-index:string|0|Current zero-based.
-has-zoom:boolean|absent|Reserved image.
+src*:str|—|Primary image source.
+alt:str|—|Primary image alternative text.
+caption:str|—|Visible image caption.
+thumbnail-src:str|—|Trigger thumbnail source.
+trigger-label:str|Open image viewer|Accessible trigger name.
+label:str|Image viewer|Accessible dialog name.
+lightbox-id:str|—|Native dialog identifier.
+is-open/open:bool|false|Controlled viewer open state.
+index:str|0|Current zero-based image index.
+has-zoom:bool|false|Reserved image zoom capability.
 -->
 <!-- slots:
 thumbnail:Trigger thumbnail content.
-default*:Media figures.
+default*:Authored gallery media figures.
 caption:Caption for generated single-image media.
 -->
 <!-- events:
-astryx:open-change:Custom event.
-astryx:index-change:Custom event.
+astryx:open-change:Emitted with {isOpen} whenever the modal viewer opens or closes.
+astryx:index-change:Emitted with {index} after gallery navigation changes the image.
 -->
 <!-- methods:
-show(): Open modal.
-close(): Close modal.
-next(): Move next.
-previous(): Move previous.
+show():Open modal.
+close():Close modal.
+next():Move next.
+previous():Move previous.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: single -->
-<ax-lightbox src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Launch"></ax-lightbox>
+<ax-lightbox src="data:image/svg+xml,%3Csvg/%3E" alt="Launch"></ax-lightbox>
 <!-- variant: gallery -->
-<ax-lightbox><figure class="ax-lightbox__item" data-ax-lightbox-item><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="One" /></figure></ax-lightbox>
+<ax-lightbox><figure><img src="data:image/svg+xml,%3Csvg/%3E" alt="One" /></figure><figure><img src="data:image/svg+xml,%3Csvg/%3E" alt="Two" /></figure></ax-lightbox>

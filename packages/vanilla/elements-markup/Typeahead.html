@@ -1,31 +1,31 @@
-<!-- docs: Typeahead custom element using native Astryx markup. -->
+<!-- docs: Suggest authored datalist options while reflecting free-form query and value state. -->
 <!-- attributes:
-label*:string|—|Field label.
-value:string|—|Search value.
-description:string|—|Help text.
-placeholder:string|—|Native placeholder.
-size:sm, md, lg|md|Input size.
-status:none, error, warning, success|none|Validation state.
-status-message:string|—|Validation message.
-is-required (required):boolean|absent|Marks input.
-is-disabled (disabled):boolean|absent|Disables input.
-html-name (name):string|—|Form name.
-list-id:string|—|ID used.
-auto-complete (autocomplete):string|off|Native autocomplete.
+label*:str|—|Visible field label.
+value:str|—|Current search value.
+description:str|—|Supporting help text.
+placeholder:str|—|Native placeholder text.
+size:sm,md,lg|md|Visual input size.
+status:none,error,warning,success|none|Current validation state.
+status-message:str|—|Displayed validation message.
+is-required/required:bool|false|Marks the input required.
+is-disabled/disabled:bool|false|Disables the native input.
+html-name/name:str|—|Native form name.
+list-id:str|—|Datalist element identifier.
+auto-complete/autocomplete:str|off|Native autocomplete hint.
 -->
 <!-- slots:
-label*:Label.
-description:Help text.
-default*:Native option.
-status-message:Validation message.
+label*:Visible field label.
+description:Supporting help text.
+default*:Native datalist options.
+status-message:Displayed validation message.
 -->
 <!-- events:
-input:Native event.
-change:Native event.
-astryx:query:Custom event.
+input:native
+change:native
+astryx:query:Emitted with {query} after the search text changes.
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
+<!-- properties:attrs→camelCase;readonly:form,validity,validationMessage,willValidate -->
 <!-- variant: default -->
-<ax-typeahead label="Assignee"><option value="Alex"></option></ax-typeahead>
+<ax-typeahead label="Assignee"><option>Alex</option><option>Sam</option></ax-typeahead>
 <!-- variant: error -->
-<ax-typeahead label="Owner" status="error"><option value="Design"></option></ax-typeahead>
+<ax-typeahead label="Owner" status="error"><option>Design</option><option>Engineering</option></ax-typeahead>

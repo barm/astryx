@@ -1,14 +1,14 @@
 <!-- docs: Present a persistent page or section message with semantic status and optional detail. -->
 <!-- attributes:
-status:info, warning, error, success|info|Semantic message status.
-title* (data-ax-title):string|—|Required visible title; consumed so the host never shows a native title tooltip.
-description:string|—|Optional supporting message.
-is-dismissable:boolean|absent|Shows a dismiss control.
-dismiss-label:string|Dismiss banner|Accessible label for the dismiss control.
-container:card, section|card|Card or full-width section presentation.
-elevation:none, low, med, high|none|Resting shadow depth.
-collapsible:boolean|absent|Places supporting content behind a disclosure control.
-is-open (open):boolean|absent|Current supporting-content disclosure state.
+status:info,warning,error,success|info|Semantic message status.
+title*/data-ax-title:str|—|Required visible title; consumed so the host never shows a native title tooltip.
+description:str|—|Optional supporting message.
+is-dismissable:bool|false|Shows a dismiss control.
+dismiss-label:str|Dismiss banner|Accessible label for the dismiss control.
+container:card,section|card|Card or full-width section presentation.
+elevation:none,low,med,high|none|Resting shadow depth.
+collapsible:bool|false|Places supporting content behind a disclosure control.
+is-open/open:bool|false|Current supporting-content disclosure state.
 -->
 <!-- slots:
 title*:Required title; overrides the title attribute.
@@ -21,7 +21,7 @@ default:Optional detailed content below the status surface.
 astryx:dismiss:Emitted after the banner is dismissed.
 astryx:open-change:Emitted after disclosure state changes with detail.isOpen.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: information -->
 <ax-banner status="info" title="Your trial ends in 5 days">
   <ax-button slot="end-content" variant="primary" size="sm">View plans</ax-button>

@@ -1,29 +1,29 @@
-<!-- docs: Tooltip custom element using native Astryx markup. -->
+<!-- docs: Describe a focusable trigger with delayed hover and focus disclosure. -->
 <!-- attributes:
-content*:string|—|Short tooltip.
-trigger-label:string|?|Generated trigger.
-trigger-aria-label:string|More information|Accessible name.
-placement:above, below, start, end|above|Logical placement.
-alignment:start, center, end|center|Logical alignment.
-delay:string|200|Show delay.
-hide-delay:string|0|Hide delay.
-focus-trigger:auto, always, never|auto|Whether focus.
-touch-trigger:auto, tap, none|auto|Touch activation.
-is-enabled:boolean|absent|Enable tooltip behavior; omitted also remains enabled for HTML ergonomics.
-is-open (open):boolean|absent|Controlled open.
+content*:str|—|Concise tooltip content.
+trigger-label:str|?|Generated trigger label.
+trigger-aria-label:str|More information|Accessible trigger name.
+placement:above,below,start,end|above|Logical surface placement.
+alignment:start,center,end|center|Logical surface alignment.
+delay:str|200|Opening delay in milliseconds.
+hide-delay:str|0|Closing delay in milliseconds.
+focus-trigger:auto,always,never|auto|Keyboard focus trigger policy.
+touch-trigger:auto,tap,none|auto|Touch activation policy.
+is-enabled:bool|true|Enabled by default; set false to disable.
+is-open/open:bool|false|Controlled open state.
 -->
 <!-- slots:
-default*:Focusable hoverable.
-content*:Short tooltip.
+default*:Focusable hoverable trigger.
+content*:Concise tooltip content.
 -->
 <!-- events:
-astryx:open-change:Custom event.
+astryx:open-change:Emitted with {isOpen} whenever the tooltip opens or closes.
 -->
 <!-- methods:
-show(): Show tooltip.
-close(): Hide the tooltip.
+show():Show tooltip.
+close():Hide the tooltip.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: icon-button -->
 <ax-tooltip content="Info"><button type="button">?</button></ax-tooltip>
 <!-- variant: below -->

@@ -1,7 +1,11 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 /* global HTMLDetailsElement */
 
-import {dispatchAstryx, elementsMatching} from './utils.js';
+import {
+  dispatchAstryx,
+  elementsMatching,
+  isInElementOwnedSubtree,
+} from './utils.js';
 
 const collapsibleDocuments = new WeakSet();
 
@@ -16,7 +20,7 @@ export function enhanceCollapsibles(root) {
     root,
     'details[data-ax-collapsible]',
   )) {
-    syncCollapsible(details);
+    if (!isInElementOwnedSubtree(details)) syncCollapsible(details);
   }
 }
 
@@ -29,7 +33,8 @@ export function setupCollapsibles(doc) {
       const details = event.target;
       if (
         details instanceof HTMLDetailsElement &&
-        details.matches('[data-ax-collapsible]')
+        details.matches('[data-ax-collapsible]') &&
+        !isInElementOwnedSubtree(details)
       ) {
         syncCollapsible(details);
         dispatchAstryx(details, 'collapsible-toggle', {open: details.open});

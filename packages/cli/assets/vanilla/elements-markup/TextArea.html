@@ -1,31 +1,31 @@
-<!-- docs: TextArea custom element using native Astryx markup. -->
+<!-- docs: Collect multiline text with native validation, form participation, and reflected value. -->
 <!-- attributes:
-label*:string|—|Field label.
-value:string|—|Current value.
-description:string|—|Help text.
-placeholder:string|—|Native placeholder.
-rows:string|3|Visible text rows.
-max-length:string|—|Native maximum.
-size:sm, md, lg|md|Textarea size.
-status:none, error, warning, success|none|Validation state.
-status-message:string|—|Validation message.
-is-required (required):boolean|absent|Marks textarea.
-is-disabled (disabled):boolean|absent|Disables textarea.
-is-read-only (readonly):boolean|absent|Makes textarea.
-html-name (name):string|—|Form name.
-auto-complete (autocomplete):string|—|Native autocomplete.
-has-spell-check (spellcheck):boolean|present|Enables browser.
+label*:str|—|Visible field label.
+value:str|—|Current input value.
+description:str|—|Supporting help text.
+placeholder:str|—|Native placeholder text.
+rows:str|3|Visible text rows.
+max-length:str|—|Native maximum value.
+size:sm,md,lg|md|Visual textarea size.
+status:none,error,warning,success|none|Current validation state.
+status-message:str|—|Displayed validation message.
+is-required/required:bool|false|Marks the textarea required.
+is-disabled/disabled:bool|false|Disables the native textarea.
+is-read-only/readonly:bool|false|Makes the textarea read-only.
+html-name/name:str|—|Native form name.
+auto-complete/autocomplete:str|—|Native autocomplete hint.
+has-spell-check/spellcheck:bool|true|Enabled by default; set false to disable.
 -->
 <!-- slots:
-label*:Label.
-description:Help text.
-status-message:Validation message.
+label*:Visible field label.
+description:Supporting help text.
+status-message:Displayed validation message.
 -->
 <!-- events:
-input:Native event.
-change:Native event.
+input:native
+change:native
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
+<!-- properties:attrs→camelCase;readonly:form,validity,validationMessage,willValidate -->
 <!-- variant: default -->
 <ax-text-area label="Summary"></ax-text-area>
 <!-- variant: error -->

@@ -1,5 +1,5 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
-/* global clearTimeout, globalThis, setTimeout */
+/* global clearTimeout, setTimeout */
 
 const placements = ['above', 'below', 'start', 'end'];
 const alignments = ['start', 'center', 'end'];
@@ -9,6 +9,7 @@ const timers = new WeakMap();
 
 function setOpen(host, api, open, emit = false) {
   clearTimeout(timers.get(host));
+  open = Boolean(open && api.read('is-enabled'));
   const surface = api.query('[data-ax-hover-card-content]');
   const trigger = api.control;
   if (!surface) return;
@@ -20,6 +21,7 @@ function setOpen(host, api, open, emit = false) {
 }
 
 function schedule(host, api, open, immediate = false) {
+  if (open && !api.read('is-enabled')) return;
   clearTimeout(timers.get(host));
   const delay = immediate
     ? 0
@@ -38,7 +40,7 @@ export default {
   attributes: {
     content: {
       type: 'string',
-      description: 'Card text.',
+      description: 'Rich hover-card content.',
     },
     label: {
       type: 'string',
@@ -49,56 +51,55 @@ export default {
       type: 'enum',
       values: placements,
       default: 'above',
-      description: 'Logical placement.',
+      description: 'Logical surface placement.',
     },
     alignment: {
       type: 'enum',
       values: alignments,
       default: 'center',
-      description: 'Logical alignment.',
+      description: 'Logical surface alignment.',
     },
     delay: {
       type: 'string',
       default: '300',
-      description: 'Show delay.',
+      description: 'Opening delay in milliseconds.',
     },
     'hide-delay': {
       type: 'string',
       default: '200',
-      description: 'Hide delay.',
+      description: 'Closing delay in milliseconds.',
     },
     'focus-trigger': {
       type: 'enum',
       values: focusTriggers,
       default: 'auto',
-      description: 'Whether focus.',
+      description: 'Keyboard focus trigger policy.',
     },
     'touch-trigger': {
       type: 'enum',
       values: touchTriggers,
       default: 'auto',
-      description: 'Touch activation.',
+      description: 'Touch activation policy.',
     },
     'is-enabled': {
       type: 'boolean',
-      default: false,
-      description:
-        'Enable hover-card behavior; omitted also remains enabled for HTML ergonomics.',
+      default: true,
+      description: 'Enabled by default; set false to disable.',
     },
     'is-open': {
       type: 'boolean',
       aliases: ['open'],
       aliasProperties: ['open'],
       default: false,
-      description: 'Controlled open.',
+      description: 'Controlled open state.',
     },
   },
   slots: {
     default: {
-      description: 'Hoverable focusable.',
+      description: 'Hoverable focusable trigger.',
       required: true,
     },
-    content: {description: 'Rich supplementary.', required: true},
+    content: {description: 'Rich supplementary content.', required: true},
   },
   content: [{attribute: 'content', slot: 'content', required: true}],
   control: '[data-ax-hover-card-trigger]',
@@ -117,11 +118,15 @@ export default {
     },
   },
   events: {
-    'astryx:open-change': 'Custom event.',
+    'astryx:open-change':
+      'Emitted with {isOpen} whenever the hover card opens or closes.',
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
-      if (name !== 'is-open' || !api.query('[data-ax-hover-card-content]'))
+      if (
+        !['is-open', 'is-enabled'].includes(name) ||
+        !api.query('[data-ax-hover-card-content]')
+      )
         return false;
       setOpen(host, api, api.read('is-open'));
       return true;
@@ -142,15 +147,6 @@ export default {
       else trigger.setAttribute('aria-describedby', surface.id);
       host._control = trigger;
       setOpen(host, api, api.read('is-open'));
-      if (globalThis.astryx || globalThis.AstryxVanilla) {
-        api.listen(surface, 'astryx:hover-card-open', () =>
-          api.reflect('is-open', true),
-        );
-        api.listen(surface, 'astryx:hover-card-close', () =>
-          api.reflect('is-open', false),
-        );
-        return;
-      }
       api.listen(host, 'pointerenter', () => schedule(host, api, true));
       api.listen(host, 'pointerleave', () => schedule(host, api, false));
       api.listen(host, 'focusin', () => {
@@ -173,7 +169,7 @@ export default {
       clearTimeout(timers.get(host));
     },
   },
-  docs: 'HoverCard custom element using native Astryx markup.',
+  docs: 'Reveal rich supplementary content from hover or keyboard focus.',
   examples: [
     {
       name: 'profile',
@@ -187,7 +183,7 @@ export default {
   render(_host, h) {
     const content = h.content('content', 'content', 'More information');
     const id = h.id('surface');
-    const open = h.attr('is-open');
+    const open = h.attr('is-enabled') && h.attr('is-open');
     const label = h.attr('label');
     return `<span class="ax-hover-card" data-ax-hover-card data-ax-owned="ax-hover-card" data-ax-hover-card-delay="${h.escape(h.attr('delay'))}" data-ax-hover-card-hide-delay="${h.escape(h.attr('hide-delay'))}">
   <span ${h.slot()}></span>

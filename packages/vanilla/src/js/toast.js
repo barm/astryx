@@ -1,6 +1,8 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 /* global Element, HTMLElement, document, setTimeout */
 
+import {isInElementOwnedSubtree} from './utils.js';
+
 const toastDocuments = new WeakSet();
 let toastID = 0;
 
@@ -68,7 +70,7 @@ export function setupToasts(doc) {
   toastDocuments.add(doc);
   doc.addEventListener('click', event => {
     const target = event.target;
-    if (!(target instanceof Element)) return;
+    if (!(target instanceof Element) || isInElementOwnedSubtree(target)) return;
     const dismiss = target.closest('[data-ax-toast-dismiss]');
     if (dismiss) {
       dismissToast(dismiss.closest('[data-ax-toast-item]'));

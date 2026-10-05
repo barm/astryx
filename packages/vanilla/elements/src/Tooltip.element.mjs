@@ -1,5 +1,5 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
-/* global clearTimeout, globalThis, setTimeout */
+/* global clearTimeout, setTimeout */
 
 const placements = ['above', 'below', 'start', 'end'];
 const alignments = ['start', 'center', 'end'];
@@ -9,6 +9,7 @@ const timers = new WeakMap();
 
 function setOpen(host, api, open, emit = false) {
   clearTimeout(timers.get(host));
+  open = Boolean(open && api.read('is-enabled'));
   const surface = api.query('[data-ax-tooltip-content]');
   if (!surface) return;
   surface.hidden = !open;
@@ -18,6 +19,7 @@ function setOpen(host, api, open, emit = false) {
 }
 
 function scheduleOpen(host, api, immediate = false) {
+  if (!api.read('is-enabled')) return;
   const delay = immediate ? 0 : Math.max(0, Number(api.read('delay')) || 0);
   clearTimeout(timers.get(host));
   if (delay === 0) setOpen(host, api, true, true);
@@ -34,72 +36,71 @@ export default {
   attributes: {
     content: {
       type: 'string',
-      description: 'Short tooltip.',
+      description: 'Concise tooltip content.',
     },
     'trigger-label': {
       type: 'string',
       default: '?',
-      description: 'Generated trigger.',
+      description: 'Generated trigger label.',
     },
     'trigger-aria-label': {
       type: 'string',
       default: 'More information',
-      description: 'Accessible name.',
+      description: 'Accessible trigger name.',
     },
     placement: {
       type: 'enum',
       values: placements,
       default: 'above',
-      description: 'Logical placement.',
+      description: 'Logical surface placement.',
     },
     alignment: {
       type: 'enum',
       values: alignments,
       default: 'center',
-      description: 'Logical alignment.',
+      description: 'Logical surface alignment.',
     },
     delay: {
       type: 'string',
       default: '200',
-      description: 'Show delay.',
+      description: 'Opening delay in milliseconds.',
     },
     'hide-delay': {
       type: 'string',
       default: '0',
-      description: 'Hide delay.',
+      description: 'Closing delay in milliseconds.',
     },
     'focus-trigger': {
       type: 'enum',
       values: focusTriggers,
       default: 'auto',
-      description: 'Whether focus.',
+      description: 'Keyboard focus trigger policy.',
     },
     'touch-trigger': {
       type: 'enum',
       values: touchTriggers,
       default: 'auto',
-      description: 'Touch activation.',
+      description: 'Touch activation policy.',
     },
     'is-enabled': {
       type: 'boolean',
-      default: false,
-      description:
-        'Enable tooltip behavior; omitted also remains enabled for HTML ergonomics.',
+      default: true,
+      description: 'Enabled by default; set false to disable.',
     },
     'is-open': {
       type: 'boolean',
       aliases: ['open'],
       aliasProperties: ['open'],
       default: false,
-      description: 'Controlled open.',
+      description: 'Controlled open state.',
     },
   },
   slots: {
     default: {
-      description: 'Focusable hoverable.',
+      description: 'Focusable hoverable trigger.',
       required: true,
     },
-    content: {description: 'Short tooltip.', required: true},
+    content: {description: 'Concise tooltip content.', required: true},
   },
   content: [{attribute: 'content', slot: 'content', required: true}],
   control: '[data-ax-tooltip-trigger]',
@@ -118,11 +119,15 @@ export default {
     },
   },
   events: {
-    'astryx:open-change': 'Custom event.',
+    'astryx:open-change':
+      'Emitted with {isOpen} whenever the tooltip opens or closes.',
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
-      if (name !== 'is-open' || !api.query('[data-ax-tooltip-content]'))
+      if (
+        !['is-open', 'is-enabled'].includes(name) ||
+        !api.query('[data-ax-tooltip-content]')
+      )
         return false;
       setOpen(host, api, api.read('is-open'));
       return true;
@@ -139,15 +144,6 @@ export default {
       trigger.setAttribute('aria-describedby', surface.id);
       host._control = trigger;
       setOpen(host, api, api.read('is-open'));
-      if (globalThis.astryx || globalThis.AstryxVanilla) {
-        api.listen(surface, 'astryx:tooltip-open', () =>
-          api.reflect('is-open', true),
-        );
-        api.listen(surface, 'astryx:tooltip-close', () =>
-          api.reflect('is-open', false),
-        );
-        return;
-      }
       api.listen(host, 'pointerenter', () => scheduleOpen(host, api));
       api.listen(host, 'pointerleave', () => setOpen(host, api, false, true));
       api.listen(host, 'focusin', () => {
@@ -169,7 +165,7 @@ export default {
       clearTimeout(timers.get(host));
     },
   },
-  docs: 'Tooltip custom element using native Astryx markup.',
+  docs: 'Describe a focusable trigger with delayed hover and focus disclosure.',
   examples: [
     {
       name: 'icon-button',
@@ -183,7 +179,7 @@ export default {
   render(_host, h) {
     const content = h.content('content', 'content', 'More information');
     const id = h.id('surface');
-    const open = h.attr('is-open');
+    const open = h.attr('is-enabled') && h.attr('is-open');
     const trigger = h.hasSlot()
       ? `<span ${h.slot()}></span>`
       : `<button class="ax-button ax-button--secondary" type="button" data-ax-tooltip-trigger aria-label="${h.escape(h.attr('trigger-aria-label'))}">${h.escape(h.attr('trigger-label'))}</button>`;

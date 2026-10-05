@@ -1,13 +1,13 @@
 <!-- docs: Communicate determinate or indeterminate task progress with native progressbar semantics. -->
 <!-- attributes:
-label*:string|—|Required accessible operation label.
-value:string|0|Current determinate value.
-max:string|100|Maximum determinate value.
-is-label-hidden:boolean|absent|Visually hides the label while preserving its accessible name.
-has-value-label:boolean|absent|Shows a percentage value next to the label.
-variant:accent, success, warning, error, neutral|accent|Semantic progress color.
-is-indeterminate:boolean|absent|Shows progress when completion cannot be measured.
-is-disabled (disabled):boolean|absent|Uses disabled visual treatment.
+label*:str|—|Required accessible operation label.
+value:str|0|Current determinate value.
+max:str|100|Maximum determinate value.
+is-label-hidden:bool|false|Visually hides the label while preserving its accessible name.
+has-value-label:bool|false|Shows a percentage value next to the label.
+variant:accent,success,warning,error,neutral|accent|Semantic progress color.
+is-indeterminate:bool|false|Shows progress when completion cannot be measured.
+is-disabled/disabled:bool|false|Uses disabled visual treatment.
 -->
 <!-- slots:
 label:Visible operation label; overrides the label attribute.
@@ -15,7 +15,7 @@ label:Visible operation label; overrides the label attribute.
 <!-- events:
 none
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: determinate -->
 <ax-progress-bar label="Uploading files" value="72" variant="success" has-value-label></ax-progress-bar>
 <!-- variant: indeterminate -->

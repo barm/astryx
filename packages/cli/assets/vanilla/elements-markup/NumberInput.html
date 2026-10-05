@@ -1,33 +1,33 @@
-<!-- docs: NumberInput custom element using native Astryx markup. -->
+<!-- docs: Collect a numeric value with native limits, steppers, units, and validation. -->
 <!-- attributes:
-label*:string|—|Field label.
-value:string|—|Current value.
-description:string|—|Help text.
-units:string|—|Visible units.
-min:string|—|Native minimum.
-max:string|—|Native maximum.
-step:string|1|Native step.
-placeholder:string|—|Native placeholder.
-size:sm, md, lg|md|Input size.
-status:none, error, warning, success|none|Validation state.
-status-message:string|—|Validation message.
-is-required (required):boolean|absent|Marks input.
-is-disabled (disabled):boolean|absent|Disables input.
-is-read-only (readonly):boolean|absent|Makes input.
-html-name (name):string|—|Form name.
-auto-complete (autocomplete):string|—|Native autocomplete.
+label*:str|—|Visible field label.
+value:str|—|Current input value.
+description:str|—|Supporting help text.
+units:str|—|Visible unit suffix.
+min:str|—|Native minimum value.
+max:str|—|Native maximum value.
+step:str|1|Native step interval.
+placeholder:str|—|Native placeholder text.
+size:sm,md,lg|md|Visual input size.
+status:none,error,warning,success|none|Current validation state.
+status-message:str|—|Displayed validation message.
+is-required/required:bool|false|Marks the input required.
+is-disabled/disabled:bool|false|Disables the native input.
+is-read-only/readonly:bool|false|Makes the input read-only.
+html-name/name:str|—|Native form name.
+auto-complete/autocomplete:str|—|Native autocomplete hint.
 -->
 <!-- slots:
-label*:Label.
-description:Help text.
+label*:Visible field label.
+description:Supporting help text.
 units:Visible units suffix.
-status-message:Validation message.
+status-message:Displayed validation message.
 -->
 <!-- events:
-input:Native event.
-change:Native event.
+input:native
+change:native
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, valueAsNumber, willValidate -->
+<!-- properties:attrs→camelCase;readonly:form,validity,validationMessage,valueAsNumber,willValidate -->
 <!-- variant: default -->
 <ax-number-input label="Seats" value="12"></ax-number-input>
 <!-- variant: error -->

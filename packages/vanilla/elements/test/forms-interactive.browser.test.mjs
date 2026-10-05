@@ -277,8 +277,19 @@ test('form and interactive elements work with Vanilla Astryx and elements alone'
   );
   await page.keyboard.press('Escape');
 
-  await page.locator('ax-toast button').click();
-  await page.waitForSelector('[data-ax-toast-viewport] [data-ax-toast-item]');
+  const toast = page.locator('ax-toast');
+  assert.match(await toast.textContent(), /Changes saved/);
+  await toast.evaluate(host => {
+    window.__toastDismiss = null;
+    host.addEventListener('astryx:dismiss', event => {
+      window.__toastDismiss = event.detail;
+    });
+  });
+  await toast.locator('[data-ax-toast-dismiss]').click();
+  await page.waitForFunction(() => document.querySelector('ax-toast').hidden);
+  assert.deepEqual(await page.evaluate(() => window.__toastDismiss), {
+    reason: 'manual',
+  });
 
   const lightbox = page.locator('ax-lightbox');
   await lightbox.locator('[data-ax-lightbox-open]').click();

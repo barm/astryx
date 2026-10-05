@@ -11,6 +11,12 @@ function elementsMatching(root, selector) {
   return matches;
 }
 
+function isInElementOwnedSubtree(element) {
+  return (
+    element instanceof Element && element.closest('[data-ax-owned]') !== null
+  );
+}
+
 function ensureID(element, prefix) {
   if (!element.id) {
     floatingID += 1;
@@ -291,6 +297,7 @@ function moveMenuFocus(menu, current, delta) {
 
 function enhanceDropdownMenus(root) {
   for (const menu of elementsMatching(root, '[data-ax-dropdown-menu]')) {
+    if (isInElementOwnedSubtree(menu)) continue;
     ensureID(menu, 'ax-dropdown-menu');
     if (!menu.dataset.axOpen) menu.dataset.axOpen = 'false';
     for (const item of menuItems(menu)) {
@@ -299,6 +306,7 @@ function enhanceDropdownMenus(root) {
     }
   }
   for (const trigger of elementsMatching(root, '[data-ax-dropdown-trigger]')) {
+    if (isInElementOwnedSubtree(trigger)) continue;
     const menuID =
       trigger.dataset.axDropdownTrigger ||
       trigger.getAttribute('aria-controls');
@@ -319,7 +327,7 @@ function setupDropdownMenus(doc) {
 
   doc.addEventListener('click', event => {
     const target = event.target;
-    if (!(target instanceof Element)) return;
+    if (!(target instanceof Element) || isInElementOwnedSubtree(target)) return;
     const trigger = target.closest('[data-ax-dropdown-trigger]');
     if (trigger instanceof HTMLElement) {
       const menu = doc.getElementById(
@@ -350,7 +358,8 @@ function setupDropdownMenus(doc) {
 
   doc.addEventListener('keydown', event => {
     const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
+    if (!(target instanceof HTMLElement) || isInElementOwnedSubtree(target))
+      return;
     const trigger = target.closest('[data-ax-dropdown-trigger]');
     if (
       trigger instanceof HTMLElement &&
@@ -396,6 +405,7 @@ function setupDropdownMenus(doc) {
       for (const menu of doc.querySelectorAll(
         '[data-ax-dropdown-menu][data-ax-open="true"]',
       )) {
+        if (isInElementOwnedSubtree(menu)) continue;
         const trigger = triggerForMenu(menu);
         if (!menu.contains(target) && !trigger?.contains(target))
           closeDropdownMenu(menu, false);
@@ -408,6 +418,7 @@ function setupDropdownMenus(doc) {
     for (const menu of doc.querySelectorAll(
       '[data-ax-dropdown-menu][data-ax-open="true"]',
     )) {
+      if (isInElementOwnedSubtree(menu)) continue;
       const trigger = triggerForMenu(menu);
       if (trigger)
         positionFloating(
@@ -527,7 +538,7 @@ function enhanceCollapsibles(root) {
     root,
     'details[data-ax-collapsible]',
   )) {
-    syncCollapsible(details);
+    if (!isInElementOwnedSubtree(details)) syncCollapsible(details);
   }
 }
 
@@ -540,7 +551,8 @@ function setupCollapsibles(doc) {
       const details = event.target;
       if (
         details instanceof HTMLDetailsElement &&
-        details.matches('[data-ax-collapsible]')
+        details.matches('[data-ax-collapsible]') &&
+        !isInElementOwnedSubtree(details)
       ) {
         syncCollapsible(details);
         dispatchAstryx(details, 'collapsible-toggle', {open: details.open});
@@ -565,6 +577,12 @@ function tooltipParts(wrapper) {
     wrapper.querySelector('[data-ax-tooltip-trigger]') ??
     [...wrapper.children].find(child => child !== surface);
   return {surface, trigger};
+}
+
+function tooltipWrapper(target) {
+  const wrapper =
+    target instanceof Element ? target.closest('[data-ax-tooltip]') : null;
+  return wrapper && !isInElementOwnedSubtree(wrapper) ? wrapper : null;
 }
 
 function clearTooltipTimer(wrapper) {
@@ -603,6 +621,7 @@ function hideTooltip(wrapper) {
 
 function enhanceTooltips(root) {
   for (const wrapper of elementsMatching(root, '[data-ax-tooltip]')) {
+    if (isInElementOwnedSubtree(wrapper)) continue;
     const {surface, trigger} = tooltipParts(wrapper);
     if (!(surface instanceof HTMLElement) || !(trigger instanceof HTMLElement))
       continue;
@@ -618,10 +637,7 @@ function setupTooltips(doc) {
   tooltipDocuments.add(doc);
 
   doc.addEventListener('pointerover', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-tooltip]')
-        : null;
+    const wrapper = tooltipWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -632,10 +648,7 @@ function setupTooltips(doc) {
       showTooltip(wrapper);
   });
   doc.addEventListener('pointerout', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-tooltip]')
-        : null;
+    const wrapper = tooltipWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -646,17 +659,11 @@ function setupTooltips(doc) {
       hideTooltip(wrapper);
   });
   doc.addEventListener('focusin', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-tooltip]')
-        : null;
+    const wrapper = tooltipWrapper(event.target);
     if (wrapper) showTooltip(wrapper, true);
   });
   doc.addEventListener('focusout', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-tooltip]')
-        : null;
+    const wrapper = tooltipWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -668,8 +675,9 @@ function setupTooltips(doc) {
   });
   doc.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
-    for (const wrapper of doc.querySelectorAll('[data-ax-tooltip]'))
-      hideTooltip(wrapper);
+    for (const wrapper of doc.querySelectorAll('[data-ax-tooltip]')) {
+      if (!isInElementOwnedSubtree(wrapper)) hideTooltip(wrapper);
+    }
   });
 }
 
@@ -693,6 +701,12 @@ function hoverCardParts(wrapper) {
     wrapper.querySelector('[data-ax-hover-card-trigger]') ??
     [...wrapper.children].find(child => child !== surface);
   return {surface, trigger};
+}
+
+function hoverCardWrapper(target) {
+  const wrapper =
+    target instanceof Element ? target.closest('[data-ax-hover-card]') : null;
+  return wrapper && !isInElementOwnedSubtree(wrapper) ? wrapper : null;
 }
 
 function clearHoverCardTimer(wrapper) {
@@ -765,6 +779,7 @@ function scheduleHideHoverCard(wrapper) {
 
 function enhanceHoverCards(root) {
   for (const wrapper of elementsMatching(root, '[data-ax-hover-card]')) {
+    if (isInElementOwnedSubtree(wrapper)) continue;
     const {surface, trigger} = hoverCardParts(wrapper);
     if (!(surface instanceof HTMLElement) || !(trigger instanceof HTMLElement))
       continue;
@@ -791,10 +806,7 @@ function setupHoverCards(doc) {
   hoverCardDocuments.add(doc);
 
   doc.addEventListener('pointerover', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-hover-card]')
-        : null;
+    const wrapper = hoverCardWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -807,10 +819,7 @@ function setupHoverCards(doc) {
   });
 
   doc.addEventListener('pointerout', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-hover-card]')
-        : null;
+    const wrapper = hoverCardWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -823,19 +832,13 @@ function setupHoverCards(doc) {
   });
 
   doc.addEventListener('focusin', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-hover-card]')
-        : null;
+    const wrapper = hoverCardWrapper(event.target);
     if (wrapper && suppressedFocusOpen.delete(wrapper)) return;
     if (wrapper) showHoverCard(wrapper, true);
   });
 
   doc.addEventListener('focusout', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-hover-card]')
-        : null;
+    const wrapper = hoverCardWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -853,7 +856,7 @@ function setupHoverCards(doc) {
       ...doc.querySelectorAll(
         '[data-ax-hover-card-content][data-ax-open="true"]',
       ),
-    ];
+    ].filter(surface => !isInElementOwnedSubtree(surface));
     const surface =
       openSurfaces.find(candidate => candidate.contains(doc.activeElement)) ??
       openSurfaces.at(-1);
@@ -964,10 +967,12 @@ function closeLightbox(dialog, returnFocus = true) {
 
 function enhanceLightboxes(root) {
   for (const dialog of elementsMatching(root, 'dialog[data-ax-lightbox]')) {
+    if (isInElementOwnedSubtree(dialog)) continue;
     ensureID(dialog, 'ax-lightbox');
     updateLightbox(dialog, currentIndex(dialog));
   }
   for (const trigger of elementsMatching(root, '[data-ax-lightbox-open]')) {
+    if (isInElementOwnedSubtree(trigger)) continue;
     const dialog = getLightbox(
       trigger.ownerDocument,
       trigger.dataset.axLightboxOpen,
@@ -984,7 +989,7 @@ function setupLightboxes(doc) {
 
   doc.addEventListener('click', event => {
     const target = event.target;
-    if (!(target instanceof Element)) return;
+    if (!(target instanceof Element) || isInElementOwnedSubtree(target)) return;
 
     const openTrigger = target.closest('[data-ax-lightbox-open]');
     if (openTrigger instanceof HTMLElement) {
@@ -1039,7 +1044,8 @@ function setupLightboxes(doc) {
       const dialog = event.target;
       if (
         !(dialog instanceof HTMLDialogElement) ||
-        !dialog.matches('[data-ax-lightbox]')
+        !dialog.matches('[data-ax-lightbox]') ||
+        isInElementOwnedSubtree(dialog)
       )
         return;
       event.preventDefault();
@@ -1053,7 +1059,12 @@ function setupLightboxes(doc) {
       event.target instanceof Element
         ? event.target.closest('dialog[data-ax-lightbox]')
         : null;
-    if (!(dialog instanceof HTMLDialogElement) || !dialog.open) return;
+    if (
+      !(dialog instanceof HTMLDialogElement) ||
+      !dialog.open ||
+      isInElementOwnedSubtree(dialog)
+    )
+      return;
     if (
       event.target instanceof Element &&
       event.target.matches('input, textarea, select, video')
@@ -1072,6 +1083,7 @@ function setupLightboxes(doc) {
 
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 /* global Element, HTMLElement, document, setTimeout */
+
 
 const toastDocuments = new WeakSet();
 let toastID = 0;
@@ -1140,7 +1152,7 @@ function setupToasts(doc) {
   toastDocuments.add(doc);
   doc.addEventListener('click', event => {
     const target = event.target;
-    if (!(target instanceof Element)) return;
+    if (!(target instanceof Element) || isInElementOwnedSubtree(target)) return;
     const dismiss = target.closest('[data-ax-toast-dismiss]');
     if (dismiss) {
       dismissToast(dismiss.closest('[data-ax-toast-item]'));

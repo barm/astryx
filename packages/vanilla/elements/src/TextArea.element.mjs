@@ -8,76 +8,79 @@ export default {
   name: 'TextArea',
   tag: 'ax-text-area',
   attributes: {
-    label: {type: 'string', description: 'Field label.'},
+    label: {type: 'string', description: 'Visible field label.'},
     value: {
       type: 'string',
       default: '',
       liveProperty: 'value',
       reflect: {events: ['input', 'change'], property: 'value'},
-      description: 'Current value.',
+      description: 'Current input value.',
     },
-    description: {type: 'string', description: 'Help text.'},
-    placeholder: {type: 'string', description: 'Native placeholder.'},
+    description: {type: 'string', description: 'Supporting help text.'},
+    placeholder: {type: 'string', description: 'Native placeholder text.'},
     rows: {type: 'string', default: '3', description: 'Visible text rows.'},
-    'max-length': {type: 'string', description: 'Native maximum.'},
+    'max-length': {type: 'string', description: 'Native maximum value.'},
     size: {
       type: 'enum',
       values: sizes,
       default: 'md',
-      description: 'Textarea size.',
+      description: 'Visual textarea size.',
     },
     status: {
       type: 'enum',
       values: statuses,
       default: 'none',
-      description: 'Validation state.',
+      description: 'Current validation state.',
     },
-    'status-message': {type: 'string', description: 'Validation message.'},
+    'status-message': {
+      type: 'string',
+      description: 'Displayed validation message.',
+    },
     'is-required': {
       type: 'boolean',
       aliases: ['required'],
       aliasProperties: ['required'],
       default: false,
-      description: 'Marks textarea.',
+      description: 'Marks the textarea required.',
     },
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Disables textarea.',
+      description: 'Disables the native textarea.',
     },
     'is-read-only': {
       type: 'boolean',
       aliases: ['readonly'],
       aliasProperties: ['readOnly'],
       default: false,
-      description: 'Makes textarea.',
+      description: 'Makes the textarea read-only.',
     },
     'html-name': {
       type: 'string',
       aliases: ['name'],
       aliasProperties: ['name'],
-      description: 'Form name.',
+      description: 'Native form name.',
     },
     'auto-complete': {
       type: 'string',
       aliases: ['autocomplete'],
       aliasProperties: ['autocomplete'],
-      description: 'Native autocomplete.',
+      description: 'Native autocomplete hint.',
     },
     'has-spell-check': {
       type: 'boolean',
       aliases: ['spellcheck'],
       aliasProperties: ['spellcheck'],
       default: true,
-      description: 'Enables browser.',
+      description: 'Enabled by default; set false to disable.',
     },
   },
   slots: {
-    label: {description: 'Label.', required: true},
-    description: 'Help text.',
-    'status-message': 'Validation message.',
+    label: {description: 'Visible field label.', required: true},
+    description: 'Supporting help text.',
+    'status-message': 'Displayed validation message.',
   },
   content: [
     {attribute: 'label', slot: 'label', required: true},
@@ -103,6 +106,8 @@ export default {
         api.control.required = api.read('is-required');
       else if (name === 'is-read-only')
         api.control.readOnly = api.read('is-read-only');
+      else if (name === 'has-spell-check')
+        api.control.spellcheck = api.read('has-spell-check');
       else return false;
       return true;
     },
@@ -115,7 +120,7 @@ export default {
       if (api.control.value !== value) api.control.value = value;
     },
   },
-  docs: 'TextArea custom element using native Astryx markup.',
+  docs: 'Collect multiline text with native validation, form participation, and reflected value.',
   examples: [
     {name: 'default', html: `<ax-text-area label="Summary"></ax-text-area>`},
     {
@@ -156,6 +161,7 @@ export default {
     if (h.attr('is-required')) attrs.push('required', 'aria-required="true"');
     if (h.attr('is-disabled')) attrs.push('disabled');
     if (h.attr('is-read-only')) attrs.push('readonly');
+    if (!h.attr('has-spell-check')) attrs.push('spellcheck="false"');
     return `<label class="${classes.join(' ')}" for="${id}">
   <span class="ax-text-area__label"${label.slotted ? ` ${h.slot('label')}` : ''}>${label.html}</span>
   ${description.slotted || description.html ? `<span class="ax-text-area__description" id="${descriptionID}"${description.slotted ? ` ${h.slot('description')}` : ''}>${description.html}</span>` : ''}

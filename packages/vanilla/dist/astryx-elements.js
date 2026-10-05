@@ -283,9 +283,9 @@ var Banner_element_default = {
       return false;
     },
     afterRender(host, api) {
-      const dismiss = api.query("[data-ax-banner-dismiss]");
-      if (dismiss)
-        api.listen(dismiss, "click", () => {
+      const dismiss2 = api.query("[data-ax-banner-dismiss]");
+      if (dismiss2)
+        api.listen(dismiss2, "click", () => {
           host.hidden = true;
           api.dispatch("astryx:dismiss");
         });
@@ -622,7 +622,7 @@ var CheckboxInput_element_default = {
   attributes: {
     label: {
       type: "string",
-      description: "Field label."
+      description: "Visible field label."
     },
     value: {
       type: "boolean",
@@ -631,67 +631,70 @@ var CheckboxInput_element_default = {
       liveProperty: "checked",
       reflect: { events: ["change"], property: "checked" },
       default: false,
-      description: "Checked state."
+      description: "Current checked state."
     },
     "is-indeterminate": {
       type: "boolean",
       default: false,
-      description: "Mixed state."
+      description: "Current mixed state."
     },
     description: {
       type: "string",
-      description: "Help text."
+      description: "Supporting help text."
     },
     size: {
       type: "enum",
       values: sizes3,
       default: "md",
-      description: "Checkbox size."
+      description: "Visual checkbox size."
     },
     status: {
       type: "enum",
       values: statuses2,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables native."
+      description: "Disables the native control."
     },
     "is-read-only": {
       type: "boolean",
       aliases: ["readonly"],
       aliasProperties: ["readOnly"],
       default: false,
-      description: "Read-only state."
+      description: "Prevents user changes."
     },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Required state."
+      description: "Marks the control required."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Form name."
+      description: "Native form name."
     },
     "html-value": {
       type: "string",
       default: "on",
-      description: "Submit value."
+      description: "Submitted native form value."
     }
   },
   slots: {
-    label: { description: "Label.", required: true },
-    description: "Help text.",
-    "status-message": "Validation message."
+    label: { description: "Visible field label.", required: true },
+    description: "Supporting help text.",
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
@@ -738,7 +741,7 @@ var CheckboxInput_element_default = {
       }
     }
   },
-  docs: "CheckboxInput custom element using native Astryx markup.",
+  docs: "Collect a native checkbox value with validation, indeterminate, and form semantics.",
   examples: [
     {
       name: "default",
@@ -794,39 +797,45 @@ var Collapsible_element_default = {
   name: "Collapsible",
   tag: "ax-collapsible",
   attributes: {
-    trigger: { type: "string", description: "Always-visible disclosure." },
+    trigger: {
+      type: "string",
+      description: "Always-visible disclosure trigger."
+    },
     "is-open": {
       type: "boolean",
       aliases: ["open"],
       aliasProperties: ["open"],
       default: false,
-      description: "Current open."
+      description: "Current disclosure state."
     },
     "default-is-open": {
       type: "boolean",
       default: false,
-      description: "Initial uncontrolled."
+      description: "Initial uncontrolled open state."
     },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Prevents disclosure."
+      description: "Prevents disclosure interaction."
     },
     "chevron-position": {
       type: "enum",
       values: positions,
       default: "end",
-      description: "Logical chevron."
+      description: "Logical chevron position."
     },
     value: {
       type: "string",
-      description: "Optional group."
+      description: "Optional disclosure group value."
     }
   },
   slots: {
-    trigger: { description: "Always-visible disclosure.", required: true },
+    trigger: {
+      description: "Always-visible disclosure trigger.",
+      required: true
+    },
     default: "Collapsible body content."
   },
   content: [{ attribute: "trigger", slot: "trigger", required: true }],
@@ -862,7 +871,7 @@ var Collapsible_element_default = {
     afterRender(host, api) {
       const details = api.query("details");
       if (!initialized2.has(host)) {
-        const initial = host.hasAttribute("is-open") || host.hasAttribute("open") || host.hasAttribute("default-is-open") || !host.hasAttribute("is-open") && !host.hasAttribute("open");
+        const initial = host.hasAttribute("is-open") || host.hasAttribute("open") || host.hasAttribute("default-is-open");
         details.open = initial;
         api.reflect("is-open", initial);
         initialized2.add(host);
@@ -885,7 +894,7 @@ var Collapsible_element_default = {
       });
     }
   },
-  docs: "Collapsible custom element using native Astryx markup.",
+  docs: "Show and hide authored content with a native details disclosure.",
   examples: [
     {
       name: "default",
@@ -917,7 +926,7 @@ var DateInput_element_default = {
   name: "DateInput",
   tag: "ax-date-input",
   attributes: {
-    label: { type: "string", description: "Field label." },
+    label: { type: "string", description: "Visible field label." },
     value: {
       type: "string",
       default: "",
@@ -925,47 +934,50 @@ var DateInput_element_default = {
       reflect: { events: ["input", "change"], property: "value" },
       description: "Selected ISO date."
     },
-    description: { type: "string", description: "Help text." },
+    description: { type: "string", description: "Supporting help text." },
     min: { type: "string", description: "Minimum ISO date." },
     max: { type: "string", description: "Maximum ISO date." },
     size: {
       type: "enum",
       values: sizes4,
       default: "md",
-      description: "Input size."
+      description: "Visual input size."
     },
     status: {
       type: "enum",
       values: statuses3,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Marks input."
+      description: "Marks the input required."
     },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables input."
+      description: "Disables the native input."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Form name."
+      description: "Native form name."
     }
   },
   slots: {
-    label: { description: "Label.", required: true },
-    description: "Help text.",
-    "status-message": "Validation message."
+    label: { description: "Visible field label.", required: true },
+    description: "Supporting help text.",
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
@@ -1007,7 +1019,7 @@ var DateInput_element_default = {
       if (api.control.value !== value) api.control.value = value;
     }
   },
-  docs: "DateInput custom element using native Astryx markup.",
+  docs: "Collect an ISO date with native picker, constraints, and form validation.",
   examples: [
     {
       name: "default",
@@ -1339,43 +1351,44 @@ var DropdownMenu_element_default = {
     "button-label": {
       type: "string",
       default: "Menu",
-      description: "Visible trigger."
+      description: "Visible trigger label."
     },
     "is-menu-open": {
       type: "boolean",
       aliases: ["open"],
       aliasProperties: ["open"],
       default: false,
-      description: "Controlled menu."
+      description: "Controlled menu open state."
     },
     placement: {
       type: "enum",
       values: placements,
       default: "below",
-      description: "Logical placement."
+      description: "Logical surface placement."
     },
     alignment: {
       type: "enum",
       values: alignments,
       default: "start",
-      description: "Logical alignment."
+      description: "Logical surface alignment."
     },
-    "menu-id": { type: "string", description: "ID trigger-to-menu." },
+    "menu-id": { type: "string", description: "Menu element identifier." },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables trigger."
+      description: "Disables trigger interaction."
     }
   },
   slots: {
     button: "Trigger button content; the component supplies the native button.",
     default: {
-      description: "Native button.",
+      description: "Native menu item controls.",
       required: true
     }
   },
+  exampleItemSelector: "button, a, [data-ax-menu-item]",
   control: "[data-ax-dropdown-trigger]",
   methods: {
     show: {
@@ -1393,8 +1406,8 @@ var DropdownMenu_element_default = {
     }
   },
   events: {
-    "astryx:open-change": "Custom event.",
-    "astryx:select": "Custom event."
+    "astryx:open-change": "Emitted with {isOpen} whenever the menu opens or closes.",
+    "astryx:select": "Emitted with {value,label} from the activated menu item."
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
@@ -1406,22 +1419,13 @@ var DropdownMenu_element_default = {
       const menu = api.query("[data-ax-dropdown-menu]");
       const trigger = api.control;
       const open = api.read("is-menu-open");
+      for (const item of menu.children) {
+        if (item.matches("button, a") && !item.hasAttribute("role")) {
+          item.setAttribute("role", "menuitem");
+        }
+      }
       syncMenu(host, api, open);
       for (const item of items(api)) item.tabIndex = -1;
-      if (globalThis.astryx || globalThis.AstryxVanilla) {
-        menu.hidden = false;
-        api.listen(
-          menu,
-          "astryx:dropdown-open",
-          () => api.reflect("is-menu-open", true)
-        );
-        api.listen(
-          menu,
-          "astryx:dropdown-close",
-          () => api.reflect("is-menu-open", false)
-        );
-        return;
-      }
       api.listen(trigger, "click", (event) => {
         event.preventDefault();
         if (!api.read("is-disabled"))
@@ -1467,15 +1471,15 @@ var DropdownMenu_element_default = {
       });
     }
   },
-  docs: "DropdownMenu custom element using native Astryx markup.",
+  docs: "Open an accessible action menu with keyboard navigation and selection events.",
   examples: [
     {
       name: "actions",
-      html: `<ax-dropdown-menu button-label="Actions"><button type="button" role="menuitem">Edit</button></ax-dropdown-menu>`
+      html: `<ax-dropdown-menu button-label="Actions"><button type=button>Edit</button><button type=button>Archive</button></ax-dropdown-menu>`
     },
     {
       name: "compact",
-      html: `<ax-dropdown-menu button-label="More"><button type="button" role="menuitem">Move</button></ax-dropdown-menu>`
+      html: `<ax-dropdown-menu button-label="More"><button type=button>Move</button><a href="#share">Share</a></ax-dropdown-menu>`
     }
   ],
   render(_host, h) {
@@ -1657,6 +1661,7 @@ var touchTriggers = ["auto", "tap", "none"];
 var timers = /* @__PURE__ */ new WeakMap();
 function setOpen2(host, api, open, emit = false) {
   clearTimeout(timers.get(host));
+  open = Boolean(open && api.read("is-enabled"));
   const surface = api.query("[data-ax-hover-card-content]");
   const trigger = api.control;
   if (!surface) return;
@@ -1667,6 +1672,7 @@ function setOpen2(host, api, open, emit = false) {
   if (emit) api.dispatch("astryx:open-change", { isOpen: open });
 }
 function schedule(host, api, open, immediate = false) {
+  if (open && !api.read("is-enabled")) return;
   clearTimeout(timers.get(host));
   const delay = immediate ? 0 : Math.max(0, Number(api.read(open ? "delay" : "hide-delay")) || 0);
   if (delay === 0) setOpen2(host, api, open, true);
@@ -1682,7 +1688,7 @@ var HoverCard_element_default = {
   attributes: {
     content: {
       type: "string",
-      description: "Card text."
+      description: "Rich hover-card content."
     },
     label: {
       type: "string",
@@ -1692,55 +1698,55 @@ var HoverCard_element_default = {
       type: "enum",
       values: placements2,
       default: "above",
-      description: "Logical placement."
+      description: "Logical surface placement."
     },
     alignment: {
       type: "enum",
       values: alignments2,
       default: "center",
-      description: "Logical alignment."
+      description: "Logical surface alignment."
     },
     delay: {
       type: "string",
       default: "300",
-      description: "Show delay."
+      description: "Opening delay in milliseconds."
     },
     "hide-delay": {
       type: "string",
       default: "200",
-      description: "Hide delay."
+      description: "Closing delay in milliseconds."
     },
     "focus-trigger": {
       type: "enum",
       values: focusTriggers,
       default: "auto",
-      description: "Whether focus."
+      description: "Keyboard focus trigger policy."
     },
     "touch-trigger": {
       type: "enum",
       values: touchTriggers,
       default: "auto",
-      description: "Touch activation."
+      description: "Touch activation policy."
     },
     "is-enabled": {
       type: "boolean",
-      default: false,
-      description: "Enable hover-card behavior; omitted also remains enabled for HTML ergonomics."
+      default: true,
+      description: "Enabled by default; set false to disable."
     },
     "is-open": {
       type: "boolean",
       aliases: ["open"],
       aliasProperties: ["open"],
       default: false,
-      description: "Controlled open."
+      description: "Controlled open state."
     }
   },
   slots: {
     default: {
-      description: "Hoverable focusable.",
+      description: "Hoverable focusable trigger.",
       required: true
     },
-    content: { description: "Rich supplementary.", required: true }
+    content: { description: "Rich supplementary content.", required: true }
   },
   content: [{ attribute: "content", slot: "content", required: true }],
   control: "[data-ax-hover-card-trigger]",
@@ -1759,11 +1765,11 @@ var HoverCard_element_default = {
     }
   },
   events: {
-    "astryx:open-change": "Custom event."
+    "astryx:open-change": "Emitted with {isOpen} whenever the hover card opens or closes."
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
-      if (name !== "is-open" || !api.query("[data-ax-hover-card-content]"))
+      if (!["is-open", "is-enabled"].includes(name) || !api.query("[data-ax-hover-card-content]"))
         return false;
       setOpen2(host, api, api.read("is-open"));
       return true;
@@ -1784,19 +1790,6 @@ var HoverCard_element_default = {
       else trigger.setAttribute("aria-describedby", surface.id);
       host._control = trigger;
       setOpen2(host, api, api.read("is-open"));
-      if (globalThis.astryx || globalThis.AstryxVanilla) {
-        api.listen(
-          surface,
-          "astryx:hover-card-open",
-          () => api.reflect("is-open", true)
-        );
-        api.listen(
-          surface,
-          "astryx:hover-card-close",
-          () => api.reflect("is-open", false)
-        );
-        return;
-      }
       api.listen(host, "pointerenter", () => schedule(host, api, true));
       api.listen(host, "pointerleave", () => schedule(host, api, false));
       api.listen(host, "focusin", () => {
@@ -1819,7 +1812,7 @@ var HoverCard_element_default = {
       clearTimeout(timers.get(host));
     }
   },
-  docs: "HoverCard custom element using native Astryx markup.",
+  docs: "Reveal rich supplementary content from hover or keyboard focus.",
   examples: [
     {
       name: "profile",
@@ -1833,7 +1826,7 @@ var HoverCard_element_default = {
   render(_host, h) {
     const content = h.content("content", "content", "More information");
     const id = h.id("surface");
-    const open = h.attr("is-open");
+    const open = h.attr("is-enabled") && h.attr("is-open");
     const label = h.attr("label");
     return `<span class="ax-hover-card" data-ax-hover-card data-ax-owned="ax-hover-card" data-ax-hover-card-delay="${h.escape(h.attr("delay"))}" data-ax-hover-card-hide-delay="${h.escape(h.attr("hide-delay"))}">
   <span ${h.slot()}></span>
@@ -1911,22 +1904,37 @@ var openerByHost = /* @__PURE__ */ new WeakMap();
 function mediaItems(api) {
   return api.queryAll("[data-ax-lightbox-item], .ax-lightbox__item");
 }
+function firstAuthoredImage(helpers) {
+  for (const node of helpers.authorNodes) {
+    if (node.nodeType !== 1) continue;
+    const image = node.matches?.("img") ? node : node.querySelector?.("img");
+    if (image?.getAttribute("src")) {
+      return {
+        alt: image.getAttribute("alt") || "",
+        src: image.getAttribute("src")
+      };
+    }
+  }
+  return null;
+}
 function syncIndex(host, api, requested, emit = false) {
   const items2 = mediaItems(api);
   const index = Math.max(
     0,
     Math.min(Number(requested) || 0, Math.max(0, items2.length - 1))
   );
-  items2.forEach((item, itemIndex) => {
-    item.hidden = itemIndex !== index;
+  api.mutate(() => {
+    items2.forEach((item, itemIndex) => {
+      item.hidden = itemIndex !== index;
+    });
+    const previous = api.query("[data-ax-lightbox-previous]");
+    const next = api.query("[data-ax-lightbox-next]");
+    if (previous) previous.disabled = index <= 0;
+    if (next) next.disabled = index >= items2.length - 1;
+    const counter = api.query("[data-ax-lightbox-counter]");
+    if (counter)
+      counter.textContent = items2.length > 1 ? `${index + 1} / ${items2.length}` : "";
   });
-  const previous = api.query("[data-ax-lightbox-previous]");
-  const next = api.query("[data-ax-lightbox-next]");
-  if (previous) previous.disabled = index <= 0;
-  if (next) next.disabled = index >= items2.length - 1;
-  const counter = api.query("[data-ax-lightbox-counter]");
-  if (counter)
-    counter.textContent = items2.length > 1 ? `${index + 1} / ${items2.length}` : "";
   api.reflect("index", String(index));
   if (emit) api.dispatch("astryx:index-change", { index });
   return index;
@@ -1955,49 +1963,49 @@ var Lightbox_element_default = {
   attributes: {
     src: {
       type: "string",
-      description: "Image source."
+      description: "Primary image source."
     },
-    alt: { type: "string", description: "Image alternative." },
-    caption: { type: "string", description: "Visible image." },
+    alt: { type: "string", description: "Primary image alternative text." },
+    caption: { type: "string", description: "Visible image caption." },
     "thumbnail-src": {
       type: "string",
-      description: "Trigger thumbnail."
+      description: "Trigger thumbnail source."
     },
     "trigger-label": {
       type: "string",
       default: "Open image viewer",
-      description: "Accessible trigger."
+      description: "Accessible trigger name."
     },
     label: {
       type: "string",
       default: "Image viewer",
-      description: "Accessible dialog."
+      description: "Accessible dialog name."
     },
     "lightbox-id": {
       type: "string",
-      description: "Native dialog."
+      description: "Native dialog identifier."
     },
     "is-open": {
       type: "boolean",
       aliases: ["open"],
       aliasProperties: ["open"],
       default: false,
-      description: "Controlled viewer."
+      description: "Controlled viewer open state."
     },
     index: {
       type: "string",
       default: "0",
-      description: "Current zero-based."
+      description: "Current zero-based image index."
     },
     "has-zoom": {
       type: "boolean",
       default: false,
-      description: "Reserved image."
+      description: "Reserved image zoom capability."
     }
   },
   slots: {
     thumbnail: "Trigger thumbnail content.",
-    default: { description: "Media figures.", required: true },
+    default: { description: "Authored gallery media figures.", required: true },
     caption: "Caption for generated single-image media."
   },
   content: [
@@ -2034,8 +2042,8 @@ var Lightbox_element_default = {
     }
   },
   events: {
-    "astryx:open-change": "Custom event.",
-    "astryx:index-change": "Custom event."
+    "astryx:open-change": "Emitted with {isOpen} whenever the modal viewer opens or closes.",
+    "astryx:index-change": "Emitted with {index} after gallery navigation changes the image."
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
@@ -2051,26 +2059,20 @@ var Lightbox_element_default = {
       return false;
     },
     afterRender(host, api) {
+      api.mutate(() => {
+        const region = api.query('[data-ax-region="default"]');
+        for (const item of region?.children ?? []) {
+          if (!item.matches("figure, img")) continue;
+          item.classList.add("ax-lightbox__item");
+          item.setAttribute("data-ax-lightbox-item", "");
+          if (item.matches("img")) item.classList.add("ax-lightbox__media");
+          for (const image of item.querySelectorAll("img")) {
+            image.classList.add("ax-lightbox__media");
+          }
+        }
+      });
       syncIndex(host, api, api.read("index"));
       if (api.read("is-open")) setOpen3(host, api, true);
-      const vanilla = globalThis.astryx || globalThis.AstryxVanilla;
-      if (vanilla) {
-        api.listen(api.control, "astryx:lightbox-open", (event) => {
-          api.reflect("is-open", true);
-          api.reflect("index", String(event.detail?.index ?? 0));
-        });
-        api.listen(
-          api.control,
-          "astryx:lightbox-change",
-          (event) => api.reflect("index", String(event.detail?.index ?? 0))
-        );
-        api.listen(
-          api.control,
-          "astryx:lightbox-close",
-          () => api.reflect("is-open", false)
-        );
-        return;
-      }
       api.listen(host, "click", (event) => {
         const open = event.target.closest?.("[data-ax-lightbox-open]");
         if (open) {
@@ -2122,25 +2124,28 @@ var Lightbox_element_default = {
       });
     }
   },
-  docs: "Lightbox custom element using native Astryx markup.",
+  docs: "Open authored images in a modal viewer with gallery navigation and focus restoration.",
   examples: [
     {
       name: "single",
-      html: `<ax-lightbox src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Launch"></ax-lightbox>`
+      html: `<ax-lightbox src="data:image/svg+xml,%3Csvg/%3E" alt="Launch"></ax-lightbox>`
     },
     {
       name: "gallery",
-      html: `<ax-lightbox><figure class="ax-lightbox__item" data-ax-lightbox-item><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="One" /></figure></ax-lightbox>`
+      html: `<ax-lightbox><figure><img src="data:image/svg+xml,%3Csvg/%3E" alt="One" /></figure><figure><img src="data:image/svg+xml,%3Csvg/%3E" alt="Two" /></figure></ax-lightbox>`
     }
   ],
   render(_host, h) {
     const id = h.attr("lightbox-id") || h.id("dialog");
     const src = h.attr("src");
-    const thumbnail = h.attr("thumbnail-src") || src;
+    const authoredImage = firstAuthoredImage(h);
+    const thumbnail = h.attr("thumbnail-src") || src || authoredImage?.src;
+    const thumbnailAlt = h.attr("alt") || authoredImage?.alt || "";
     const caption = h.content("caption", "caption");
     const open = h.attr("is-open");
     const indexAttribute = h.hasAttribute("index") ? ` data-ax-lightbox-index="${h.escape(h.attr("index"))}"` : "";
-    const trigger = `<button class="ax-lightbox__trigger" type="button" data-ax-lightbox-open="${h.escape(id)}"${indexAttribute} aria-label="${h.escape(h.attr("trigger-label"))}"${h.hasSlot("thumbnail") ? ` ${h.slot("thumbnail")}` : ""}>${h.hasSlot("thumbnail") ? "" : `<img class="ax-lightbox__thumbnail" src="${h.escape(thumbnail)}" alt="${h.escape(h.attr("alt"))}" />`}</button>`;
+    const triggerContent = h.hasSlot("thumbnail") ? "" : thumbnail ? `<img class="ax-lightbox__thumbnail" src="${h.escape(thumbnail)}" alt="${h.escape(thumbnailAlt)}" />` : `<span class="ax-lightbox__trigger-label">${h.escape(h.attr("trigger-label"))}</span>`;
+    const trigger = `<button class="ax-lightbox__trigger" type="button" data-ax-owned="ax-lightbox" data-ax-lightbox-open="${h.escape(id)}"${indexAttribute} aria-label="${h.escape(h.attr("trigger-label"))}"${h.hasSlot("thumbnail") ? ` ${h.slot("thumbnail")}` : ""}>${triggerContent}</button>`;
     const media = h.hasSlot() ? `<span class="ax-lightbox__counter" data-ax-lightbox-counter aria-live="polite"></span><button class="ax-lightbox__control ax-lightbox__previous" type="button" data-ax-lightbox-previous aria-label="Previous image">\u2039</button><span ${h.slot()}></span><span hidden ${h.slot("caption")}></span><button class="ax-lightbox__control ax-lightbox__next" type="button" data-ax-lightbox-next aria-label="Next image">\u203A</button>` : `<figure class="ax-lightbox__item" data-ax-lightbox-item><img class="ax-lightbox__media" src="${h.escape(src)}" alt="${h.escape(h.attr("alt"))}" />${caption.slotted || caption.html ? `<figcaption class="ax-lightbox__caption"${caption.slotted ? ` ${h.slot("caption")}` : ""}>${caption.html}</figcaption>` : ""}</figure>`;
     return `${trigger}
 <dialog class="ax-lightbox" id="${h.escape(id)}" data-ax-lightbox data-ax-owned="ax-lightbox" aria-label="${h.escape(h.attr("label"))}"${open ? " open" : ""}>
@@ -2157,7 +2162,7 @@ var Link_element_default = {
   name: "Link",
   tag: "ax-link",
   attributes: {
-    href: { type: "string", description: "Navigation destination." },
+    href: { type: "string", description: "Destination URL for navigation." },
     label: {
       type: "string",
       description: "Accessible label for icon-only content."
@@ -2243,72 +2248,75 @@ var NumberInput_element_default = {
   name: "NumberInput",
   tag: "ax-number-input",
   attributes: {
-    label: { type: "string", description: "Field label." },
+    label: { type: "string", description: "Visible field label." },
     value: {
       type: "string",
       default: "",
       liveProperty: "value",
       reflect: { events: ["input", "change"], property: "value" },
-      description: "Current value."
+      description: "Current input value."
     },
-    description: { type: "string", description: "Help text." },
-    units: { type: "string", description: "Visible units." },
-    min: { type: "string", description: "Native minimum." },
-    max: { type: "string", description: "Native maximum." },
-    step: { type: "string", default: "1", description: "Native step." },
-    placeholder: { type: "string", description: "Native placeholder." },
+    description: { type: "string", description: "Supporting help text." },
+    units: { type: "string", description: "Visible unit suffix." },
+    min: { type: "string", description: "Native minimum value." },
+    max: { type: "string", description: "Native maximum value." },
+    step: { type: "string", default: "1", description: "Native step interval." },
+    placeholder: { type: "string", description: "Native placeholder text." },
     size: {
       type: "enum",
       values: sizes5,
       default: "md",
-      description: "Input size."
+      description: "Visual input size."
     },
     status: {
       type: "enum",
       values: statuses4,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Marks input."
+      description: "Marks the input required."
     },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables input."
+      description: "Disables the native input."
     },
     "is-read-only": {
       type: "boolean",
       aliases: ["readonly"],
       aliasProperties: ["readOnly"],
       default: false,
-      description: "Makes input."
+      description: "Makes the input read-only."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Form name."
+      description: "Native form name."
     },
     "auto-complete": {
       type: "string",
       aliases: ["autocomplete"],
       aliasProperties: ["autocomplete"],
-      description: "Native autocomplete."
+      description: "Native autocomplete hint."
     }
   },
   slots: {
-    label: { description: "Label.", required: true },
-    description: "Help text.",
+    label: { description: "Visible field label.", required: true },
+    description: "Supporting help text.",
     units: "Visible units suffix.",
-    "status-message": "Validation message."
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
@@ -2359,7 +2367,7 @@ var NumberInput_element_default = {
       if (api.control.value !== value) api.control.value = value;
     }
   },
-  docs: "NumberInput custom element using native Astryx markup.",
+  docs: "Collect a numeric value with native limits, steppers, units, and validation.",
   examples: [
     {
       name: "default",
@@ -2509,6 +2517,7 @@ var ProgressBar_element_default = {
 var orientations = ["vertical", "horizontal"];
 var sizes6 = ["sm", "md"];
 var statuses5 = ["none", "error", "warning", "success"];
+var initializedRadios = /* @__PURE__ */ new WeakSet();
 function radios(api) {
   return api.queryAll('input[type="radio"]');
 }
@@ -2518,7 +2527,10 @@ function syncRadios(host, api) {
   for (const radio of radios(api)) {
     radio.name = name;
     radio.checked = radio.value === value;
-    radio.defaultChecked = radio.checked;
+    if (!initializedRadios.has(radio)) {
+      radio.defaultChecked = radio.checked;
+      initializedRadios.add(radio);
+    }
     radio.disabled = api.read("is-disabled") || radio.hasAttribute("data-ax-item-disabled");
     radio.required = api.read("is-required");
   }
@@ -2527,74 +2539,79 @@ var RadioList_element_default = {
   name: "RadioList",
   tag: "ax-radio-list",
   attributes: {
-    label: { type: "string", description: "Field label." },
+    label: { type: "string", description: "Visible field label." },
     value: {
       type: "string",
       default: "",
-      description: "Selected child."
+      description: "Currently selected radio value."
     },
-    description: { type: "string", description: "Help text." },
+    description: { type: "string", description: "Supporting help text." },
     orientation: {
       type: "enum",
       values: orientations,
       default: "vertical",
-      description: "Vertical horizontal."
+      description: "Radio group orientation."
     },
     size: {
       type: "enum",
       values: sizes6,
       default: "md",
-      description: "Radio size."
+      description: "Visual radio size."
     },
     status: {
       type: "enum",
       values: statuses5,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables all."
+      description: "Disables every radio option."
     },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Marks radio."
+      description: "Marks the radio group required."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Shared native."
+      description: "Shared native radio name."
     }
   },
   slots: {
-    label: { description: "Group label.", required: true },
-    description: "Help text.",
+    label: { description: "Visible radio group label.", required: true },
+    description: "Supporting help text.",
     default: {
-      description: "Native radio.",
+      description: "Native radio options.",
       required: true
     },
-    "status-message": "Validation message."
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
     { attribute: "description", slot: "description" },
     { attribute: "status-message", slot: "status-message" }
   ],
+  exampleItemSelector: 'input[type="radio"]',
   control: 'input[type="radio"]',
   delegates: {
     properties: ["form", "validity", "validationMessage", "willValidate"],
     methods: ["checkValidity", "reportValidity"]
   },
   events: {
-    change: "Native event."
+    change: "Native event from the selected radio.",
+    "astryx:change": "Emitted with {value} after radio selection changes."
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
@@ -2607,6 +2624,17 @@ var RadioList_element_default = {
     },
     afterRender(host, api) {
       syncRadios(host, api);
+      const form = radios(api)[0]?.form;
+      if (form) {
+        api.listen(
+          form,
+          "reset",
+          () => queueMicrotask(() => {
+            const selected = radios(api).find((radio) => radio.checked);
+            api.reflect("value", selected?.value ?? "");
+          })
+        );
+      }
       for (const radio of radios(api)) {
         api.listen(radio, "change", () => {
           if (!radio.checked) return;
@@ -2616,15 +2644,15 @@ var RadioList_element_default = {
       }
     }
   },
-  docs: "RadioList custom element using native Astryx markup.",
+  docs: "Choose one value from a native radio group with shared form semantics.",
   examples: [
     {
       name: "default",
-      html: `<ax-radio-list label="Plan"><label><input type="radio" value="a" />A</label></ax-radio-list>`
+      html: `<ax-radio-list label="Plan"><label><input type=radio value=a>A</label><label><input type=radio value=b>B</label></ax-radio-list>`
     },
     {
       name: "horizontal",
-      html: `<ax-radio-list label="Plan" orientation="horizontal"><label><input type="radio" value="b" />B</label></ax-radio-list>`
+      html: `<ax-radio-list label="Plan" orientation="horizontal"><label><input type=radio value=a>A</label><label><input type=radio value=b>B</label></ax-radio-list>`
     }
   ],
   render(_host, h) {
@@ -2701,7 +2729,7 @@ var Selector_element_default = {
       type: "enum",
       values: statuses6,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
     description: { type: "string", description: "Supporting field description." },
     "status-message": {
@@ -3026,62 +3054,65 @@ var Slider_element_default = {
   attributes: {
     label: {
       type: "string",
-      description: "Field label."
+      description: "Visible field label."
     },
     value: {
       type: "string",
       default: "0",
       liveProperty: "value",
       reflect: { events: ["input", "change"], property: "value" },
-      description: "Current single-thumb."
+      description: "Current single-thumb value."
     },
-    min: { type: "string", default: "0", description: "Native minimum." },
-    max: { type: "string", default: "100", description: "Native maximum." },
-    step: { type: "string", default: "1", description: "Native step." },
+    min: { type: "string", default: "0", description: "Native minimum value." },
+    max: { type: "string", default: "100", description: "Native maximum value." },
+    step: { type: "string", default: "1", description: "Native step interval." },
     orientation: {
       type: "enum",
       values: orientations2,
       default: "horizontal",
-      description: "Slider orientation."
+      description: "Native slider orientation."
     },
     "value-suffix": {
       type: "string",
       default: "",
-      description: "Visible suffix."
+      description: "Visible value suffix."
     },
-    description: { type: "string", description: "Help text." },
+    description: { type: "string", description: "Supporting help text." },
     status: {
       type: "enum",
       values: statuses7,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables native."
+      description: "Disables the native control."
     },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Marks range."
+      description: "Marks the range required."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Form name."
+      description: "Native form name."
     }
   },
   slots: {
-    label: { description: "Visible slider.", required: true },
-    description: "Help text.",
-    "status-message": "Validation message."
+    label: { description: "Visible slider field label.", required: true },
+    description: "Supporting help text.",
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
@@ -3102,7 +3133,7 @@ var Slider_element_default = {
   events: {
     input: "Native event.",
     change: "Native event.",
-    "astryx:change-end": "Custom event."
+    "astryx:change-end": "Emitted with {value} when a committed slider change finishes."
   },
   hooks: {
     attributeChanged(_host, name, _oldValue, _newValue, api) {
@@ -3113,7 +3144,12 @@ var Slider_element_default = {
       else return false;
       const output = api.query("output");
       if (output)
-        output.value = formatValue(api.control.value, api.read("value-suffix"));
+        api.mutate(() => {
+          output.value = formatValue(
+            api.control.value,
+            api.read("value-suffix")
+          );
+        });
       return true;
     },
     afterRender(host, api) {
@@ -3126,10 +3162,12 @@ var Slider_element_default = {
       const output = api.query("output");
       const update = () => {
         if (output)
-          output.value = formatValue(
-            api.control.value,
-            api.read("value-suffix")
-          );
+          api.mutate(() => {
+            output.value = formatValue(
+              api.control.value,
+              api.read("value-suffix")
+            );
+          });
       };
       update();
       api.listen(api.control, "input", update);
@@ -3140,7 +3178,7 @@ var Slider_element_default = {
       );
     }
   },
-  docs: "Slider custom element using native Astryx markup.",
+  docs: "Choose a numeric value with a native range control and live output.",
   examples: [
     {
       name: "default",
@@ -3264,12 +3302,12 @@ var Stack_element_default = {
     justify: {
       type: "enum",
       values: alignments3.slice(0, 6),
-      description: "Main-axis alignment."
+      description: "Main-axis content alignment."
     },
     align: {
       type: "enum",
       values: ["start", "center", "end", "stretch"],
-      description: "Cross-axis alignment."
+      description: "Cross-axis item alignment."
     }
   },
   slots: { default: { description: "Stack items.", required: true } },
@@ -3381,7 +3419,7 @@ var Switch_element_default = {
   attributes: {
     label: {
       type: "string",
-      description: "Field label."
+      description: "Visible field label."
     },
     value: {
       type: "boolean",
@@ -3390,67 +3428,70 @@ var Switch_element_default = {
       liveProperty: "checked",
       reflect: { events: ["change"], property: "checked" },
       default: false,
-      description: "Checked state."
+      description: "Current checked state."
     },
     description: {
       type: "string",
-      description: "Help text."
+      description: "Supporting help text."
     },
     size: {
       type: "enum",
       values: sizes8,
       default: "md",
-      description: "Switch size."
+      description: "Visual switch size."
     },
     "label-position": {
       type: "enum",
       values: positions2,
       default: "end",
-      description: "Label switch."
+      description: "Logical label position."
     },
     "label-spacing": {
       type: "enum",
       values: spacings,
       default: "hug",
-      description: "Hug spread."
+      description: "Label spacing behavior."
     },
     status: {
       type: "enum",
       values: statuses8,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables native."
+      description: "Disables the native control."
     },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Required state."
+      description: "Marks the control required."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Form name."
+      description: "Native form name."
     },
     "html-value": {
       type: "string",
       default: "on",
-      description: "Submit value."
+      description: "Submitted native form value."
     }
   },
   slots: {
-    label: { description: "Label.", required: true },
-    description: "Help text.",
-    "status-message": "Validation message."
+    label: { description: "Visible field label.", required: true },
+    description: "Supporting help text.",
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
@@ -3485,7 +3526,7 @@ var Switch_element_default = {
       api.control.checked = checked;
     }
   },
-  docs: "Switch custom element using native Astryx markup.",
+  docs: "Toggle a native switch state with labels, validation, and form submission.",
   examples: [
     { name: "default", html: `<ax-switch label="Alerts"></ax-switch>` },
     { name: "checked", html: `<ax-switch label="Dark mode" value></ax-switch>` }
@@ -3569,21 +3610,19 @@ var Tab_element_default = {
   content: [{ attribute: "label", slot: "default", required: true }],
   control: 'button[role="tab"]',
   events: {
-    "astryx:tab-change": "Bubbles when this tab is activated by its TabList."
+    "astryx:tab-change": "Bubbles with {value} when this tab is activated by its TabList."
   },
   docs: "Represent one selectable view inside an ax-tab-list.",
   examples: [
     {
       name: "with-panel",
       gallery: false,
-      html: `<ax-tab value="overview" panel-id="panel-overview">
-  Overview
-</ax-tab>`
+      html: `<ax-tab-list><ax-tab value="a">A</ax-tab></ax-tab-list>`
     },
     {
       name: "label",
       gallery: false,
-      html: `<ax-tab value="activity" label="Activity"></ax-tab>`
+      html: `<ax-tab-list><ax-tab value="b" label="B"></ax-tab></ax-tab-list>`
     }
   ],
   render(_host, h) {
@@ -3989,76 +4028,79 @@ var TextArea_element_default = {
   name: "TextArea",
   tag: "ax-text-area",
   attributes: {
-    label: { type: "string", description: "Field label." },
+    label: { type: "string", description: "Visible field label." },
     value: {
       type: "string",
       default: "",
       liveProperty: "value",
       reflect: { events: ["input", "change"], property: "value" },
-      description: "Current value."
+      description: "Current input value."
     },
-    description: { type: "string", description: "Help text." },
-    placeholder: { type: "string", description: "Native placeholder." },
+    description: { type: "string", description: "Supporting help text." },
+    placeholder: { type: "string", description: "Native placeholder text." },
     rows: { type: "string", default: "3", description: "Visible text rows." },
-    "max-length": { type: "string", description: "Native maximum." },
+    "max-length": { type: "string", description: "Native maximum value." },
     size: {
       type: "enum",
       values: sizes10,
       default: "md",
-      description: "Textarea size."
+      description: "Visual textarea size."
     },
     status: {
       type: "enum",
       values: statuses9,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Marks textarea."
+      description: "Marks the textarea required."
     },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables textarea."
+      description: "Disables the native textarea."
     },
     "is-read-only": {
       type: "boolean",
       aliases: ["readonly"],
       aliasProperties: ["readOnly"],
       default: false,
-      description: "Makes textarea."
+      description: "Makes the textarea read-only."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Form name."
+      description: "Native form name."
     },
     "auto-complete": {
       type: "string",
       aliases: ["autocomplete"],
       aliasProperties: ["autocomplete"],
-      description: "Native autocomplete."
+      description: "Native autocomplete hint."
     },
     "has-spell-check": {
       type: "boolean",
       aliases: ["spellcheck"],
       aliasProperties: ["spellcheck"],
       default: true,
-      description: "Enables browser."
+      description: "Enabled by default; set false to disable."
     }
   },
   slots: {
-    label: { description: "Label.", required: true },
-    description: "Help text.",
-    "status-message": "Validation message."
+    label: { description: "Visible field label.", required: true },
+    description: "Supporting help text.",
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
@@ -4084,6 +4126,8 @@ var TextArea_element_default = {
         api.control.required = api.read("is-required");
       else if (name === "is-read-only")
         api.control.readOnly = api.read("is-read-only");
+      else if (name === "has-spell-check")
+        api.control.spellcheck = api.read("has-spell-check");
       else return false;
       return true;
     },
@@ -4096,7 +4140,7 @@ var TextArea_element_default = {
       if (api.control.value !== value) api.control.value = value;
     }
   },
-  docs: "TextArea custom element using native Astryx markup.",
+  docs: "Collect multiline text with native validation, form participation, and reflected value.",
   examples: [
     { name: "default", html: `<ax-text-area label="Summary"></ax-text-area>` },
     {
@@ -4135,6 +4179,7 @@ var TextArea_element_default = {
     if (h.attr("is-required")) attrs.push("required", 'aria-required="true"');
     if (h.attr("is-disabled")) attrs.push("disabled");
     if (h.attr("is-read-only")) attrs.push("readonly");
+    if (!h.attr("has-spell-check")) attrs.push('spellcheck="false"');
     return `<label class="${classes.join(" ")}" for="${id}">
   <span class="ax-text-area__label"${label.slotted ? ` ${h.slot("label")}` : ""}>${label.html}</span>
   ${description.slotted || description.html ? `<span class="ax-text-area__description" id="${descriptionID}"${description.slotted ? ` ${h.slot("description")}` : ""}>${description.html}</span>` : ""}
@@ -4374,7 +4419,7 @@ var TimeInput_element_default = {
   name: "TimeInput",
   tag: "ax-time-input",
   attributes: {
-    label: { type: "string", description: "Field label." },
+    label: { type: "string", description: "Visible field label." },
     value: {
       type: "string",
       default: "",
@@ -4382,48 +4427,51 @@ var TimeInput_element_default = {
       reflect: { events: ["input", "change"], property: "value" },
       description: "Selected ISO time."
     },
-    description: { type: "string", description: "Help text." },
+    description: { type: "string", description: "Supporting help text." },
     min: { type: "string", description: "Minimum ISO time." },
     max: { type: "string", description: "Maximum ISO time." },
-    step: { type: "string", description: "Native step." },
+    step: { type: "string", description: "Native step interval." },
     size: {
       type: "enum",
       values: sizes12,
       default: "md",
-      description: "Input size."
+      description: "Visual input size."
     },
     status: {
       type: "enum",
       values: statuses11,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Marks input."
+      description: "Marks the input required."
     },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables input."
+      description: "Disables the native input."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Form name."
+      description: "Native form name."
     }
   },
   slots: {
-    label: { description: "Label.", required: true },
-    description: "Help text.",
-    "status-message": "Validation message."
+    label: { description: "Visible field label.", required: true },
+    description: "Supporting help text.",
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
@@ -4466,7 +4514,7 @@ var TimeInput_element_default = {
       if (api.control.value !== value) api.control.value = value;
     }
   },
-  docs: "TimeInput custom element using native Astryx markup.",
+  docs: "Collect an ISO time with native picker, constraints, and form validation.",
   examples: [
     {
       name: "default",
@@ -4515,121 +4563,103 @@ var TimeInput_element_default = {
 // elements/src/Toast.element.mjs
 var types4 = ["info", "error"];
 var timers2 = /* @__PURE__ */ new WeakMap();
-function ensureViewport() {
-  let viewport = document.querySelector("[data-ax-toast-viewport]");
-  if (!viewport) {
-    viewport = document.createElement("div");
-    viewport.className = "ax-toast-viewport";
-    viewport.dataset.axToastViewport = "";
-    viewport.setAttribute("aria-live", "polite");
-    viewport.setAttribute("aria-relevant", "additions");
-    document.body.append(viewport);
-  }
-  return viewport;
+function clearTimer(host) {
+  clearTimeout(timers2.get(host));
+  timers2.delete(host);
 }
-function showFallback(host, api) {
-  const toast = document.createElement("div");
-  const type = api.read("type");
-  toast.className = `ax-toast ax-toast--${type}`;
-  toast.dataset.axToastItem = "";
-  toast.setAttribute("role", type === "error" ? "alert" : "status");
-  const body = document.createElement("span");
-  body.className = "ax-toast__body";
-  body.textContent = api.read("body");
-  toast.append(body);
-  const close = document.createElement("button");
-  close.className = "ax-toast__close";
-  close.type = "button";
-  close.setAttribute("aria-label", "Dismiss notification");
-  close.textContent = "\xD7";
-  toast.append(close);
-  const dismiss = (reason) => {
-    clearTimeout(timers2.get(toast));
-    toast.remove();
-    api.dispatch("astryx:dismiss", { reason }, host);
-  };
-  close.addEventListener("click", () => dismiss("manual"));
-  ensureViewport().append(toast);
-  const duration = Number(api.read("auto-hide-duration")) || 0;
-  if (api.read("is-auto-hide") && duration > 0)
+function dismiss(host, api, reason = "manual") {
+  clearTimer(host);
+  host.hidden = true;
+  api.dispatch("astryx:dismiss", { reason });
+}
+function scheduleAutoHide(host, api) {
+  clearTimer(host);
+  if (!api.read("is-auto-hide") || host.hidden) return;
+  const duration = Math.max(0, Number(api.read("auto-hide-duration")) || 0);
+  if (duration > 0) {
     timers2.set(
-      toast,
-      setTimeout(() => dismiss("auto"), duration)
+      host,
+      setTimeout(() => dismiss(host, api, "auto"), duration)
     );
+  }
 }
 var Toast_element_default = {
   name: "Toast",
   tag: "ax-toast",
   attributes: {
-    body: { type: "string", description: "Notification message." },
-    "trigger-label": {
+    body: {
       type: "string",
-      default: "Show toast",
-      description: "Visible trigger."
+      description: "Visible notification message."
     },
     type: {
       type: "enum",
       values: types4,
       default: "info",
-      description: "Informational error."
+      description: "Semantic notification type."
     },
     "is-auto-hide": {
       type: "boolean",
       default: false,
-      description: "Automatically dismiss."
+      description: "Enables timed dismissal."
     },
     "auto-hide-duration": {
       type: "string",
       default: "5000",
-      description: "Auto-hide delay."
+      description: "Auto-hide delay milliseconds."
     }
   },
   slots: {
-    body: { description: "Notification message.", required: true },
-    default: "Visible trigger label."
+    body: { description: "Rich notification message content.", required: true }
   },
-  content: [
-    { attribute: "body", slot: "body", required: true },
-    { attribute: "trigger-label", slot: "default" }
-  ],
-  control: "button[data-ax-toast]",
+  content: [{ attribute: "body", slot: "body", required: true }],
+  control: "[data-ax-toast-dismiss]",
   methods: {
     show: {
-      description: "Show configured.",
+      description: "Show and restart auto-hide.",
       call(api) {
-        if (globalThis.astryx?.toast)
-          globalThis.astryx.toast(api.read("body"), {
-            type: api.read("type"),
-            duration: api.read("is-auto-hide") ? Number(api.read("auto-hide-duration")) : 0
-          });
-        else showFallback(this, api);
+        this.hidden = false;
+        scheduleAutoHide(this, api);
+      }
+    },
+    dismiss: {
+      description: "Dismiss programmatically.",
+      call(api) {
+        dismiss(this, api, "programmatic");
       }
     }
   },
   events: {
-    "astryx:dismiss": "Custom event."
+    "astryx:dismiss": "Emitted with {reason} when the notification is dismissed manually, automatically, or programmatically."
   },
   hooks: {
+    attributeChanged(host, name, _oldValue, _newValue, api) {
+      if (!["is-auto-hide", "auto-hide-duration"].includes(name)) return false;
+      scheduleAutoHide(host, api);
+      return true;
+    },
     afterRender(host, api) {
-      api.listen(api.control, "click", () => {
-        if (globalThis.astryx?.toast) return;
-        showFallback(host, api);
-      });
+      api.listen(api.control, "click", () => dismiss(host, api, "manual"));
+      scheduleAutoHide(host, api);
+    },
+    disconnected(host) {
+      clearTimer(host);
     }
   },
-  docs: "Toast custom element using native Astryx markup.",
+  docs: "Display a declarative status or error notification with optional timed dismissal.",
   examples: [
-    { name: "info", html: `<ax-toast body="Saved">Show</ax-toast>` },
-    { name: "error", html: `<ax-toast body="Failed" type="error"></ax-toast>` }
+    { name: "info", html: `<ax-toast body="Saved"></ax-toast>` },
+    {
+      name: "error",
+      html: `<ax-toast type="error"><span slot="body">Save failed. Try again.</span></ax-toast>`
+    }
   ],
   render(_host, h) {
-    const label = h.content(
-      "trigger-label",
-      "default",
-      h.attr("trigger-label")
-    );
-    return `<button class="ax-button ax-button--${h.attr("type") === "error" ? "destructive" : "primary"}" type="button" data-ax-toast="${h.escape(h.attr("body"))}" data-ax-toast-type="${h.escape(h.attr("type"))}" data-ax-toast-duration="${h.attr("is-auto-hide") ? h.escape(h.attr("auto-hide-duration")) : "0"}"${label.slotted ? ` ${h.slot()}` : ""}>${label.html}</button>
-<span hidden ${h.slot("body")}></span>`;
+    const body = h.content("body", "body", "Done");
+    const type = h.attr("type");
+    return `<div class="ax-toast ax-toast--${type}" data-ax-toast-item data-ax-owned="ax-toast" role="${type === "error" ? "alert" : "status"}">
+  <span class="ax-toast__body"${body.slotted ? ` ${h.slot("body")}` : ""}>${body.html}</span>
+  <button class="ax-toast__close" type="button" data-ax-toast-dismiss aria-label="Dismiss notification">\xD7</button>
+</div>`;
   }
 };
 
@@ -4641,6 +4671,7 @@ var touchTriggers2 = ["auto", "tap", "none"];
 var timers3 = /* @__PURE__ */ new WeakMap();
 function setOpen4(host, api, open, emit = false) {
   clearTimeout(timers3.get(host));
+  open = Boolean(open && api.read("is-enabled"));
   const surface = api.query("[data-ax-tooltip-content]");
   if (!surface) return;
   surface.hidden = !open;
@@ -4649,6 +4680,7 @@ function setOpen4(host, api, open, emit = false) {
   if (emit) api.dispatch("astryx:open-change", { isOpen: open });
 }
 function scheduleOpen(host, api, immediate = false) {
+  if (!api.read("is-enabled")) return;
   const delay = immediate ? 0 : Math.max(0, Number(api.read("delay")) || 0);
   clearTimeout(timers3.get(host));
   if (delay === 0) setOpen4(host, api, true, true);
@@ -4664,71 +4696,71 @@ var Tooltip_element_default = {
   attributes: {
     content: {
       type: "string",
-      description: "Short tooltip."
+      description: "Concise tooltip content."
     },
     "trigger-label": {
       type: "string",
       default: "?",
-      description: "Generated trigger."
+      description: "Generated trigger label."
     },
     "trigger-aria-label": {
       type: "string",
       default: "More information",
-      description: "Accessible name."
+      description: "Accessible trigger name."
     },
     placement: {
       type: "enum",
       values: placements3,
       default: "above",
-      description: "Logical placement."
+      description: "Logical surface placement."
     },
     alignment: {
       type: "enum",
       values: alignments4,
       default: "center",
-      description: "Logical alignment."
+      description: "Logical surface alignment."
     },
     delay: {
       type: "string",
       default: "200",
-      description: "Show delay."
+      description: "Opening delay in milliseconds."
     },
     "hide-delay": {
       type: "string",
       default: "0",
-      description: "Hide delay."
+      description: "Closing delay in milliseconds."
     },
     "focus-trigger": {
       type: "enum",
       values: focusTriggers2,
       default: "auto",
-      description: "Whether focus."
+      description: "Keyboard focus trigger policy."
     },
     "touch-trigger": {
       type: "enum",
       values: touchTriggers2,
       default: "auto",
-      description: "Touch activation."
+      description: "Touch activation policy."
     },
     "is-enabled": {
       type: "boolean",
-      default: false,
-      description: "Enable tooltip behavior; omitted also remains enabled for HTML ergonomics."
+      default: true,
+      description: "Enabled by default; set false to disable."
     },
     "is-open": {
       type: "boolean",
       aliases: ["open"],
       aliasProperties: ["open"],
       default: false,
-      description: "Controlled open."
+      description: "Controlled open state."
     }
   },
   slots: {
     default: {
-      description: "Focusable hoverable.",
+      description: "Focusable hoverable trigger.",
       required: true
     },
-    content: { description: "Short tooltip.", required: true }
+    content: { description: "Concise tooltip content.", required: true }
   },
   content: [{ attribute: "content", slot: "content", required: true }],
   control: "[data-ax-tooltip-trigger]",
@@ -4747,11 +4779,11 @@ var Tooltip_element_default = {
     }
   },
   events: {
-    "astryx:open-change": "Custom event."
+    "astryx:open-change": "Emitted with {isOpen} whenever the tooltip opens or closes."
   },
   hooks: {
     attributeChanged(host, name, _oldValue, _newValue, api) {
-      if (name !== "is-open" || !api.query("[data-ax-tooltip-content]"))
+      if (!["is-open", "is-enabled"].includes(name) || !api.query("[data-ax-tooltip-content]"))
         return false;
       setOpen4(host, api, api.read("is-open"));
       return true;
@@ -4768,19 +4800,6 @@ var Tooltip_element_default = {
       trigger.setAttribute("aria-describedby", surface.id);
       host._control = trigger;
       setOpen4(host, api, api.read("is-open"));
-      if (globalThis.astryx || globalThis.AstryxVanilla) {
-        api.listen(
-          surface,
-          "astryx:tooltip-open",
-          () => api.reflect("is-open", true)
-        );
-        api.listen(
-          surface,
-          "astryx:tooltip-close",
-          () => api.reflect("is-open", false)
-        );
-        return;
-      }
       api.listen(host, "pointerenter", () => scheduleOpen(host, api));
       api.listen(host, "pointerleave", () => setOpen4(host, api, false, true));
       api.listen(host, "focusin", () => {
@@ -4802,7 +4821,7 @@ var Tooltip_element_default = {
       clearTimeout(timers3.get(host));
     }
   },
-  docs: "Tooltip custom element using native Astryx markup.",
+  docs: "Describe a focusable trigger with delayed hover and focus disclosure.",
   examples: [
     {
       name: "icon-button",
@@ -4816,7 +4835,7 @@ var Tooltip_element_default = {
   render(_host, h) {
     const content = h.content("content", "content", "More information");
     const id = h.id("surface");
-    const open = h.attr("is-open");
+    const open = h.attr("is-enabled") && h.attr("is-open");
     const trigger = h.hasSlot() ? `<span ${h.slot()}></span>` : `<button class="ax-button ax-button--secondary" type="button" data-ax-tooltip-trigger aria-label="${h.escape(h.attr("trigger-aria-label"))}">${h.escape(h.attr("trigger-label"))}</button>`;
     return `<span class="ax-tooltip" data-ax-tooltip data-ax-owned="ax-tooltip" data-ax-tooltip-delay="${h.escape(h.attr("delay"))}" data-ax-tooltip-hide-delay="${h.escape(h.attr("hide-delay"))}">
   ${trigger}
@@ -4887,75 +4906,79 @@ var Typeahead_element_default = {
   name: "Typeahead",
   tag: "ax-typeahead",
   attributes: {
-    label: { type: "string", description: "Field label." },
+    label: { type: "string", description: "Visible field label." },
     value: {
       type: "string",
       default: "",
       liveProperty: "value",
       reflect: { events: ["input", "change"], property: "value" },
-      description: "Search value."
+      description: "Current search value."
     },
-    description: { type: "string", description: "Help text." },
-    placeholder: { type: "string", description: "Native placeholder." },
+    description: { type: "string", description: "Supporting help text." },
+    placeholder: { type: "string", description: "Native placeholder text." },
     size: {
       type: "enum",
       values: sizes13,
       default: "md",
-      description: "Input size."
+      description: "Visual input size."
     },
     status: {
       type: "enum",
       values: statuses12,
       default: "none",
-      description: "Validation state."
+      description: "Current validation state."
     },
-    "status-message": { type: "string", description: "Validation message." },
+    "status-message": {
+      type: "string",
+      description: "Displayed validation message."
+    },
     "is-required": {
       type: "boolean",
       aliases: ["required"],
       aliasProperties: ["required"],
       default: false,
-      description: "Marks input."
+      description: "Marks the input required."
     },
     "is-disabled": {
       type: "boolean",
       aliases: ["disabled"],
       aliasProperties: ["disabled"],
       default: false,
-      description: "Disables input."
+      description: "Disables the native input."
     },
     "html-name": {
       type: "string",
       aliases: ["name"],
       aliasProperties: ["name"],
-      description: "Form name."
+      description: "Native form name."
     },
     "list-id": {
       type: "string",
-      description: "ID used."
+      description: "Datalist element identifier."
     },
     "auto-complete": {
       type: "string",
       aliases: ["autocomplete"],
       aliasProperties: ["autocomplete"],
       default: "off",
-      description: "Native autocomplete."
+      description: "Native autocomplete hint."
     }
   },
   slots: {
-    label: { description: "Label.", required: true },
-    description: "Help text.",
+    label: { description: "Visible field label.", required: true },
+    description: "Supporting help text.",
     default: {
-      description: "Native option.",
+      description: "Native datalist options.",
       required: true
     },
-    "status-message": "Validation message."
+    "status-message": "Displayed validation message."
   },
   content: [
     { attribute: "label", slot: "label", required: true },
     { attribute: "description", slot: "description" },
     { attribute: "status-message", slot: "status-message" }
   ],
+  exampleItemSelector: "option",
   control: "input[list]",
   delegates: {
     properties: ["form", "validity", "validationMessage", "willValidate"],
@@ -4964,7 +4987,7 @@ var Typeahead_element_default = {
   events: {
     input: "Native event.",
     change: "Native event.",
-    "astryx:query": "Custom event."
+    "astryx:query": "Emitted with {query} after the search text changes."
   },
   hooks: {
     attributeChanged(_host, name, _oldValue, _newValue, api) {
@@ -4991,15 +5014,15 @@ var Typeahead_element_default = {
       );
     }
   },
-  docs: "Typeahead custom element using native Astryx markup.",
+  docs: "Suggest authored datalist options while reflecting free-form query and value state.",
   examples: [
     {
       name: "default",
-      html: `<ax-typeahead label="Assignee"><option value="Alex"></option></ax-typeahead>`
+      html: `<ax-typeahead label="Assignee"><option>Alex</option><option>Sam</option></ax-typeahead>`
     },
     {
       name: "error",
-      html: `<ax-typeahead label="Owner" status="error"><option value="Design"></option></ax-typeahead>`
+      html: `<ax-typeahead label="Owner" status="error"><option>Design</option><option>Engineering</option></ax-typeahead>`
     }
   ],
   render(_host, h) {
@@ -5318,6 +5341,20 @@ function registerElement(definition) {
         render() {
           host._scheduleRender();
         },
+        mutate(callback) {
+          host._observer.disconnect();
+          try {
+            return callback();
+          } finally {
+            const authorNodes = new Set(host._authorNodes);
+            for (const root of host._runtimeRoots) {
+              walkNodes(root, (node) => {
+                if (!authorNodes.has(node)) host._generatedNodes.add(node);
+              });
+            }
+            if (host.isConnected) host._observe();
+          }
+        },
         dispatch(type, detail = {}, target = host) {
           target.dispatchEvent(
             new CustomEvent(type, { bubbles: true, composed: true, detail })
@@ -5425,6 +5462,10 @@ function registerElement(definition) {
         )) {
           continue;
         }
+        const insideRegion = [...this._regions.values()].some(
+          (region) => region === record.target || region.contains(record.target)
+        );
+        if (this._generatedNodes.has(record.target) && !insideRegion) continue;
         if (record.target === this && [...record.removedNodes].some(
           (node) => this._runtimeRoots.includes(node)
         )) {
@@ -5639,7 +5680,11 @@ function registerElement(definition) {
       const spec = definition.attributes[name];
       if (!spec) return this.getAttribute(name);
       const raw = this._rawAttribute(name);
-      if (spec.type === "boolean") return raw !== null;
+      if (spec.type === "boolean") {
+        if (raw === null) return spec.default === true;
+        if (spec.default === true && raw === "false") return false;
+        return true;
+      }
       if (raw === null || raw === "") return spec.default ?? "";
       if (spec.type === "enum" && !spec.values.includes(raw)) {
         this._warnInvalidEnum(name, raw, spec.values);
@@ -5651,7 +5696,10 @@ function registerElement(definition) {
       const spec = definition.attributes[name];
       this._reflecting = false;
       if (spec.type === "boolean") {
-        if (value) this.setAttribute(name, "");
+        if (spec.default === true && !value) {
+          this.setAttribute(name, "false");
+          for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
+        } else if (value) this.setAttribute(name, "");
         else {
           this.removeAttribute(name);
           for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
@@ -5673,7 +5721,10 @@ function registerElement(definition) {
         (alias) => this.hasAttribute(alias)
       );
       if (spec.type === "boolean") {
-        if (value) {
+        if (spec.default === true && !value) {
+          this.setAttribute(name, "false");
+          for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
+        } else if (value) {
           if (this.hasAttribute(name) || presentAliases.length === 0) {
             this.setAttribute(name, "");
           }
@@ -5698,7 +5749,7 @@ function registerElement(definition) {
       const spec = definition.attributes[canonical];
       if (spec || GLOBAL_ATTRIBUTES.has(name) || name.startsWith("aria-") || name.startsWith("data-") || /^on[a-z]+$/i.test(name)) {
         const value = this.getAttribute(name);
-        if (spec?.type === "boolean" && value === "false") {
+        if (spec?.type === "boolean" && spec.default !== true && value === "false") {
           this._warn(
             `boolean-false:${canonical}`,
             `[Astryx] <${definition.tag}> treats ${name}="false" as present and therefore true; remove the attribute for false.`

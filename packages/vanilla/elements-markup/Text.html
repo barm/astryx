@@ -1,13 +1,13 @@
 <!-- docs: Render semantic body, supporting, label, large, or code text. -->
 <!-- attributes:
-type:body, large, label, supporting, code, inherit|body|Semantic text type.
-color:primary, secondary, disabled, placeholder, accent, inherit|primary|Semantic text color.
-weight:normal, medium, semibold, bold|—|Explicit font-weight override.
-display:inline, block|inline|Inline or block display.
-as:span, p, div, label, code|span|Allowed native text element.
-max-lines:string|0|Maximum visible lines; zero disables truncation.
-has-strikethrough:boolean|absent|Applies a line-through decoration.
-has-tabular-numbers:boolean|absent|Uses tabular number spacing.
+type:body,large,label,supporting,code,inherit|body|Semantic text type.
+color:primary,secondary,disabled,placeholder,accent,inherit|primary|Semantic text color.
+weight:normal,medium,semibold,bold|—|Explicit font-weight override.
+display:inline,block|inline|Inline or block display.
+as:span,p,div,label,code|span|Allowed native text element.
+max-lines:str|0|Maximum visible lines; zero disables truncation.
+has-strikethrough:bool|false|Applies a line-through decoration.
+has-tabular-numbers:bool|false|Uses tabular number spacing.
 -->
 <!-- slots:
 default*:Text content.
@@ -15,7 +15,7 @@ default*:Text content.
 <!-- events:
 none
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: body -->
 <ax-text as="p">Readable body copy.</ax-text>
 <!-- variant: supporting -->

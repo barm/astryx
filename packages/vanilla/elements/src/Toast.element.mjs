@@ -1,127 +1,109 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
-/* global clearTimeout, document, globalThis, setTimeout */
+/* global clearTimeout, setTimeout */
 
 const types = ['info', 'error'];
 const timers = new WeakMap();
 
-function ensureViewport() {
-  let viewport = document.querySelector('[data-ax-toast-viewport]');
-  if (!viewport) {
-    viewport = document.createElement('div');
-    viewport.className = 'ax-toast-viewport';
-    viewport.dataset.axToastViewport = '';
-    viewport.setAttribute('aria-live', 'polite');
-    viewport.setAttribute('aria-relevant', 'additions');
-    document.body.append(viewport);
-  }
-  return viewport;
+function clearTimer(host) {
+  clearTimeout(timers.get(host));
+  timers.delete(host);
 }
 
-function showFallback(host, api) {
-  const toast = document.createElement('div');
-  const type = api.read('type');
-  toast.className = `ax-toast ax-toast--${type}`;
-  toast.dataset.axToastItem = '';
-  toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
-  const body = document.createElement('span');
-  body.className = 'ax-toast__body';
-  body.textContent = api.read('body');
-  toast.append(body);
-  const close = document.createElement('button');
-  close.className = 'ax-toast__close';
-  close.type = 'button';
-  close.setAttribute('aria-label', 'Dismiss notification');
-  close.textContent = '×';
-  toast.append(close);
-  const dismiss = reason => {
-    clearTimeout(timers.get(toast));
-    toast.remove();
-    api.dispatch('astryx:dismiss', {reason}, host);
-  };
-  close.addEventListener('click', () => dismiss('manual'));
-  ensureViewport().append(toast);
-  const duration = Number(api.read('auto-hide-duration')) || 0;
-  if (api.read('is-auto-hide') && duration > 0)
+function dismiss(host, api, reason = 'manual') {
+  clearTimer(host);
+  host.hidden = true;
+  api.dispatch('astryx:dismiss', {reason});
+}
+
+function scheduleAutoHide(host, api) {
+  clearTimer(host);
+  if (!api.read('is-auto-hide') || host.hidden) return;
+  const duration = Math.max(0, Number(api.read('auto-hide-duration')) || 0);
+  if (duration > 0) {
     timers.set(
-      toast,
-      setTimeout(() => dismiss('auto'), duration),
+      host,
+      setTimeout(() => dismiss(host, api, 'auto'), duration),
     );
+  }
 }
 
 export default {
   name: 'Toast',
   tag: 'ax-toast',
   attributes: {
-    body: {type: 'string', description: 'Notification message.'},
-    'trigger-label': {
+    body: {
       type: 'string',
-      default: 'Show toast',
-      description: 'Visible trigger.',
+      description: 'Visible notification message.',
     },
     type: {
       type: 'enum',
       values: types,
       default: 'info',
-      description: 'Informational error.',
+      description: 'Semantic notification type.',
     },
     'is-auto-hide': {
       type: 'boolean',
       default: false,
-      description: 'Automatically dismiss.',
+      description: 'Enables timed dismissal.',
     },
     'auto-hide-duration': {
       type: 'string',
       default: '5000',
-      description: 'Auto-hide delay.',
+      description: 'Auto-hide delay milliseconds.',
     },
   },
   slots: {
-    body: {description: 'Notification message.', required: true},
-    default: 'Visible trigger label.',
+    body: {description: 'Rich notification message content.', required: true},
   },
-  content: [
-    {attribute: 'body', slot: 'body', required: true},
-    {attribute: 'trigger-label', slot: 'default'},
-  ],
-  control: 'button[data-ax-toast]',
+  content: [{attribute: 'body', slot: 'body', required: true}],
+  control: '[data-ax-toast-dismiss]',
   methods: {
     show: {
-      description: 'Show configured.',
+      description: 'Show and restart auto-hide.',
       call(api) {
-        if (globalThis.astryx?.toast)
-          globalThis.astryx.toast(api.read('body'), {
-            type: api.read('type'),
-            duration: api.read('is-auto-hide')
-              ? Number(api.read('auto-hide-duration'))
-              : 0,
-          });
-        else showFallback(this, api);
+        this.hidden = false;
+        scheduleAutoHide(this, api);
+      },
+    },
+    dismiss: {
+      description: 'Dismiss programmatically.',
+      call(api) {
+        dismiss(this, api, 'programmatic');
       },
     },
   },
   events: {
-    'astryx:dismiss': 'Custom event.',
+    'astryx:dismiss':
+      'Emitted with {reason} when the notification is dismissed manually, automatically, or programmatically.',
   },
   hooks: {
+    attributeChanged(host, name, _oldValue, _newValue, api) {
+      if (!['is-auto-hide', 'auto-hide-duration'].includes(name)) return false;
+      scheduleAutoHide(host, api);
+      return true;
+    },
     afterRender(host, api) {
-      api.listen(api.control, 'click', () => {
-        if (globalThis.astryx?.toast) return;
-        showFallback(host, api);
-      });
+      api.listen(api.control, 'click', () => dismiss(host, api, 'manual'));
+      scheduleAutoHide(host, api);
+    },
+    disconnected(host) {
+      clearTimer(host);
     },
   },
-  docs: 'Toast custom element using native Astryx markup.',
+  docs: 'Display a declarative status or error notification with optional timed dismissal.',
   examples: [
-    {name: 'info', html: `<ax-toast body="Saved">Show</ax-toast>`},
-    {name: 'error', html: `<ax-toast body="Failed" type="error"></ax-toast>`},
+    {name: 'info', html: `<ax-toast body="Saved"></ax-toast>`},
+    {
+      name: 'error',
+      html: `<ax-toast type="error"><span slot="body">Save failed. Try again.</span></ax-toast>`,
+    },
   ],
   render(_host, h) {
-    const label = h.content(
-      'trigger-label',
-      'default',
-      h.attr('trigger-label'),
-    );
-    return `<button class="ax-button ax-button--${h.attr('type') === 'error' ? 'destructive' : 'primary'}" type="button" data-ax-toast="${h.escape(h.attr('body'))}" data-ax-toast-type="${h.escape(h.attr('type'))}" data-ax-toast-duration="${h.attr('is-auto-hide') ? h.escape(h.attr('auto-hide-duration')) : '0'}"${label.slotted ? ` ${h.slot()}` : ''}>${label.html}</button>
-<span hidden ${h.slot('body')}></span>`;
+    const body = h.content('body', 'body', 'Done');
+    const type = h.attr('type');
+    return `<div class="ax-toast ax-toast--${type}" data-ax-toast-item data-ax-owned="ax-toast" role="${type === 'error' ? 'alert' : 'status'}">
+  <span class="ax-toast__body"${body.slotted ? ` ${h.slot('body')}` : ''}>${body.html}</span>
+  <button class="ax-toast__close" type="button" data-ax-toast-dismiss aria-label="Dismiss notification">×</button>
+</div>`;
   },
 };

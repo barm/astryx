@@ -1,9 +1,9 @@
 <!-- docs: Pair a compact semantic status signal with visible or otherwise accessible status text. -->
 <!-- attributes:
-variant:success, warning, error, accent, neutral|neutral|Semantic status color.
-label*:string|—|Required accessible status label.
-is-pulsing:boolean|absent|Adds reduced-motion-aware attention animation.
-tooltip:string|—|Optional explanatory tooltip.
+variant:success,warning,error,accent,neutral|neutral|Semantic status color.
+label*:str|—|Required accessible status label.
+is-pulsing:bool|false|Adds reduced-motion-aware attention animation.
+tooltip:str|—|Optional explanatory tooltip.
 -->
 <!-- slots:
 label*:Accessible status label.
@@ -12,7 +12,7 @@ icon:Optional non-color status mark.
 <!-- events:
 none
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: online -->
 <ax-status-dot variant="success" label="Online"></ax-status-dot>
 <!-- variant: incident -->

@@ -1,15 +1,15 @@
 <!-- docs: Represent a person or team with an image, initials, or fallback mark and optional status. -->
 <!-- attributes:
-src:string|—|Primary profile image URL.
-fallback-src:string|—|Image URL used if the primary source fails.
-name:string|—|Person or team name used for initials and accessible text.
-alt:string|—|Accessible name override; defaults to name.
-size:string|md|Named avatar size or CSS length.
-shape:circle, rounded, square|circle|Circle, rounded, or square silhouette.
-href:string|—|Optional profile destination.
-target:string|—|Native link browsing context.
-rel:string|—|Native link relationship tokens.
-tooltip:string|—|Native tooltip text; omit to avoid duplicate tooltips.
+src:str|—|Primary profile image URL.
+fallback-src:str|—|Image URL used if the primary source fails.
+name:str|—|Person or team name used for initials and accessible text.
+alt:str|—|Accessible name override; defaults to name.
+size:str|md|Named avatar size or CSS length.
+shape:circle,rounded,square|circle|Circle, rounded, or square silhouette.
+href:str|—|Optional profile destination.
+target:str|—|Native link browsing context.
+rel:str|—|Native link relationship tokens.
+tooltip:str|—|Native tooltip text; omit to avoid duplicate tooltips.
 -->
 <!-- slots:
 default:Custom fallback initials or mark when no image is available.
@@ -18,7 +18,7 @@ status:Optional status indicator in the avatar corner.
 <!-- events:
 click:Native activation event when href is present.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: initials-status -->
 <ax-avatar src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" name="Ada Lovelace" alt="Ada Lovelace, Online">
   <ax-status-dot slot="status" variant="success" label="Online"></ax-status-dot>

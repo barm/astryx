@@ -14,62 +14,65 @@ export default {
   attributes: {
     label: {
       type: 'string',
-      description: 'Field label.',
+      description: 'Visible field label.',
     },
     value: {
       type: 'string',
       default: '0',
       liveProperty: 'value',
       reflect: {events: ['input', 'change'], property: 'value'},
-      description: 'Current single-thumb.',
+      description: 'Current single-thumb value.',
     },
-    min: {type: 'string', default: '0', description: 'Native minimum.'},
-    max: {type: 'string', default: '100', description: 'Native maximum.'},
-    step: {type: 'string', default: '1', description: 'Native step.'},
+    min: {type: 'string', default: '0', description: 'Native minimum value.'},
+    max: {type: 'string', default: '100', description: 'Native maximum value.'},
+    step: {type: 'string', default: '1', description: 'Native step interval.'},
     orientation: {
       type: 'enum',
       values: orientations,
       default: 'horizontal',
-      description: 'Slider orientation.',
+      description: 'Native slider orientation.',
     },
     'value-suffix': {
       type: 'string',
       default: '',
-      description: 'Visible suffix.',
+      description: 'Visible value suffix.',
     },
-    description: {type: 'string', description: 'Help text.'},
+    description: {type: 'string', description: 'Supporting help text.'},
     status: {
       type: 'enum',
       values: statuses,
       default: 'none',
-      description: 'Validation state.',
+      description: 'Current validation state.',
     },
-    'status-message': {type: 'string', description: 'Validation message.'},
+    'status-message': {
+      type: 'string',
+      description: 'Displayed validation message.',
+    },
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Disables native.',
+      description: 'Disables the native control.',
     },
     'is-required': {
       type: 'boolean',
       aliases: ['required'],
       aliasProperties: ['required'],
       default: false,
-      description: 'Marks range.',
+      description: 'Marks the range required.',
     },
     'html-name': {
       type: 'string',
       aliases: ['name'],
       aliasProperties: ['name'],
-      description: 'Form name.',
+      description: 'Native form name.',
     },
   },
   slots: {
-    label: {description: 'Visible slider.', required: true},
-    description: 'Help text.',
-    'status-message': 'Validation message.',
+    label: {description: 'Visible slider field label.', required: true},
+    description: 'Supporting help text.',
+    'status-message': 'Displayed validation message.',
   },
   content: [
     {attribute: 'label', slot: 'label', required: true},
@@ -90,7 +93,8 @@ export default {
   events: {
     input: 'Native event.',
     change: 'Native event.',
-    'astryx:change-end': 'Custom event.',
+    'astryx:change-end':
+      'Emitted with {value} when a committed slider change finishes.',
   },
   hooks: {
     attributeChanged(_host, name, _oldValue, _newValue, api) {
@@ -101,7 +105,12 @@ export default {
       else return false;
       const output = api.query('output');
       if (output)
-        output.value = formatValue(api.control.value, api.read('value-suffix'));
+        api.mutate(() => {
+          output.value = formatValue(
+            api.control.value,
+            api.read('value-suffix'),
+          );
+        });
       return true;
     },
     afterRender(host, api) {
@@ -114,10 +123,12 @@ export default {
       const output = api.query('output');
       const update = () => {
         if (output)
-          output.value = formatValue(
-            api.control.value,
-            api.read('value-suffix'),
-          );
+          api.mutate(() => {
+            output.value = formatValue(
+              api.control.value,
+              api.read('value-suffix'),
+            );
+          });
       };
       update();
       api.listen(api.control, 'input', update);
@@ -126,7 +137,7 @@ export default {
       );
     },
   },
-  docs: 'Slider custom element using native Astryx markup.',
+  docs: 'Choose a numeric value with a native range control and live output.',
   examples: [
     {
       name: 'default',

@@ -10,7 +10,7 @@ export default {
   attributes: {
     label: {
       type: 'string',
-      description: 'Field label.',
+      description: 'Visible field label.',
     },
     value: {
       type: 'boolean',
@@ -19,67 +19,70 @@ export default {
       liveProperty: 'checked',
       reflect: {events: ['change'], property: 'checked'},
       default: false,
-      description: 'Checked state.',
+      description: 'Current checked state.',
     },
     'is-indeterminate': {
       type: 'boolean',
       default: false,
-      description: 'Mixed state.',
+      description: 'Current mixed state.',
     },
     description: {
       type: 'string',
-      description: 'Help text.',
+      description: 'Supporting help text.',
     },
     size: {
       type: 'enum',
       values: sizes,
       default: 'md',
-      description: 'Checkbox size.',
+      description: 'Visual checkbox size.',
     },
     status: {
       type: 'enum',
       values: statuses,
       default: 'none',
-      description: 'Validation state.',
+      description: 'Current validation state.',
     },
-    'status-message': {type: 'string', description: 'Validation message.'},
+    'status-message': {
+      type: 'string',
+      description: 'Displayed validation message.',
+    },
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Disables native.',
+      description: 'Disables the native control.',
     },
     'is-read-only': {
       type: 'boolean',
       aliases: ['readonly'],
       aliasProperties: ['readOnly'],
       default: false,
-      description: 'Read-only state.',
+      description: 'Prevents user changes.',
     },
     'is-required': {
       type: 'boolean',
       aliases: ['required'],
       aliasProperties: ['required'],
       default: false,
-      description: 'Required state.',
+      description: 'Marks the control required.',
     },
     'html-name': {
       type: 'string',
       aliases: ['name'],
       aliasProperties: ['name'],
-      description: 'Form name.',
+      description: 'Native form name.',
     },
     'html-value': {
       type: 'string',
       default: 'on',
-      description: 'Submit value.',
+      description: 'Submitted native form value.',
     },
   },
   slots: {
-    label: {description: 'Label.', required: true},
-    description: 'Help text.',
-    'status-message': 'Validation message.',
+    label: {description: 'Visible field label.', required: true},
+    description: 'Supporting help text.',
+    'status-message': 'Displayed validation message.',
   },
   content: [
     {attribute: 'label', slot: 'label', required: true},
@@ -126,7 +129,7 @@ export default {
       }
     },
   },
-  docs: 'CheckboxInput custom element using native Astryx markup.',
+  docs: 'Collect a native checkbox value with validation, indeterminate, and form semantics.',
   examples: [
     {
       name: 'default',

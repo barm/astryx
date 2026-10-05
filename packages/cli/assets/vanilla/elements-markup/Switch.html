@@ -1,27 +1,27 @@
-<!-- docs: Switch custom element using native Astryx markup. -->
+<!-- docs: Toggle a native switch state with labels, validation, and form submission. -->
 <!-- attributes:
-label*:string|—|Field label.
-value (checked):boolean|absent|Checked state.
-description:string|—|Help text.
-size:sm, md|md|Switch size.
-label-position:start, end|end|Label switch.
-label-spacing:hug, spread|hug|Hug spread.
-status:none, error, warning, success|none|Validation state.
-status-message:string|—|Validation message.
-is-disabled (disabled):boolean|absent|Disables native.
-is-required (required):boolean|absent|Required state.
-html-name (name):string|—|Form name.
-html-value:string|on|Submit value.
+label*:str|—|Visible field label.
+value/checked:bool|false|Current checked state.
+description:str|—|Supporting help text.
+size:sm,md|md|Visual switch size.
+label-position:start,end|end|Logical label position.
+label-spacing:hug,spread|hug|Label spacing behavior.
+status:none,error,warning,success|none|Current validation state.
+status-message:str|—|Displayed validation message.
+is-disabled/disabled:bool|false|Disables the native control.
+is-required/required:bool|false|Marks the control required.
+html-name/name:str|—|Native form name.
+html-value:str|on|Submitted native form value.
 -->
 <!-- slots:
-label*:Label.
-description:Help text.
-status-message:Validation message.
+label*:Visible field label.
+description:Supporting help text.
+status-message:Displayed validation message.
 -->
 <!-- events:
-change:Native event.
+change:native
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
+<!-- properties:attrs→camelCase;readonly:form,validity,validationMessage,willValidate -->
 <!-- variant: default -->
 <ax-switch label="Alerts"></ax-switch>
 <!-- variant: checked -->

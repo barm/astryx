@@ -1,18 +1,18 @@
 <!-- docs: Collect a single line of text with an associated visible label. -->
 <!-- attributes:
-type:text, password, email|text|Native single-line input type.
-label*:string|—|Visible and accessible field label.
-value:string|—|Current value, reflected after native input events.
-size:sm, md, lg|md|Field size matching TextInput size.
-description:string|—|Supporting field description.
-status:none, error, warning, success|none|Validation state; none renders no status treatment.
-status-message:string|—|Validation message associated with the native input.
-is-required (required):boolean|absent|Marks the native input required.
-is-disabled (disabled):boolean|absent|Disables the native input.
-is-read-only (readonly):boolean|absent|Makes the native input read-only.
-placeholder:string|—|Native placeholder text.
-html-name (name):string|—|Native form field name.
-auto-complete (autocomplete):string|—|Native autocomplete hint.
+type:text,password,email|text|Native single-line input type.
+label*:str|—|Visible and accessible field label.
+value:str|—|Current value, reflected after native input events.
+size:sm,md,lg|md|Field size matching TextInput size.
+description:str|—|Supporting field description.
+status:none,error,warning,success|none|Validation state; none renders no status treatment.
+status-message:str|—|Validation message associated with the native input.
+is-required/required:bool|false|Marks the native input required.
+is-disabled/disabled:bool|false|Disables the native input.
+is-read-only/readonly:bool|false|Makes the native input read-only.
+placeholder:str|—|Native placeholder text.
+html-name/name:str|—|Native form field name.
+auto-complete/autocomplete:str|—|Native autocomplete hint.
 -->
 <!-- slots:
 label*:Visible field label.
@@ -23,7 +23,7 @@ status-message:Validation message.
 input:Native input event; value is reflected before bubbling completes.
 change:Native change event; value is reflected to the host.
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
+<!-- properties:attrs→camelCase;readonly:form,validity,validationMessage,willValidate -->
 <!-- variant: default -->
 <ax-text-input
   label="Project name"

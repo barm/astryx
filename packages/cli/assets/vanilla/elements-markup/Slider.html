@@ -1,30 +1,30 @@
-<!-- docs: Slider custom element using native Astryx markup. -->
+<!-- docs: Choose a numeric value with a native range control and live output. -->
 <!-- attributes:
-label*:string|—|Field label.
-value:string|0|Current single-thumb.
-min:string|0|Native minimum.
-max:string|100|Native maximum.
-step:string|1|Native step.
-orientation:horizontal, vertical|horizontal|Slider orientation.
-value-suffix:string|—|Visible suffix.
-description:string|—|Help text.
-status:none, error, warning, success|none|Validation state.
-status-message:string|—|Validation message.
-is-disabled (disabled):boolean|absent|Disables native.
-is-required (required):boolean|absent|Marks range.
-html-name (name):string|—|Form name.
+label*:str|—|Visible field label.
+value:str|0|Current single-thumb value.
+min:str|0|Native minimum value.
+max:str|100|Native maximum value.
+step:str|1|Native step interval.
+orientation:horizontal,vertical|horizontal|Native slider orientation.
+value-suffix:str|—|Visible value suffix.
+description:str|—|Supporting help text.
+status:none,error,warning,success|none|Current validation state.
+status-message:str|—|Displayed validation message.
+is-disabled/disabled:bool|false|Disables the native control.
+is-required/required:bool|false|Marks the range required.
+html-name/name:str|—|Native form name.
 -->
 <!-- slots:
-label*:Visible slider.
-description:Help text.
-status-message:Validation message.
+label*:Visible slider field label.
+description:Supporting help text.
+status-message:Displayed validation message.
 -->
 <!-- events:
-input:Native event.
-change:Native event.
-astryx:change-end:Custom event.
+input:native
+change:native
+astryx:change-end:Emitted with {value} when a committed slider change finishes.
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, valueAsNumber, willValidate -->
+<!-- properties:attrs→camelCase;readonly:form,validity,validationMessage,valueAsNumber,willValidate -->
 <!-- variant: default -->
 <ax-slider label="Volume" value="65"></ax-slider>
 <!-- variant: error -->

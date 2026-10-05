@@ -12,7 +12,7 @@ export default {
   attributes: {
     label: {
       type: 'string',
-      description: 'Field label.',
+      description: 'Visible field label.',
     },
     value: {
       type: 'boolean',
@@ -21,67 +21,70 @@ export default {
       liveProperty: 'checked',
       reflect: {events: ['change'], property: 'checked'},
       default: false,
-      description: 'Checked state.',
+      description: 'Current checked state.',
     },
     description: {
       type: 'string',
-      description: 'Help text.',
+      description: 'Supporting help text.',
     },
     size: {
       type: 'enum',
       values: sizes,
       default: 'md',
-      description: 'Switch size.',
+      description: 'Visual switch size.',
     },
     'label-position': {
       type: 'enum',
       values: positions,
       default: 'end',
-      description: 'Label switch.',
+      description: 'Logical label position.',
     },
     'label-spacing': {
       type: 'enum',
       values: spacings,
       default: 'hug',
-      description: 'Hug spread.',
+      description: 'Label spacing behavior.',
     },
     status: {
       type: 'enum',
       values: statuses,
       default: 'none',
-      description: 'Validation state.',
+      description: 'Current validation state.',
     },
-    'status-message': {type: 'string', description: 'Validation message.'},
+    'status-message': {
+      type: 'string',
+      description: 'Displayed validation message.',
+    },
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Disables native.',
+      description: 'Disables the native control.',
     },
     'is-required': {
       type: 'boolean',
       aliases: ['required'],
       aliasProperties: ['required'],
       default: false,
-      description: 'Required state.',
+      description: 'Marks the control required.',
     },
     'html-name': {
       type: 'string',
       aliases: ['name'],
       aliasProperties: ['name'],
-      description: 'Form name.',
+      description: 'Native form name.',
     },
     'html-value': {
       type: 'string',
       default: 'on',
-      description: 'Submit value.',
+      description: 'Submitted native form value.',
     },
   },
   slots: {
-    label: {description: 'Label.', required: true},
-    description: 'Help text.',
-    'status-message': 'Validation message.',
+    label: {description: 'Visible field label.', required: true},
+    description: 'Supporting help text.',
+    'status-message': 'Displayed validation message.',
   },
   content: [
     {attribute: 'label', slot: 'label', required: true},
@@ -116,7 +119,7 @@ export default {
       api.control.checked = checked;
     },
   },
-  docs: 'Switch custom element using native Astryx markup.',
+  docs: 'Toggle a native switch state with labels, validation, and form submission.',
   examples: [
     {name: 'default', html: `<ax-switch label="Alerts"></ax-switch>`},
     {name: 'checked', html: `<ax-switch label="Dark mode" value></ax-switch>`},

@@ -1,12 +1,12 @@
 <!-- docs: Style an authored native table inside an accessible horizontal scroll region. -->
 <!-- attributes:
-label:string|Data table|Accessible label for the horizontal scroll region.
-density:compact, balanced, spacious|balanced|Body row density.
-dividers:rows, columns, grid, none|rows|Cell divider treatment.
-is-striped:boolean|absent|Adds alternating body-row surfaces.
-has-hover:boolean|absent|Adds pointer hover highlighting to body rows.
-vertical-align:middle, top, bottom|middle|Vertical alignment for body cells.
-text-overflow:wrap, truncate|wrap|Body-cell overflow behavior.
+label:str|Data table|Accessible label for the horizontal scroll region.
+density:compact,balanced,spacious|balanced|Body row density.
+dividers:rows,columns,grid,none|rows|Cell divider treatment.
+is-striped:bool|false|Adds alternating body-row surfaces.
+has-hover:bool|false|Adds pointer hover highlighting to body rows.
+vertical-align:middle,top,bottom|middle|Vertical alignment for body cells.
+text-overflow:wrap,truncate|wrap|Body-cell overflow behavior.
 -->
 <!-- slots:
 default*:A native table with semantic sections, rows, and cells.
@@ -14,7 +14,7 @@ default*:A native table with semantic sections, rows, and cells.
 <!-- events:
 none
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: balanced -->
 <ax-table label="Project table" has-hover>
   <table>

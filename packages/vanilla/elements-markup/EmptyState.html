@@ -1,9 +1,9 @@
 <!-- docs: Explain an empty result or first-run state with a specific title and useful next actions. -->
 <!-- attributes:
-title* (data-ax-title):string|—|Required primary message; consumed so the host never shows a native title tooltip.
-description:string|—|Optional explanatory text.
-heading-level:1, 2, 3, 4, 5, 6|3|Semantic heading level for the title.
-is-compact:boolean|absent|Uses reduced spacing for constrained surfaces.
+title*/data-ax-title:str|—|Required primary message; consumed so the host never shows a native title tooltip.
+description:str|—|Optional explanatory text.
+heading-level:1,2,3,4,5,6|3|Semantic heading level for the title.
+is-compact:bool|false|Uses reduced spacing for constrained surfaces.
 -->
 <!-- slots:
 title*:Primary message; overrides the title attribute.
@@ -15,7 +15,7 @@ default:Optional additional supporting content.
 <!-- events:
 none
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: default -->
 <ax-empty-state title="No projects yet">
   <span slot="icon">＋</span>

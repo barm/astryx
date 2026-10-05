@@ -1,14 +1,14 @@
 <!-- docs: Navigate with a themed native anchor while preserving disabled and external-link semantics. -->
 <!-- attributes:
-href:string|—|Navigation destination.
-label:string|—|Accessible label for icon-only content.
-has-underline:boolean|absent|Always shows an underline.
-is-disabled (disabled):boolean|absent|Disables navigation and activation.
-is-external-link:boolean|absent|Opens in a new tab with safe rel tokens.
-target:string|—|Native link browsing context.
-rel:string|—|Native link relationship tokens.
-download:string|—|Native download filename; an empty value requests download.
-referrer-policy:string|—|Native referrer policy.
+href:str|—|Destination URL for navigation.
+label:str|—|Accessible label for icon-only content.
+has-underline:bool|false|Always shows an underline.
+is-disabled/disabled:bool|false|Disables navigation and activation.
+is-external-link:bool|false|Opens in a new tab with safe rel tokens.
+target:str|—|Native link browsing context.
+rel:str|—|Native link relationship tokens.
+download:str|—|Native download filename; an empty value requests download.
+referrer-policy:str|—|Native referrer policy.
 -->
 <!-- slots:
 default*:Visible descriptive link content.
@@ -16,7 +16,7 @@ default*:Visible descriptive link content.
 <!-- events:
 click:Native click event from the inner anchor.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: default -->
 <ax-link href="#destination">Learn more</ax-link>
 <!-- variant: disabled -->

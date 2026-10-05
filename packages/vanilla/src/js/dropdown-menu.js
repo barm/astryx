@@ -5,6 +5,7 @@ import {
   dispatchAstryx,
   elementsMatching,
   ensureID,
+  isInElementOwnedSubtree,
   positionFloating,
 } from './utils.js';
 
@@ -80,6 +81,7 @@ function moveMenuFocus(menu, current, delta) {
 
 export function enhanceDropdownMenus(root) {
   for (const menu of elementsMatching(root, '[data-ax-dropdown-menu]')) {
+    if (isInElementOwnedSubtree(menu)) continue;
     ensureID(menu, 'ax-dropdown-menu');
     if (!menu.dataset.axOpen) menu.dataset.axOpen = 'false';
     for (const item of menuItems(menu)) {
@@ -88,6 +90,7 @@ export function enhanceDropdownMenus(root) {
     }
   }
   for (const trigger of elementsMatching(root, '[data-ax-dropdown-trigger]')) {
+    if (isInElementOwnedSubtree(trigger)) continue;
     const menuID =
       trigger.dataset.axDropdownTrigger ||
       trigger.getAttribute('aria-controls');
@@ -108,7 +111,7 @@ export function setupDropdownMenus(doc) {
 
   doc.addEventListener('click', event => {
     const target = event.target;
-    if (!(target instanceof Element)) return;
+    if (!(target instanceof Element) || isInElementOwnedSubtree(target)) return;
     const trigger = target.closest('[data-ax-dropdown-trigger]');
     if (trigger instanceof HTMLElement) {
       const menu = doc.getElementById(
@@ -139,7 +142,8 @@ export function setupDropdownMenus(doc) {
 
   doc.addEventListener('keydown', event => {
     const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
+    if (!(target instanceof HTMLElement) || isInElementOwnedSubtree(target))
+      return;
     const trigger = target.closest('[data-ax-dropdown-trigger]');
     if (
       trigger instanceof HTMLElement &&
@@ -185,6 +189,7 @@ export function setupDropdownMenus(doc) {
       for (const menu of doc.querySelectorAll(
         '[data-ax-dropdown-menu][data-ax-open="true"]',
       )) {
+        if (isInElementOwnedSubtree(menu)) continue;
         const trigger = triggerForMenu(menu);
         if (!menu.contains(target) && !trigger?.contains(target))
           closeDropdownMenu(menu, false);
@@ -197,6 +202,7 @@ export function setupDropdownMenus(doc) {
     for (const menu of doc.querySelectorAll(
       '[data-ax-dropdown-menu][data-ax-open="true"]',
     )) {
+      if (isInElementOwnedSubtree(menu)) continue;
       const trigger = triggerForMenu(menu);
       if (trigger)
         positionFloating(

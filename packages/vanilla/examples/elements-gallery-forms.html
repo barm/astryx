@@ -130,20 +130,8 @@
         <h2 class="ax-heading ax-heading--2">Interactive elements</h2>
         <div class="gallery-grid">
           <ax-dropdown-menu button-label="Actions">
-            <button
-              class="ax-dropdown-menu__item"
-              type="button"
-              role="menuitem"
-              value="edit">
-              Edit project
-            </button>
-            <button
-              class="ax-dropdown-menu__item"
-              type="button"
-              role="menuitem"
-              value="archive">
-              Archive project
-            </button>
+            <button type="button" value="edit">Edit project</button>
+            <button type="button" value="archive">Archive project</button>
           </ax-dropdown-menu>
 
           <ax-collapsible trigger="What is Vanilla Astryx?">
@@ -152,32 +140,21 @@
           </ax-collapsible>
 
           <ax-tooltip content="More information about this project" delay="0">
-            <button
-              class="ax-button ax-button--secondary"
-              type="button"
-              aria-label="Project information">
-              ?
-            </button>
+            <button type="button" aria-label="Project information">?</button>
           </ax-tooltip>
 
           <ax-hover-card
             label="Jordan Lee profile preview"
             delay="0"
             hide-delay="0">
-            <button
-              class="ax-hover-card__trigger ax-hover-card__trigger--text"
-              type="button">
-              Jordan Lee
-            </button>
+            <button type="button">Jordan Lee</button>
             <span slot="content">
               <strong>Jordan Lee</strong>
-              <span class="ax-text ax-text--supporting"
-                >Product designer · New York</span
-              >
+              <span>Product designer · New York</span>
             </span>
           </ax-hover-card>
 
-          <ax-toast body="Changes saved" is-auto-hide>Show toast</ax-toast>
+          <ax-toast body="Changes saved"></ax-toast>
 
           <ax-lightbox
             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='480'%3E%3Crect width='640' height='480' fill='%230064e0'/%3E%3C/svg%3E"

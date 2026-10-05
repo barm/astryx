@@ -1,10 +1,10 @@
 <!-- docs: Present a focused task in a native modal dialog with managed focus return; call show()/close() or use is-open. -->
 <!-- attributes:
-title* (data-ax-title):string|—|Visible dialog heading; consumed so the host never shows a native title tooltip.
-is-open (open):boolean|absent|Open state reflected from the native dialog.
-variant:standard, fullscreen|standard|Standard or fullscreen presentation.
-purpose:info, form, required|info|Dismissal policy for info, form, or required tasks.
-dialog-id:string|—|ID placed on the inner native dialog for trigger wiring.
+title*/data-ax-title:str|—|Visible dialog heading; consumed so the host never shows a native title tooltip.
+is-open/open:bool|false|Open state reflected from the native dialog.
+variant:standard,fullscreen|standard|Standard or fullscreen presentation.
+purpose:info,form,required|info|Dismissal policy for info, form, or required tasks.
+dialog-id:str|—|ID placed on the inner native dialog for trigger wiring.
 -->
 <!-- slots:
 title*:Required dialog heading.
@@ -16,10 +16,10 @@ close:Native dialog close event after is-open is reflected false.
 cancel:Native cancel event; prevented for purpose="required".
 -->
 <!-- methods:
-show(): Open the native modal dialog and move focus to its title.
-close(): Close the native dialog and restore focus to its opener.
+show():Open the native modal dialog and move focus to its title.
+close():Close the native dialog and restore focus to its opener.
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: returnValue -->
+<!-- properties:attrs→camelCase;readonly:returnValue -->
 <!-- variant: open-and-close -->
 <ax-button data-ax-dialog-open="confirm-dialog">Open dialog</ax-button>
 <ax-dialog dialog-id="confirm-dialog">

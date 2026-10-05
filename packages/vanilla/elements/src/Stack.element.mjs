@@ -74,12 +74,12 @@ export default {
     justify: {
       type: 'enum',
       values: alignments.slice(0, 6),
-      description: 'Main-axis alignment.',
+      description: 'Main-axis content alignment.',
     },
     align: {
       type: 'enum',
       values: ['start', 'center', 'end', 'stretch'],
-      description: 'Cross-axis alignment.',
+      description: 'Cross-axis item alignment.',
     },
   },
   slots: {default: {description: 'Stack items.', required: true}},

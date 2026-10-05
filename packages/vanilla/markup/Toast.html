@@ -1,4 +1,28 @@
 <!-- docs: Confirm an action with a brief non-blocking notification. -->
+<!-- variant: notification -->
+<div class="ax-toast ax-toast--info" data-ax-toast-item role="status">
+  <span class="ax-toast__body">Changes saved</span>
+  <button
+    class="ax-toast__close"
+    type="button"
+    data-ax-toast-dismiss
+    aria-label="Dismiss notification">
+    ×
+  </button>
+</div>
+
+<!-- variant: error notification -->
+<div class="ax-toast ax-toast--error" data-ax-toast-item role="alert">
+  <span class="ax-toast__body">Unable to save changes</span>
+  <button
+    class="ax-toast__close"
+    type="button"
+    data-ax-toast-dismiss
+    aria-label="Dismiss notification">
+    ×
+  </button>
+</div>
+
 <!-- variant: trigger -->
 <button
   class="ax-button ax-button--primary"

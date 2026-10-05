@@ -329,6 +329,20 @@ export function registerElement(definition) {
         render() {
           host._scheduleRender();
         },
+        mutate(callback) {
+          host._observer.disconnect();
+          try {
+            return callback();
+          } finally {
+            const authorNodes = new Set(host._authorNodes);
+            for (const root of host._runtimeRoots) {
+              walkNodes(root, node => {
+                if (!authorNodes.has(node)) host._generatedNodes.add(node);
+              });
+            }
+            if (host.isConnected) host._observe();
+          }
+        },
         dispatch(type, detail = {}, target = host) {
           target.dispatchEvent(
             new CustomEvent(type, {bubbles: true, composed: true, detail}),
@@ -453,6 +467,10 @@ export function registerElement(definition) {
         ) {
           continue;
         }
+        const insideRegion = [...this._regions.values()].some(
+          region => region === record.target || region.contains(record.target),
+        );
+        if (this._generatedNodes.has(record.target) && !insideRegion) continue;
         if (
           record.target === this &&
           [...record.removedNodes].some(node =>
@@ -701,7 +719,11 @@ export function registerElement(definition) {
       const spec = definition.attributes[name];
       if (!spec) return this.getAttribute(name);
       const raw = this._rawAttribute(name);
-      if (spec.type === 'boolean') return raw !== null;
+      if (spec.type === 'boolean') {
+        if (raw === null) return spec.default === true;
+        if (spec.default === true && raw === 'false') return false;
+        return true;
+      }
       if (raw === null || raw === '') return spec.default ?? '';
       if (spec.type === 'enum' && !spec.values.includes(raw)) {
         this._warnInvalidEnum(name, raw, spec.values);
@@ -714,7 +736,10 @@ export function registerElement(definition) {
       const spec = definition.attributes[name];
       this._reflecting = false;
       if (spec.type === 'boolean') {
-        if (value) this.setAttribute(name, '');
+        if (spec.default === true && !value) {
+          this.setAttribute(name, 'false');
+          for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
+        } else if (value) this.setAttribute(name, '');
         else {
           this.removeAttribute(name);
           for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
@@ -737,7 +762,10 @@ export function registerElement(definition) {
         this.hasAttribute(alias),
       );
       if (spec.type === 'boolean') {
-        if (value) {
+        if (spec.default === true && !value) {
+          this.setAttribute(name, 'false');
+          for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
+        } else if (value) {
           if (this.hasAttribute(name) || presentAliases.length === 0) {
             this.setAttribute(name, '');
           }
@@ -769,7 +797,11 @@ export function registerElement(definition) {
         /^on[a-z]+$/i.test(name)
       ) {
         const value = this.getAttribute(name);
-        if (spec?.type === 'boolean' && value === 'false') {
+        if (
+          spec?.type === 'boolean' &&
+          spec.default !== true &&
+          value === 'false'
+        ) {
           this._warn(
             `boolean-false:${canonical}`,
             `[Astryx] <${definition.tag}> treats ${name}="false" as present and therefore true; remove the attribute for false.`,

@@ -272,7 +272,7 @@ function mockHelpers(definition) {
   return {
     attr(name) {
       const spec = definition.attributes[name];
-      if (spec.type === 'boolean') return false;
+      if (spec.type === 'boolean') return spec.default === true;
       if (spec.default !== undefined) return spec.default;
       if (spec.type === 'enum') return spec.values[0];
       return 'example';
@@ -307,11 +307,43 @@ function isMeaningfulDefaultContent(element) {
   });
 }
 
+function descriptionWordCount(description) {
+  return String(description ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
+
 function validateDefinitions(definitions) {
   const byTag = new Map(
     definitions.map(definition => [definition.tag, definition]),
   );
   for (const definition of definitions) {
+    if (
+      !String(definition.docs).trim() ||
+      /custom element using native/i.test(definition.docs)
+    ) {
+      throw new Error(
+        `${definition.name} needs a specific one-line docs summary.`,
+      );
+    }
+    for (const [name, spec] of Object.entries(definition.attributes)) {
+      if (descriptionWordCount(spec.description) < 3) {
+        throw new Error(
+          `${definition.name} attribute "${name}" needs an untruncated description of at least three words.`,
+        );
+      }
+    }
+    for (const [name, description] of Object.entries(definition.events ?? {})) {
+      if (
+        !String(description).trim() ||
+        /^custom event\.?$/i.test(description)
+      ) {
+        throw new Error(
+          `${definition.name} event "${name}" needs a payload or native-event description.`,
+        );
+      }
+    }
     const rendered = new JSDOM(
       `<!doctype html><body>${definition.render({}, mockHelpers(definition))}</body>`,
     ).window.document.body;
@@ -331,9 +363,23 @@ function validateDefinitions(definitions) {
     for (const example of definition.examples) {
       const body = new JSDOM(`<!doctype html><body>${example.html}</body>`)
         .window.document.body;
-      if (!body.querySelector(definition.tag)) {
+      const host = body.querySelector(definition.tag);
+      if (!host) {
         throw new Error(
           `${definition.name} example "${example.name}" omits <${definition.tag}>.`,
+        );
+      }
+      if (
+        definition.exampleItemSelector &&
+        host.querySelectorAll(definition.exampleItemSelector).length < 2
+      ) {
+        throw new Error(
+          `${definition.name} example "${example.name}" must show at least two list items.`,
+        );
+      }
+      if (definition.tag === 'ax-tab' && !host.closest('ax-tab-list')) {
+        throw new Error(
+          `Tab example "${example.name}" must place <ax-tab> inside <ax-tab-list>.`,
         );
       }
       for (const element of body.querySelectorAll('*')) {
@@ -437,13 +483,13 @@ async function bundle(source, format) {
 }
 
 function attributeValues(spec) {
-  if (spec.type === 'boolean') return 'boolean';
-  if (spec.type === 'enum') return spec.values.join(', ');
-  return 'string';
+  if (spec.type === 'boolean') return 'bool';
+  if (spec.type === 'enum') return spec.values.join(',');
+  return 'str';
 }
 
 function attributeDefault(spec) {
-  if (spec.type === 'boolean') return spec.default ? 'present' : 'absent';
+  if (spec.type === 'boolean') return spec.default ? 'true' : 'false';
   return spec.default === undefined || spec.default === ''
     ? '—'
     : String(spec.default);
@@ -457,9 +503,7 @@ function renderMarkup(definition) {
   );
   const attributes = Object.entries(definition.attributes)
     .map(([name, spec]) => {
-      const aliases = spec.aliases?.length
-        ? ` (${spec.aliases.join(', ')})`
-        : '';
+      const aliases = spec.aliases?.length ? `/${spec.aliases.join('/')}` : '';
       const required = requiredAttributes.has(name) ? '*' : '';
       return `${name}${required}${aliases}:${attributeValues(spec)}|${attributeDefault(spec)}|${spec.description}`;
     })
@@ -472,15 +516,18 @@ function renderMarkup(definition) {
     .join('\n');
   const events =
     Object.entries(definition.events ?? {})
-      .map(([name, description]) => `${name}:${description}`)
+      .map(
+        ([name, description]) =>
+          `${name}:${description === 'Native event.' ? 'native' : description}`,
+      )
       .join('\n') || 'none';
   const methods = Object.entries(definition.methods ?? {})
-    .map(([name, spec]) => `${name}(): ${spec.description}`)
+    .map(([name, spec]) => `${name}():${spec.description}`)
     .join('\n');
   const delegatedProperties = definition.delegates?.properties ?? [];
-  const properties = `attrs/aliases: camelCase properties${
+  const properties = `attrs→camelCase${
     delegatedProperties.length > 0
-      ? `; delegated read-only: ${delegatedProperties.join(', ')}`
+      ? `;readonly:${delegatedProperties.join(',')}`
       : ''
   }`;
   const examples = definition.examples
@@ -497,7 +544,7 @@ ${slots || 'none'}
 <!-- events:
 ${events}
 -->
-${methodsBlock}<!-- properties: ${properties} -->
+${methodsBlock}<!-- properties:${properties} -->
 ${examples}
 `;
 }

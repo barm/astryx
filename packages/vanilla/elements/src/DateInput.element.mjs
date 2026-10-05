@@ -8,7 +8,7 @@ export default {
   name: 'DateInput',
   tag: 'ax-date-input',
   attributes: {
-    label: {type: 'string', description: 'Field label.'},
+    label: {type: 'string', description: 'Visible field label.'},
     value: {
       type: 'string',
       default: '',
@@ -16,47 +16,50 @@ export default {
       reflect: {events: ['input', 'change'], property: 'value'},
       description: 'Selected ISO date.',
     },
-    description: {type: 'string', description: 'Help text.'},
+    description: {type: 'string', description: 'Supporting help text.'},
     min: {type: 'string', description: 'Minimum ISO date.'},
     max: {type: 'string', description: 'Maximum ISO date.'},
     size: {
       type: 'enum',
       values: sizes,
       default: 'md',
-      description: 'Input size.',
+      description: 'Visual input size.',
     },
     status: {
       type: 'enum',
       values: statuses,
       default: 'none',
-      description: 'Validation state.',
+      description: 'Current validation state.',
     },
-    'status-message': {type: 'string', description: 'Validation message.'},
+    'status-message': {
+      type: 'string',
+      description: 'Displayed validation message.',
+    },
     'is-required': {
       type: 'boolean',
       aliases: ['required'],
       aliasProperties: ['required'],
       default: false,
-      description: 'Marks input.',
+      description: 'Marks the input required.',
     },
     'is-disabled': {
       type: 'boolean',
       aliases: ['disabled'],
       aliasProperties: ['disabled'],
       default: false,
-      description: 'Disables input.',
+      description: 'Disables the native input.',
     },
     'html-name': {
       type: 'string',
       aliases: ['name'],
       aliasProperties: ['name'],
-      description: 'Form name.',
+      description: 'Native form name.',
     },
   },
   slots: {
-    label: {description: 'Label.', required: true},
-    description: 'Help text.',
-    'status-message': 'Validation message.',
+    label: {description: 'Visible field label.', required: true},
+    description: 'Supporting help text.',
+    'status-message': 'Displayed validation message.',
   },
   content: [
     {attribute: 'label', slot: 'label', required: true},
@@ -98,7 +101,7 @@ export default {
       if (api.control.value !== value) api.control.value = value;
     },
   },
-  docs: 'DateInput custom element using native Astryx markup.',
+  docs: 'Collect an ISO date with native picker, constraints, and form validation.',
   examples: [
     {
       name: 'default',

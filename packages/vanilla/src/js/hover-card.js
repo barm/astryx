@@ -10,6 +10,7 @@ import {
   dispatchAstryx,
   elementsMatching,
   ensureID,
+  isInElementOwnedSubtree,
   positionFloating,
 } from './utils.js';
 
@@ -24,6 +25,12 @@ function hoverCardParts(wrapper) {
     wrapper.querySelector('[data-ax-hover-card-trigger]') ??
     [...wrapper.children].find(child => child !== surface);
   return {surface, trigger};
+}
+
+function hoverCardWrapper(target) {
+  const wrapper =
+    target instanceof Element ? target.closest('[data-ax-hover-card]') : null;
+  return wrapper && !isInElementOwnedSubtree(wrapper) ? wrapper : null;
 }
 
 function clearHoverCardTimer(wrapper) {
@@ -96,6 +103,7 @@ function scheduleHideHoverCard(wrapper) {
 
 export function enhanceHoverCards(root) {
   for (const wrapper of elementsMatching(root, '[data-ax-hover-card]')) {
+    if (isInElementOwnedSubtree(wrapper)) continue;
     const {surface, trigger} = hoverCardParts(wrapper);
     if (!(surface instanceof HTMLElement) || !(trigger instanceof HTMLElement))
       continue;
@@ -122,10 +130,7 @@ export function setupHoverCards(doc) {
   hoverCardDocuments.add(doc);
 
   doc.addEventListener('pointerover', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-hover-card]')
-        : null;
+    const wrapper = hoverCardWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -138,10 +143,7 @@ export function setupHoverCards(doc) {
   });
 
   doc.addEventListener('pointerout', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-hover-card]')
-        : null;
+    const wrapper = hoverCardWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -154,19 +156,13 @@ export function setupHoverCards(doc) {
   });
 
   doc.addEventListener('focusin', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-hover-card]')
-        : null;
+    const wrapper = hoverCardWrapper(event.target);
     if (wrapper && suppressedFocusOpen.delete(wrapper)) return;
     if (wrapper) showHoverCard(wrapper, true);
   });
 
   doc.addEventListener('focusout', event => {
-    const wrapper =
-      event.target instanceof Element
-        ? event.target.closest('[data-ax-hover-card]')
-        : null;
+    const wrapper = hoverCardWrapper(event.target);
     if (
       wrapper &&
       !(
@@ -184,7 +180,7 @@ export function setupHoverCards(doc) {
       ...doc.querySelectorAll(
         '[data-ax-hover-card-content][data-ax-open="true"]',
       ),
-    ];
+    ].filter(surface => !isInElementOwnedSubtree(surface));
     const surface =
       openSurfaces.find(candidate => candidate.contains(doc.activeElement)) ??
       openSurfaces.at(-1);

@@ -4,7 +4,7 @@ export default {
   name: 'Link',
   tag: 'ax-link',
   attributes: {
-    href: {type: 'string', description: 'Navigation destination.'},
+    href: {type: 'string', description: 'Destination URL for navigation.'},
     label: {
       type: 'string',
       description: 'Accessible label for icon-only content.',

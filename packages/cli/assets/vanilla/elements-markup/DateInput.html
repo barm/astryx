@@ -1,27 +1,27 @@
-<!-- docs: DateInput custom element using native Astryx markup. -->
+<!-- docs: Collect an ISO date with native picker, constraints, and form validation. -->
 <!-- attributes:
-label*:string|—|Field label.
-value:string|—|Selected ISO date.
-description:string|—|Help text.
-min:string|—|Minimum ISO date.
-max:string|—|Maximum ISO date.
-size:sm, md, lg|md|Input size.
-status:none, error, warning, success|none|Validation state.
-status-message:string|—|Validation message.
-is-required (required):boolean|absent|Marks input.
-is-disabled (disabled):boolean|absent|Disables input.
-html-name (name):string|—|Form name.
+label*:str|—|Visible field label.
+value:str|—|Selected ISO date.
+description:str|—|Supporting help text.
+min:str|—|Minimum ISO date.
+max:str|—|Maximum ISO date.
+size:sm,md,lg|md|Visual input size.
+status:none,error,warning,success|none|Current validation state.
+status-message:str|—|Displayed validation message.
+is-required/required:bool|false|Marks the input required.
+is-disabled/disabled:bool|false|Disables the native input.
+html-name/name:str|—|Native form name.
 -->
 <!-- slots:
-label*:Label.
-description:Help text.
-status-message:Validation message.
+label*:Visible field label.
+description:Supporting help text.
+status-message:Displayed validation message.
 -->
 <!-- events:
-input:Native event.
-change:Native event.
+input:native
+change:native
 -->
-<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, valueAsDate, willValidate -->
+<!-- properties:attrs→camelCase;readonly:form,validity,validationMessage,valueAsDate,willValidate -->
 <!-- variant: default -->
 <ax-date-input label="Launch date"></ax-date-input>
 <!-- variant: error -->

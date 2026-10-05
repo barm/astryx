@@ -1,17 +1,17 @@
 <!-- docs: Arrange children in a horizontal or vertical flex stack with tokenized spacing. -->
 <!-- attributes:
-direction:horizontal, vertical|vertical|Flex direction matching Stack direction.
-gap:0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10|0|Tokenized spacing step between children.
-wrap:nowrap, wrap, wrap-reverse|nowrap|Flex wrapping behavior.
-is-scrollable:boolean|absent|Enables automatic overflow scrolling.
-width:string|—|CSS width of the stack.
-height:string|—|CSS height of the stack.
-max-width:string|—|CSS maximum width of the stack.
-min-height:string|—|CSS minimum height of the stack.
-h-align:start, center, end, between, around, evenly, stretch|—|Horizontal alignment matching hAlign.
-v-align:start, center, end, between, around, evenly, stretch|—|Vertical alignment matching vAlign.
-justify:start, center, end, between, around, evenly|—|Main-axis alignment.
-align:start, center, end, stretch|—|Cross-axis alignment.
+direction:horizontal,vertical|vertical|Flex direction matching Stack direction.
+gap:0,0.5,1,1.5,2,3,4,5,6,8,10|0|Tokenized spacing step between children.
+wrap:nowrap,wrap,wrap-reverse|nowrap|Flex wrapping behavior.
+is-scrollable:bool|false|Enables automatic overflow scrolling.
+width:str|—|CSS width of the stack.
+height:str|—|CSS height of the stack.
+max-width:str|—|CSS maximum width of the stack.
+min-height:str|—|CSS minimum height of the stack.
+h-align:start,center,end,between,around,evenly,stretch|—|Horizontal alignment matching hAlign.
+v-align:start,center,end,between,around,evenly,stretch|—|Vertical alignment matching vAlign.
+justify:start,center,end,between,around,evenly|—|Main-axis content alignment.
+align:start,center,end,stretch|—|Cross-axis item alignment.
 -->
 <!-- slots:
 default*:Stack items.
@@ -19,7 +19,7 @@ default*:Stack items.
 <!-- events:
 none
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: vertical -->
 <ax-stack gap="3">
   <span>First item</span>

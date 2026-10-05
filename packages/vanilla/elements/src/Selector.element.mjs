@@ -44,7 +44,7 @@ export default {
       type: 'enum',
       values: statuses,
       default: 'none',
-      description: 'Validation state.',
+      description: 'Current validation state.',
     },
     description: {type: 'string', description: 'Supporting field description.'},
     'status-message': {

@@ -11,6 +11,12 @@ export function elementsMatching(root, selector) {
   return matches;
 }
 
+export function isInElementOwnedSubtree(element) {
+  return (
+    element instanceof Element && element.closest('[data-ax-owned]') !== null
+  );
+}
+
 export function ensureID(element, prefix) {
   if (!element.id) {
     floatingID += 1;

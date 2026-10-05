@@ -1,9 +1,9 @@
 <!-- docs: Organize application destinations in a persistent navigation rail with optional collapsed state. -->
 <!-- attributes:
-label:string|Application navigation|Accessible label for the navigation landmark.
-is-collapsed:boolean|absent|Collapsed navigation-rail state.
-is-resizable:boolean|absent|Allows the authored navigation width to be resized.
-width:string|—|Current CSS width when resizable.
+label:str|Application navigation|Accessible label for the navigation landmark.
+is-collapsed:bool|false|Collapsed navigation-rail state.
+is-resizable:bool|false|Allows the authored navigation width to be resized.
+width:str|—|Current CSS width when resizable.
 -->
 <!-- slots:
 header:Sticky product identity or SideNav heading.
@@ -16,9 +16,9 @@ footer-icons:Compact footer icon row.
 astryx:collapsed-change:Emitted after toggle() with detail.isCollapsed.
 -->
 <!-- methods:
-toggle(): Toggle the collapsed state.
+toggle():Toggle the collapsed state.
 -->
-<!-- properties: attrs/aliases: camelCase properties -->
+<!-- properties:attrs→camelCase -->
 <!-- variant: default -->
 <ax-side-nav label="Application navigation">
   <a slot="header" href="#">Astryx</a>

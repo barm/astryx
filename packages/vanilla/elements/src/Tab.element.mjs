@@ -33,21 +33,20 @@ export default {
   content: [{attribute: 'label', slot: 'default', required: true}],
   control: 'button[role="tab"]',
   events: {
-    'astryx:tab-change': 'Bubbles when this tab is activated by its TabList.',
+    'astryx:tab-change':
+      'Bubbles with {value} when this tab is activated by its TabList.',
   },
   docs: 'Represent one selectable view inside an ax-tab-list.',
   examples: [
     {
       name: 'with-panel',
       gallery: false,
-      html: `<ax-tab value="overview" panel-id="panel-overview">
-  Overview
-</ax-tab>`,
+      html: `<ax-tab-list><ax-tab value="a">A</ax-tab></ax-tab-list>`,
     },
     {
       name: 'label',
       gallery: false,
-      html: `<ax-tab value="activity" label="Activity"></ax-tab>`,
+      html: `<ax-tab-list><ax-tab value="b" label="B"></ax-tab></ax-tab-list>`,
     },
   ],
   render(_host, h) {
