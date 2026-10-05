@@ -12,9 +12,9 @@
     "elements-templates"
   ],
   "scripts": {
-    "build": "node scripts/build.mjs && node scripts/build-elements.mjs",
+    "build": "node scripts/build-elements.mjs && node scripts/build.mjs",
     "build:elements": "node scripts/build-elements.mjs",
-    "check": "node scripts/build.mjs --check && node scripts/build-elements.mjs --check",
+    "check": "node scripts/build-elements.mjs --check && node scripts/build.mjs --check",
     "check:elements": "node scripts/build-elements.mjs --check",
     "demo": "node scripts/render-demo.mjs",
     "test": "node --test",

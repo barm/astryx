@@ -17,6 +17,10 @@ function getDialog(doc, value) {
   return dialog instanceof HTMLDialogElement ? dialog : null;
 }
 
+function isElementOwned(dialog) {
+  return dialog.hasAttribute('data-ax-owned');
+}
+
 function focusDialog(dialog) {
   const target = dialog.querySelector(
     '[data-ax-dialog-initial-focus], [autofocus], .ax-dialog__title',
@@ -74,14 +78,16 @@ export function closeDialog(dialog, returnFocus = true) {
 
 export function enhanceDialogs(root) {
   for (const dialog of elementsMatching(root, 'dialog[data-ax-dialog]')) {
+    if (isElementOwned(dialog)) continue;
     ensureID(dialog, 'ax-dialog');
   }
   for (const trigger of elementsMatching(root, '[data-ax-dialog-open]')) {
-    trigger.setAttribute('aria-haspopup', 'dialog');
     const dialog = getDialog(
       trigger.ownerDocument,
       trigger.dataset.axDialogOpen,
     );
+    if (dialog && isElementOwned(dialog)) continue;
+    trigger.setAttribute('aria-haspopup', 'dialog');
     trigger.setAttribute('aria-expanded', String(Boolean(dialog?.open)));
   }
 }
@@ -97,7 +103,7 @@ export function setupDialogs(doc) {
     const openTrigger = target.closest('[data-ax-dialog-open]');
     if (openTrigger instanceof HTMLElement) {
       const dialog = getDialog(doc, openTrigger.dataset.axDialogOpen);
-      if (dialog) {
+      if (dialog && !isElementOwned(dialog)) {
         event.preventDefault();
         openDialog(dialog, openTrigger);
       }
@@ -107,7 +113,7 @@ export function setupDialogs(doc) {
     const closeTrigger = target.closest('[data-ax-dialog-close]');
     if (closeTrigger) {
       const dialog = closeTrigger.closest('dialog[data-ax-dialog]');
-      if (dialog instanceof HTMLDialogElement) {
+      if (dialog instanceof HTMLDialogElement && !isElementOwned(dialog)) {
         event.preventDefault();
         closeDialog(dialog);
       }
@@ -116,7 +122,8 @@ export function setupDialogs(doc) {
 
     if (
       target instanceof HTMLDialogElement &&
-      target.matches('[data-ax-dialog]')
+      target.matches('[data-ax-dialog]') &&
+      !isElementOwned(target)
     ) {
       closeDialog(target);
     }
@@ -128,7 +135,8 @@ export function setupDialogs(doc) {
       const dialog = event.target;
       if (
         !(dialog instanceof HTMLDialogElement) ||
-        !dialog.matches('[data-ax-dialog]')
+        !dialog.matches('[data-ax-dialog]') ||
+        isElementOwned(dialog)
       )
         return;
       if (dialog.hasAttribute('data-ax-dialog-required')) {

@@ -1,15 +1,30 @@
 <!-- docs: Represent one selectable view inside an ax-tab-list. -->
 <!-- attributes:
+label*: string | — | Visible tab label when no child content is authored.
 value: string | — | Unique value reported by the parent TabList.
 panel-id: string | — | ID of the tab panel controlled by this tab.
-selected: presence | absent | Selected state reflected from the native tab button.
-is-disabled: presence | absent | Disables the native tab button.
+is-disabled (disabled): boolean | absent | Disables the native tab button.
 -->
 <!-- slots:
-default: Visible tab label and inline content.
+default*: Visible tab label and inline content.
 -->
-<!-- variant: selected -->
-<ax-tab value="overview" panel-id="panel-overview" selected>Overview</ax-tab>
+<!-- events:
+astryx:tab-change: Bubbles when this tab is activated by its TabList.
+-->
+<!-- methods:
+focus(): Delegate focus to the inner native control.
+click(): Delegate activation to the inner native control.
+-->
+<!-- properties:
+label: string read/write | Visible tab label when no child content is authored.
+value: string read/write | Unique value reported by the parent TabList.
+panelId: string read/write | ID of the tab panel controlled by this tab.
+isDisabled / disabled: boolean read/write | Disables the native tab button.
+-->
+<!-- variant: with-panel -->
+<ax-tab value="overview" panel-id="panel-overview">
+  Overview
+</ax-tab>
 
-<!-- variant: default -->
-<ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab>
+<!-- variant: label -->
+<ax-tab value="activity" label="Activity"></ax-tab>

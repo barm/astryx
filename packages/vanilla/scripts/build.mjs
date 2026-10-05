@@ -14,6 +14,7 @@ const tokenSourcePath = path.join(
   'packages/core/src/theme/tokens.stylex.ts',
 );
 const baseCSSPath = path.join(packageRoot, 'src/base.css');
+const elementCSSPath = path.join(packageRoot, 'src/elements.generated.css');
 const componentsDir = path.join(packageRoot, 'src/components');
 const sourceJSPath = path.join(packageRoot, 'src/js/index.js');
 const distDir = path.join(packageRoot, 'dist');
@@ -178,14 +179,20 @@ async function readComponentCSS() {
 }
 
 async function build() {
-  const [tokenSource, baseCSS, components, sourceJS] = await Promise.all([
-    readFile(tokenSourcePath, 'utf8'),
-    readFile(baseCSSPath, 'utf8'),
-    readComponentCSS(),
-    readBundledJS(),
-  ]);
+  const [tokenSource, baseCSS, elementCSS, components, sourceJS] =
+    await Promise.all([
+      readFile(tokenSourcePath, 'utf8'),
+      readFile(baseCSSPath, 'utf8'),
+      readFile(elementCSSPath, 'utf8'),
+      readComponentCSS(),
+      readBundledJS(),
+    ]);
   const tokens = extractTokenDefaults(tokenSource);
-  const generatedCSS = renderCSS(baseCSS, components, tokens);
+  const generatedCSS = renderCSS(
+    `${elementCSS}\n\n${baseCSS}`,
+    components,
+    tokens,
+  );
   const generatedClassicJS = renderClassicJS(sourceJS);
 
   if (process.argv.includes('--check')) {

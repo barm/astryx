@@ -43,11 +43,17 @@ export default {
   examples: [
     {
       name: 'default',
-      html: '<ax-card><h2 slot="header">Card title</h2><p>Card content</p></ax-card>',
+      html: `<ax-card>
+  <h2 slot="header">Card title</h2>
+  <p>Card content</p>
+</ax-card>`,
     },
     {
       name: 'elevated',
-      html: '<ax-card elevation="low"><p>Elevated card</p><ax-button slot="footer" variant="primary">Action</ax-button></ax-card>',
+      html: `<ax-card elevation="low">
+  <p>Elevated card</p>
+  <ax-button slot="footer" variant="primary">Action</ax-button>
+</ax-card>`,
     },
   ],
   render(_host, h) {

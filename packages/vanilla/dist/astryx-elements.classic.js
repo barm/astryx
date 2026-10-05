@@ -18,9 +18,9 @@ var AstryxElements = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // elements/astryx-elements.entry.mjs
-  var astryx_elements_entry_exports = {};
-  __export(astryx_elements_entry_exports, {
+  // elements/src/index.generated.mjs
+  var index_generated_exports = {};
+  __export(index_generated_exports, {
     definitions: () => definitions,
     registerElement: () => registerElement,
     registerElements: () => registerElements
@@ -47,6 +47,10 @@ var AstryxElements = (() => {
     name: "Badge",
     tag: "ax-badge",
     attributes: {
+      label: {
+        type: "string",
+        description: "Visible badge label when no child content is authored."
+      },
       variant: {
         type: "enum",
         values: variants,
@@ -54,17 +58,24 @@ var AstryxElements = (() => {
         description: "Semantic status or category color."
       }
     },
-    slots: { default: "Short status or category label." },
+    slots: {
+      default: { description: "Short status or category label.", required: true }
+    },
+    content: [{ attribute: "label", slot: "default", required: true }],
     docs: "Label status or category with compact semantic color.",
     examples: [
       { name: "neutral", html: "<ax-badge>Draft</ax-badge>" },
-      { name: "success", html: '<ax-badge variant="success">Ready</ax-badge>' }
+      {
+        name: "success-label",
+        html: '<ax-badge label="Ready" variant="success"></ax-badge>'
+      }
     ],
     render(_host, h) {
       const variant = h.attr("variant");
+      const content = h.content("label");
       const classes = ["ax-badge"];
       if (variant !== "neutral") classes.push(`ax-badge--${variant}`);
-      return `<span class="${classes.join(" ")}" ${h.slot()}></span>`;
+      return `<span class="${classes.join(" ")}"${content.slotted ? ` ${h.slot()}` : ""}>${content.html}</span>`;
     }
   };
 
@@ -76,6 +87,10 @@ var AstryxElements = (() => {
     name: "Button",
     tag: "ax-button",
     attributes: {
+      label: {
+        type: "string",
+        description: "Visible button label when no child content is authored."
+      },
       variant: {
         type: "enum",
         values: variants2,
@@ -96,42 +111,77 @@ var AstryxElements = (() => {
       },
       "is-disabled": {
         type: "boolean",
+        aliases: ["disabled"],
+        aliasProperties: ["disabled"],
         default: false,
         description: "Disables native activation."
       },
       name: { type: "string", description: "Native form field name." },
       value: { type: "string", description: "Native form submission value." },
-      form: { type: "string", description: "ID of the associated form." }
+      form: { type: "string", description: "ID of the associated form." },
+      href: { type: "string", description: "Optional native link destination." }
     },
     slots: {
-      default: "Visible button label and inline content."
+      default: {
+        description: "Visible button label and inline content.",
+        required: true
+      }
+    },
+    content: [{ attribute: "label", slot: "default", required: true }],
+    control: "button, a",
+    delegates: {
+      properties: ["validity", "validationMessage", "willValidate"],
+      methods: ["checkValidity", "reportValidity"]
+    },
+    events: {
+      click: "Native activation event from the inner button or link."
     },
     docs: "Trigger an action with primary, secondary, ghost, or destructive emphasis.",
     examples: [
       {
         name: "primary",
-        html: '<ax-button variant="primary">Continue</ax-button>'
+        html: `<ax-button variant="primary">
+  Continue
+</ax-button>`
       },
       {
-        name: "disabled",
-        html: '<ax-button variant="primary" is-disabled>Continue</ax-button>'
+        name: "disabled-label",
+        html: `<ax-button label="Continue" variant="primary" is-disabled></ax-button>`
       }
     ],
+    hooks: {
+      afterRender(host, api) {
+        if (api.read("href") && api.read("is-disabled")) {
+          api.listen(api.control, "click", (event) => event.preventDefault());
+        }
+        if (host.hasAttribute("autofocus") && document.activeElement === document.body) {
+          api.control?.focus();
+        }
+      }
+    },
     render(_host, h) {
       const variant = h.attr("variant");
       const size = h.attr("size");
+      const href = h.attr("href");
+      const content = h.content("label");
       const classes = ["ax-button", `ax-button--${variant}`];
       if (size !== "md") classes.push(`ax-button--${size}`);
-      const attributes = [
-        `class="${classes.join(" ")}"`,
-        `type="${h.escape(h.attr("type"))}"`
-      ];
-      if (h.attr("is-disabled")) attributes.push("disabled");
-      for (const name of ["name", "value", "form"]) {
-        const value = h.attr(name);
-        if (value) attributes.push(`${name}="${h.escape(value)}"`);
+      const attributes = [`class="${classes.join(" ")}"`];
+      if (href) {
+        attributes.push(`href="${h.escape(href)}"`);
+        if (h.attr("is-disabled")) {
+          attributes.push('aria-disabled="true"', 'tabindex="-1"');
+        }
+      } else {
+        attributes.push(`type="${h.escape(h.attr("type"))}"`);
+        if (h.attr("is-disabled")) attributes.push("disabled");
+        for (const name of ["name", "value", "form"]) {
+          const value = h.attr(name);
+          if (value) attributes.push(`${name}="${h.escape(value)}"`);
+        }
       }
-      return `<button ${attributes.join(" ")} ${h.slot()}></button>`;
+      const contentRegion = content.slotted ? ` ${h.slot()}` : "";
+      return `<${href ? "a" : "button"} ${attributes.join(" ")}${contentRegion}>${content.html}</${href ? "a" : "button"}>`;
     }
   };
 
@@ -178,11 +228,17 @@ var AstryxElements = (() => {
     examples: [
       {
         name: "default",
-        html: '<ax-card><h2 slot="header">Card title</h2><p>Card content</p></ax-card>'
+        html: `<ax-card>
+  <h2 slot="header">Card title</h2>
+  <p>Card content</p>
+</ax-card>`
       },
       {
         name: "elevated",
-        html: '<ax-card elevation="low"><p>Elevated card</p><ax-button slot="footer" variant="primary">Action</ax-button></ax-card>'
+        html: `<ax-card elevation="low">
+  <p>Elevated card</p>
+  <ax-button slot="footer" variant="primary">Action</ax-button>
+</ax-card>`
       }
     ],
     render(_host, h) {
@@ -202,12 +258,54 @@ var AstryxElements = (() => {
   // elements/src/Dialog.element.mjs
   var variants4 = ["standard", "fullscreen"];
   var purposes = ["info", "form", "required"];
+  var returnFocus = /* @__PURE__ */ new WeakMap();
+  function restoreFocus(host) {
+    const target = returnFocus.get(host);
+    returnFocus.delete(host);
+    if (target?.isConnected) target.focus();
+  }
+  function showDialog(host, api, opener = document.activeElement) {
+    const dialog = api.control;
+    if (!dialog) return false;
+    if (opener && opener !== dialog && !host.contains(opener))
+      returnFocus.set(host, opener);
+    if (!dialog.open) {
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", "");
+    }
+    api.reflect("is-open", true);
+    queueMicrotask(() => api.query(".ax-dialog__title")?.focus());
+    return true;
+  }
+  function closeDialog(host, api, returnValue = "") {
+    const dialog = api.control;
+    if (!dialog?.open) {
+      api.reflect("is-open", false);
+      return false;
+    }
+    if (typeof dialog.close === "function") {
+      dialog.close(String(returnValue));
+      api.reflect("is-open", false);
+      restoreFocus(host);
+    } else {
+      dialog.removeAttribute("open");
+      api.reflect("is-open", false);
+      restoreFocus(host);
+    }
+    return true;
+  }
   var Dialog_element_default = {
     name: "Dialog",
     tag: "ax-dialog",
     attributes: {
-      open: {
+      title: {
+        type: "string",
+        description: "Visible dialog heading when the title slot is empty."
+      },
+      "is-open": {
         type: "boolean",
+        aliases: ["open"],
+        aliasProperties: ["open"],
         default: false,
         description: "Open state reflected from the native dialog."
       },
@@ -228,34 +326,113 @@ var AstryxElements = (() => {
         description: "ID placed on the inner native dialog for trigger wiring."
       }
     },
+    attributeSuggestions: {
+      opened: "is-open"
+    },
     slots: {
-      title: "Required dialog heading.",
+      title: { description: "Required dialog heading.", required: true },
       default: "Dialog body content.",
       footer: "Optional dialog actions."
     },
-    docs: "Present a focused task in a native modal dialog with managed focus return.",
+    content: [{ attribute: "title", slot: "title", required: true }],
+    control: "dialog[data-ax-dialog]",
+    preserveAttributes: ["open"],
+    delegates: {
+      properties: ["returnValue"]
+    },
+    methods: {
+      show: {
+        description: "Open the native modal dialog and move focus to its title.",
+        call(api) {
+          return showDialog(this, api);
+        }
+      },
+      close: {
+        description: "Close the native dialog and restore focus to its opener.",
+        call(api, returnValue = "") {
+          return closeDialog(this, api, returnValue);
+        }
+      }
+    },
+    events: {
+      close: "Native dialog close event after is-open is reflected false.",
+      cancel: 'Native cancel event; prevented for purpose="required".'
+    },
+    docs: "Present a focused task in a native modal dialog with managed focus return; call show()/close() or use is-open.",
     examples: [
       {
-        name: "confirmation",
-        html: '<ax-dialog dialog-id="confirm-dialog"><span slot="title">Archive project?</span><p>You can restore this project later.</p><ax-button slot="footer">Cancel</ax-button></ax-dialog>'
+        name: "open-and-close",
+        html: `<ax-button data-ax-dialog-open="confirm-dialog">Open dialog</ax-button>
+<ax-dialog dialog-id="confirm-dialog">
+  <span slot="title">Archive project?</span>
+  <p>You can restore this project later.</p>
+  <ax-button slot="footer" data-ax-dialog-close>Cancel</ax-button>
+</ax-dialog>`
       },
       {
         name: "required",
-        html: '<ax-dialog purpose="required"><span slot="title">Accept terms</span><p>Review and accept to continue.</p></ax-dialog>'
+        html: `<ax-dialog purpose="required" title="Accept terms" is-open>
+  <p>Review and accept to continue.</p>
+</ax-dialog>`
       }
     ],
+    hooks: {
+      connected(host, api) {
+        const onClick = (event) => {
+          const opener = event.target.closest?.("[data-ax-dialog-open]");
+          if (opener && opener.getAttribute("data-ax-dialog-open") === api.control?.id) {
+            event.preventDefault();
+            showDialog(host, api, opener);
+            return;
+          }
+          const closer = event.target.closest?.("[data-ax-dialog-close]");
+          if (closer && host.contains(closer)) {
+            event.preventDefault();
+            closeDialog(host, api, closer.getAttribute("value") ?? "");
+          }
+        };
+        document.addEventListener("click", onClick);
+        return () => document.removeEventListener("click", onClick);
+      },
+      attributeChanged(host, name, _oldValue, _newValue, api) {
+        if (name !== "is-open" || !api.control) return false;
+        if (api.read("is-open")) showDialog(host, api);
+        else closeDialog(host, api);
+        return true;
+      },
+      afterRender(host, api) {
+        const dialog = api.control;
+        api.listen(dialog, "close", () => {
+          if (dialog.open) return;
+          api.reflect("is-open", false);
+          restoreFocus(host);
+        });
+        api.listen(dialog, "cancel", (event) => {
+          event.preventDefault();
+          if (api.read("purpose") !== "required") closeDialog(host, api);
+        });
+        api.listen(dialog, "click", (event) => {
+          if (event.target === dialog && api.read("purpose") !== "required") {
+            closeDialog(host, api);
+          }
+        });
+        if (api.read("is-open") && !dialog.open) showDialog(host, api);
+        if (!api.read("is-open") && dialog.open) closeDialog(host, api);
+      }
+    },
     render(_host, h) {
       const dialogID = h.attr("dialog-id") || h.id("dialog");
       const titleID = `${dialogID}-title`;
       const variant = h.attr("variant");
       const purpose = h.attr("purpose");
+      const title = h.content("title", "title", "Dialog");
       const classes = ["ax-dialog"];
       if (variant !== "standard") classes.push(`ax-dialog--${variant}`);
-      return `<dialog class="${classes.join(" ")}" id="${h.escape(dialogID)}" data-ax-dialog aria-labelledby="${h.escape(titleID)}"${purpose === "required" ? " data-ax-dialog-required" : ""}>
+      return `<dialog class="${classes.join(" ")}" id="${h.escape(dialogID)}" data-ax-dialog data-ax-owned="ax-dialog" aria-labelledby="${h.escape(titleID)}"${purpose === "required" ? " data-ax-dialog-required" : ""}>
   <div class="ax-dialog__surface">
     <header class="ax-dialog__header">
-      <h2 class="ax-dialog__title" id="${h.escape(titleID)}" tabindex="-1" ${h.slot("title")}></h2>
-      <button class="ax-button ax-button--ghost" type="button" data-ax-dialog-close aria-label="Close dialog">\xD7</button>
+      <h2 class="ax-dialog__title" id="${h.escape(titleID)}" tabindex="-1"${title.slotted ? ` ${h.slot("title")}` : ""}>${title.html}</h2>
+      ${purpose === "required" ? "" : '<button class="ax-button ax-button--ghost" type="button" data-ax-dialog-close aria-label="Close dialog">\xD7</button>'}
     </header>
     <div class="ax-dialog__body" ${h.slot()}></div>
     ${h.hasSlot("footer") ? `<footer class="ax-dialog__footer" ${h.slot("footer")}></footer>` : ""}
@@ -288,11 +465,19 @@ var AstryxElements = (() => {
     examples: [
       {
         name: "page-shell",
-        html: '<ax-layout><h1 slot="header">Page title</h1><p>Page content</p><small slot="footer">Footer</small></ax-layout>'
+        html: `<ax-layout>
+  <h1 slot="header">Page title</h1>
+  <p>Page content</p>
+  <small slot="footer">Footer</small>
+</ax-layout>`
       },
       {
         name: "named-regions",
-        html: '<ax-layout><nav slot="start">Navigation</nav><main>Main content</main><aside slot="end">Inspector</aside></ax-layout>'
+        html: `<ax-layout>
+  <nav slot="start">Navigation</nav>
+  <main>Main content</main>
+  <aside slot="end">Inspector</aside>
+</ax-layout>`
       }
     ],
     render(_host, h) {
@@ -323,6 +508,7 @@ var AstryxElements = (() => {
   var sizes2 = ["sm", "md", "lg"];
   var variants5 = ["input", "ghost"];
   var statuses = ["none", "error", "success"];
+  var initializedSelectors = /* @__PURE__ */ new WeakSet();
   var Selector_element_default = {
     name: "Selector",
     tag: "ax-selector",
@@ -331,6 +517,18 @@ var AstryxElements = (() => {
       value: {
         type: "string",
         default: "",
+        liveProperty: "value",
+        reflect: {
+          events: ["change"],
+          property: "value",
+          get(host, target, _event, api) {
+            if (api.read("is-read-only")) {
+              target.value = host.getAttribute("value") ?? "";
+              return void 0;
+            }
+            return target.value;
+          }
+        },
         description: "Selected option value, reflected after native change events."
       },
       size: {
@@ -352,72 +550,144 @@ var AstryxElements = (() => {
         description: "Validation state."
       },
       description: { type: "string", description: "Supporting field description." },
+      "status-message": {
+        type: "string",
+        description: "Validation message associated with the native select."
+      },
       "is-required": {
         type: "boolean",
+        aliases: ["required"],
+        aliasProperties: ["required"],
         default: false,
         description: "Marks the native select required."
       },
       "is-disabled": {
         type: "boolean",
+        aliases: ["disabled"],
+        aliasProperties: ["disabled"],
         default: false,
         description: "Disables the native select."
       },
       "is-read-only": {
         type: "boolean",
+        aliases: ["readonly"],
+        aliasProperties: ["readOnly"],
         default: false,
         description: "Prevents value changes while preserving focus and submission."
       },
-      "html-name": { type: "string", description: "Native form field name." }
+      "html-name": {
+        type: "string",
+        aliases: ["name"],
+        aliasProperties: ["name"],
+        description: "Native form field name."
+      }
     },
     slots: {
-      default: "Native option and optgroup children."
+      label: { description: "Visible field label.", required: true },
+      default: {
+        description: "Native option and optgroup children.",
+        required: true
+      },
+      description: "Supporting field description.",
+      "status-message": "Validation message."
+    },
+    content: [
+      { attribute: "label", slot: "label", required: true },
+      { attribute: "description", slot: "description" },
+      { attribute: "status-message", slot: "status-message" }
+    ],
+    control: "select",
+    delegates: {
+      properties: ["form", "validity", "validationMessage", "willValidate"],
+      methods: ["checkValidity", "reportValidity"]
+    },
+    events: {
+      change: "Native selection event; value is reflected to the host."
     },
     docs: "Choose one value from a moderate list with a native select control.",
     examples: [
       {
         name: "default",
-        html: '<ax-selector label="Workspace" html-name="workspace"><option value="design">Design systems</option><option value="tools">Developer tools</option></ax-selector>'
+        html: `<ax-selector label="Workspace" html-name="workspace">
+  <option value="design">Design systems</option>
+  <option value="tools">Developer tools</option>
+</ax-selector>`
       },
       {
         name: "compact",
-        html: '<ax-selector label="Status" size="sm"><option>Active</option><option>Paused</option></ax-selector>'
+        html: `<ax-selector label="Status" size="sm">
+  <option>Active</option>
+  <option>Paused</option>
+</ax-selector>`
       }
     ],
+    hooks: {
+      attributeChanged(_host, name, _oldValue, _newValue, api) {
+        if (!api.control) return false;
+        if (name === "value") api.control.value = api.read("value");
+        else if (name === "is-disabled")
+          api.control.disabled = api.read("is-disabled");
+        else if (name === "is-required")
+          api.control.required = api.read("is-required");
+        else if (name === "is-read-only") {
+          api.control.setAttribute(
+            "aria-readonly",
+            String(api.read("is-read-only"))
+          );
+        } else return false;
+        return true;
+      },
+      afterRender(host, api) {
+        const value = api.read("value");
+        if (api.control?.value !== value) api.control.value = value;
+        if (!initializedSelectors.has(host)) {
+          for (const option of api.control?.options ?? []) {
+            option.defaultSelected = option.selected;
+          }
+          initializedSelectors.add(host);
+        }
+      }
+    },
     render(_host, h) {
       const selectID = h.id("select");
       const descriptionID = h.id("description");
-      const label = h.attr("label") || "Select an option";
+      const statusID = h.id("status");
+      const label = h.content("label", "label", "Select an option");
+      const description = h.content("description", "description");
+      const statusMessage = h.content("status-message", "status-message");
       const size = h.attr("size");
       const variant = h.attr("variant");
       const status = h.attr("status");
-      const description = h.attr("description");
       const classes = ["ax-selector"];
       if (size !== "md") classes.push(`ax-selector--${size}`);
       if (variant !== "input") classes.push(`ax-selector--${variant}`);
       if (status !== "none") classes.push(`ax-selector--${status}`);
+      const describedBy = [
+        (description.slotted || description.html) && descriptionID,
+        (statusMessage.slotted || statusMessage.html) && statusID
+      ].filter(Boolean).join(" ");
       const selectAttributes = [
         `id="${selectID}"`,
-        'class="ax-selector__select"',
-        "data-ax-reflect-value"
+        'class="ax-selector__select"'
       ];
       if (h.attr("html-name")) {
         selectAttributes.push(`name="${h.escape(h.attr("html-name"))}"`);
       }
-      if (description)
-        selectAttributes.push(`aria-describedby="${descriptionID}"`);
+      if (describedBy) selectAttributes.push(`aria-describedby="${describedBy}"`);
       if (status === "error") selectAttributes.push('aria-invalid="true"');
       if (h.attr("is-required"))
         selectAttributes.push("required", 'aria-required="true"');
       if (h.attr("is-disabled")) selectAttributes.push("disabled");
       if (h.attr("is-read-only")) selectAttributes.push('aria-readonly="true"');
-      return `<label class="${classes.join(" ")}" for="${selectID}">
-  <span class="ax-selector__label">${h.escape(label)}</span>
+      return `<div class="${classes.join(" ")}">
+  <label class="ax-selector__label" for="${selectID}"${label.slotted ? ` ${h.slot("label")}` : ""}>${label.html}</label>
   <span class="ax-selector__control">
     <select ${selectAttributes.join(" ")} ${h.slot()}></select>
     <span class="ax-selector__indicator" aria-hidden="true"></span>
   </span>
-  ${description ? `<span class="ax-selector__description" id="${descriptionID}">${h.escape(description)}</span>` : ""}
-</label>`;
+  ${description.slotted || description.html ? `<span class="ax-selector__description" id="${descriptionID}"${description.slotted ? ` ${h.slot("description")}` : ""}>${description.html}</span>` : ""}
+  ${statusMessage.slotted || statusMessage.html ? `<span class="ax-selector__description" id="${statusID}"${status === "error" ? ' role="alert"' : ""}${statusMessage.slotted ? ` ${h.slot("status-message")}` : ""}>${statusMessage.html}</span>` : ""}
+</div>`;
     }
   };
 
@@ -426,6 +696,10 @@ var AstryxElements = (() => {
     name: "Tab",
     tag: "ax-tab",
     attributes: {
+      label: {
+        type: "string",
+        description: "Visible tab label when no child content is authored."
+      },
       value: {
         type: "string",
         description: "Unique value reported by the parent TabList."
@@ -434,44 +708,52 @@ var AstryxElements = (() => {
         type: "string",
         description: "ID of the tab panel controlled by this tab."
       },
-      selected: {
-        type: "boolean",
-        default: false,
-        description: "Selected state reflected from the native tab button."
-      },
       "is-disabled": {
         type: "boolean",
+        aliases: ["disabled"],
+        aliasProperties: ["disabled"],
         default: false,
         description: "Disables the native tab button."
       }
     },
-    slots: { default: "Visible tab label and inline content." },
+    slots: {
+      default: {
+        description: "Visible tab label and inline content.",
+        required: true
+      }
+    },
+    content: [{ attribute: "label", slot: "default", required: true }],
+    control: 'button[role="tab"]',
+    events: {
+      "astryx:tab-change": "Bubbles when this tab is activated by its TabList."
+    },
     docs: "Represent one selectable view inside an ax-tab-list.",
     examples: [
       {
-        name: "selected",
-        html: '<ax-tab value="overview" panel-id="panel-overview" selected>Overview</ax-tab>'
+        name: "with-panel",
+        html: `<ax-tab value="overview" panel-id="panel-overview">
+  Overview
+</ax-tab>`
       },
       {
-        name: "default",
-        html: '<ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab>'
+        name: "label",
+        html: `<ax-tab value="activity" label="Activity"></ax-tab>`
       }
     ],
     render(_host, h) {
-      const selected = h.attr("selected");
-      const value = h.attr("value") || h.id("value");
+      const content = h.content("label");
       const panelID = h.attr("panel-id");
       const attributes = [
         'class="ax-tab"',
         `id="${h.id("tab")}"`,
         'type="button"',
         'role="tab"',
-        `aria-selected="${selected}"`,
-        `tabindex="${selected ? "0" : "-1"}"`
+        'aria-selected="false"',
+        'tabindex="-1"'
       ];
       if (panelID) attributes.push(`aria-controls="${h.escape(panelID)}"`);
       if (h.attr("is-disabled")) attributes.push("disabled");
-      return `<button ${attributes.join(" ")} ${h.slot()}></button>`;
+      return `<button ${attributes.join(" ")}${content.slotted ? ` ${h.slot()}` : ""}>${content.html}</button>`;
     }
   };
 
@@ -479,6 +761,61 @@ var AstryxElements = (() => {
   var sizes3 = ["sm", "md", "lg"];
   var layouts = ["hug", "fill"];
   var orientations = ["horizontal", "vertical"];
+  function tabValue(tab) {
+    return tab.getAttribute("value") || tab.textContent.trim();
+  }
+  function applySelection(host, api, requestedValue, { emit = false, focus = false } = {}) {
+    const list = api.query("[data-ax-tab-list]");
+    const panelHost = api.query("[data-ax-panel-host]");
+    if (!list || !panelHost) return false;
+    const tabs = [...list.children].filter((child) => child.localName === "ax-tab");
+    const enabled = tabs.filter((tab) => !tab.disabled);
+    if (enabled.length === 0 || enabled.some((tab) => !tab.querySelector('[role="tab"]'))) {
+      return false;
+    }
+    const selected = enabled.find((tab) => tabValue(tab) === requestedValue) ?? enabled[0];
+    const value = tabValue(selected);
+    const selectedPanelID = selected.getAttribute("panel-id");
+    for (const tab of tabs) {
+      const button = tab.querySelector('[role="tab"]');
+      const active = tab === selected;
+      tab.toggleAttribute("data-selected", active);
+      button?.setAttribute("aria-selected", String(active));
+      button?.setAttribute("tabindex", active ? "0" : "-1");
+    }
+    for (const panel of panelHost.children) {
+      panel.hidden = !selectedPanelID || panel.id !== selectedPanelID;
+      if (panel.id === selectedPanelID) {
+        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute(
+          "aria-labelledby",
+          selected.querySelector('[role="tab"]').id
+        );
+      }
+    }
+    api.reflect("value", value);
+    if (focus) selected.focus();
+    if (emit) api.dispatch("astryx:tab-change", { value }, selected);
+    return true;
+  }
+  function moveSelection(host, api, key) {
+    const list = api.query("[data-ax-tab-list]");
+    const tabs = [...list.children].filter(
+      (tab) => tab.localName === "ax-tab" && !tab.disabled
+    );
+    const active = tabs.findIndex((tab) => tab.contains(document.activeElement));
+    if (tabs.length === 0 || active < 0) return;
+    const horizontal = api.read("orientation") === "horizontal";
+    let next = active;
+    if (key === "Home") next = 0;
+    else if (key === "End") next = tabs.length - 1;
+    else if (horizontal && key === "ArrowRight" || !horizontal && key === "ArrowDown") {
+      next = (active + 1) % tabs.length;
+    } else if (horizontal && key === "ArrowLeft" || !horizontal && key === "ArrowUp") {
+      next = (active - 1 + tabs.length) % tabs.length;
+    } else return;
+    applySelection(host, api, tabValue(tabs[next]), { emit: true, focus: true });
+  }
   var TabList_element_default = {
     name: "TabList",
     tag: "ax-tab-list",
@@ -512,25 +849,72 @@ var AstryxElements = (() => {
       }
     },
     slots: {
-      default: "ax-tab children.",
+      default: { description: "ax-tab children.", required: true },
       panels: "Panel elements whose IDs match child panel-id attributes."
     },
-    docs: "Switch between related in-page views with arrow-key navigation.",
+    events: {
+      "astryx:tab-change": "Bubbles from the activated ax-tab with detail.value."
+    },
+    methods: {
+      select: {
+        description: "Select a tab by value.",
+        call(api, value) {
+          return applySelection(this, api, String(value), { emit: true });
+        }
+      }
+    },
+    docs: "Switch between related in-page views; non-selected slotted panels are hidden automatically.",
     examples: [
       {
         name: "panels",
-        html: '<ax-tab-list value="overview" label="Project views"><ax-tab value="overview" panel-id="panel-overview">Overview</ax-tab><ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab><section slot="panels" id="panel-overview">Overview content</section><section slot="panels" id="panel-activity">Activity content</section></ax-tab-list>'
+        html: `<ax-tab-list value="overview" label="Project views">
+  <ax-tab value="overview" panel-id="panel-overview">Overview</ax-tab>
+  <ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab>
+  <section slot="panels" id="panel-overview">Overview content</section>
+  <section slot="panels" id="panel-activity">Activity content</section>
+</ax-tab-list>`
       },
       {
         name: "fill",
-        html: '<ax-tab-list layout="fill"><ax-tab value="one">One</ax-tab><ax-tab value="two">Two</ax-tab></ax-tab-list>'
+        html: `<ax-tab-list layout="fill">
+  <ax-tab value="one">One</ax-tab>
+  <ax-tab value="two">Two</ax-tab>
+</ax-tab-list>`
       }
     ],
+    hooks: {
+      attributeChanged(host, name, _oldValue, newValue, api) {
+        if (name !== "value" || !api.control) return false;
+        return applySelection(host, api, newValue ?? "");
+      },
+      afterRender(host, api) {
+        const list = api.query("[data-ax-tab-list]");
+        api.listen(list, "click", (event) => {
+          const tab = event.target.closest("ax-tab");
+          if (!tab || !list.contains(tab) || tab.disabled) return;
+          applySelection(host, api, tabValue(tab), { emit: true });
+        });
+        api.listen(list, "keydown", (event) => {
+          const handled = [
+            "Home",
+            "End",
+            "ArrowLeft",
+            "ArrowRight",
+            "ArrowUp",
+            "ArrowDown"
+          ].includes(event.key);
+          if (!handled) return;
+          event.preventDefault();
+          moveSelection(host, api, event.key);
+        });
+        queueMicrotask(() => applySelection(host, api, api.read("value")));
+      }
+    },
     render(_host, h) {
       const classes = ["ax-tab-list"];
       if (h.attr("layout") === "fill") classes.push("ax-tab-list--fill");
       const orientation = h.attr("orientation");
-      return `<div class="${classes.join(" ")}" role="tablist" aria-label="${h.escape(h.attr("label"))}" aria-orientation="${orientation}" data-ax-tab-list ${h.slot()}></div>
+      return `<div class="${classes.join(" ")}" role="tablist" aria-label="${h.escape(h.attr("label"))}" aria-orientation="${orientation}" data-ax-tab-list data-ax-owned="ax-tab-list" ${h.slot()}></div>
 <div data-ax-panel-host ${h.slot("panels")}></div>`;
     }
   };
@@ -539,6 +923,7 @@ var AstryxElements = (() => {
   var types2 = ["text", "password", "email"];
   var sizes4 = ["sm", "md", "lg"];
   var statuses2 = ["none", "error", "warning", "success"];
+  var initializedInputs = /* @__PURE__ */ new WeakSet();
   var TextInput_element_default = {
     name: "TextInput",
     tag: "ax-text-input",
@@ -553,6 +938,8 @@ var AstryxElements = (() => {
       value: {
         type: "string",
         default: "",
+        liveProperty: "value",
+        reflect: { events: ["input", "change"], property: "value" },
         description: "Current value, reflected after native input events."
       },
       size: {
@@ -574,33 +961,103 @@ var AstryxElements = (() => {
       },
       "is-required": {
         type: "boolean",
+        aliases: ["required"],
+        aliasProperties: ["required"],
         default: false,
         description: "Marks the native input required."
       },
       "is-disabled": {
         type: "boolean",
+        aliases: ["disabled"],
+        aliasProperties: ["disabled"],
         default: false,
         description: "Disables the native input."
       },
       "is-read-only": {
         type: "boolean",
+        aliases: ["readonly"],
+        aliasProperties: ["readOnly"],
         default: false,
         description: "Makes the native input read-only."
       },
       placeholder: { type: "string", description: "Native placeholder text." },
-      "html-name": { type: "string", description: "Native form field name." },
-      "auto-complete": { type: "string", description: "Native autocomplete hint." }
+      "html-name": {
+        type: "string",
+        aliases: ["name"],
+        aliasProperties: ["name"],
+        description: "Native form field name."
+      },
+      "auto-complete": {
+        type: "string",
+        aliases: ["autocomplete"],
+        aliasProperties: ["autocomplete"],
+        description: "Native autocomplete hint."
+      }
     },
-    slots: {},
+    attributeSuggestions: {
+      htmlname: "html-name",
+      "is-readonly": "is-read-only",
+      statusmessage: "status-message"
+    },
+    slots: {
+      label: { description: "Visible field label.", required: true },
+      description: "Supporting field description.",
+      "status-message": "Validation message."
+    },
+    content: [
+      { attribute: "label", slot: "label", required: true },
+      { attribute: "description", slot: "description" },
+      { attribute: "status-message", slot: "status-message" }
+    ],
+    control: "input",
+    delegates: {
+      properties: ["form", "validity", "validationMessage", "willValidate"],
+      methods: ["checkValidity", "reportValidity", "select", "setSelectionRange"]
+    },
+    events: {
+      input: "Native input event; value is reflected before bubbling completes.",
+      change: "Native change event; value is reflected to the host."
+    },
+    hooks: {
+      attributeChanged(_host, name, _oldValue, _newValue, api) {
+        if (!api.control) return false;
+        if (name === "value") api.control.value = api.read("value");
+        else if (name === "is-disabled")
+          api.control.disabled = api.read("is-disabled");
+        else if (name === "is-required")
+          api.control.required = api.read("is-required");
+        else if (name === "is-read-only")
+          api.control.readOnly = api.read("is-read-only");
+        else return false;
+        return true;
+      },
+      afterRender(host, api) {
+        const value = api.read("value");
+        if (!initializedInputs.has(host)) {
+          if (host.hasAttribute("value")) api.control.defaultValue = value;
+          initializedInputs.add(host);
+        }
+        if (api.control.value !== value) api.control.value = value;
+      }
+    },
     docs: "Collect a single line of text with an associated visible label.",
     examples: [
       {
         name: "default",
-        html: '<ax-text-input label="Project name" html-name="project" placeholder="Astryx"></ax-text-input>'
+        html: `<ax-text-input
+  label="Project name"
+  html-name="project"
+  placeholder="Astryx"
+></ax-text-input>`
       },
       {
         name: "error",
-        html: '<ax-text-input type="email" label="Email" status="error" status-message="Enter a valid email address."></ax-text-input>'
+        html: `<ax-text-input
+  type="email"
+  label="Email"
+  status="error"
+  status-message="Enter a valid email address."
+></ax-text-input>`
       }
     ],
     render(_host, h) {
@@ -609,20 +1066,19 @@ var AstryxElements = (() => {
       const statusID = h.id("status");
       const status = h.attr("status");
       const size = h.attr("size");
-      const label = h.attr("label") || "Text input";
-      const description = h.attr("description");
-      const statusMessage = h.attr("status-message");
+      const label = h.content("label", "label", "Text input");
+      const description = h.content("description", "description");
+      const statusMessage = h.content("status-message", "status-message");
       const wrapperClasses = ["ax-text-input"];
       if (size !== "md") wrapperClasses.push(`ax-text-input--${size}`);
       if (status !== "none") wrapperClasses.push(`ax-text-input--${status}`);
       const describedBy = [
-        description && descriptionID,
-        statusMessage && statusID
+        (description.slotted || description.html) && descriptionID,
+        (statusMessage.slotted || statusMessage.html) && statusID
       ].filter(Boolean).join(" ");
       const inputAttributes = [
         `id="${inputID}"`,
-        `type="${h.escape(h.attr("type"))}"`,
-        "data-ax-reflect-value"
+        `type="${h.escape(h.attr("type"))}"`
       ];
       if (h.attr("html-name")) {
         inputAttributes.push(`name="${h.escape(h.attr("html-name"))}"`);
@@ -641,12 +1097,12 @@ var AstryxElements = (() => {
         inputAttributes.push("required", 'aria-required="true"');
       if (h.attr("is-disabled")) inputAttributes.push("disabled");
       if (h.attr("is-read-only")) inputAttributes.push("readonly");
-      return `<label class="ax-stack ax-stack--gap-1" for="${inputID}">
-  <span class="ax-text ax-text--label">${h.escape(label)}</span>
-  ${description ? `<span class="ax-text ax-text--supporting" id="${descriptionID}">${h.escape(description)}</span>` : ""}
+      return `<div class="ax-stack ax-stack--gap-1">
+  <label class="ax-text ax-text--label" for="${inputID}"${label.slotted ? ` ${h.slot("label")}` : ""}>${label.html}</label>
+  ${description.slotted || description.html ? `<span class="ax-text ax-text--supporting" id="${descriptionID}"${description.slotted ? ` ${h.slot("description")}` : ""}>${description.html}</span>` : ""}
   <span class="${wrapperClasses.join(" ")}"><input ${inputAttributes.join(" ")} /></span>
-  ${statusMessage ? `<span class="ax-text ax-text--supporting" id="${statusID}"${status === "error" ? ' role="alert"' : ""}>${h.escape(statusMessage)}</span>` : ""}
-</label>`;
+  ${statusMessage.slotted || statusMessage.html ? `<span class="ax-text ax-text--supporting" id="${statusID}"${status === "error" ? ' role="alert"' : ""}${statusMessage.slotted ? ` ${h.slot("status-message")}` : ""}>${statusMessage.html}</span>` : ""}
+</div>`;
     }
   };
 
@@ -674,6 +1130,7 @@ var AstryxElements = (() => {
     "nonce",
     "part",
     "popover",
+    "role",
     "slot",
     "spellcheck",
     "style",
@@ -685,157 +1142,352 @@ var AstryxElements = (() => {
   function escapeHTML(value) {
     return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
   }
+  function kebabToCamel(value) {
+    return value.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
+  }
   function isMeaningfulNode(node) {
     return node.nodeType !== Node.TEXT_NODE || Boolean(node.textContent?.trim());
   }
-  function isKnownAttribute(definition, name) {
-    return Object.hasOwn(definition.attributes, name) || GLOBAL_ATTRIBUTES.has(name) || name.startsWith("aria-") || name.startsWith("data-");
+  function walkNodes(root, visit) {
+    for (const child of root.childNodes) {
+      visit(child);
+      walkNodes(child, visit);
+    }
   }
-  function createHelpers(host, definition, authorNodes, slotsByNode) {
-    const nodesForSlot = (name) => authorNodes.filter(
-      (node) => isMeaningfulNode(node) && slotsByNode.get(node) === name
+  function sameNodeKind(current, desired) {
+    return current.nodeType === desired.nodeType && (!(current instanceof Element) || desired instanceof Element && current.localName === desired.localName);
+  }
+  function attributeMetadata(definition) {
+    const aliases = /* @__PURE__ */ new Map();
+    for (const [name, spec] of Object.entries(definition.attributes)) {
+      for (const alias of spec.aliases ?? []) aliases.set(alias, name);
+    }
+    return {
+      aliases,
+      observed: [
+        .../* @__PURE__ */ new Set([...Object.keys(definition.attributes), ...aliases.keys()])
+      ]
+    };
+  }
+  function markGeneratedSubtree(node, desiredGenerated, nextGenerated) {
+    if (desiredGenerated.has(node)) nextGenerated.add(node);
+    for (const child of node.childNodes) {
+      markGeneratedSubtree(child, desiredGenerated, nextGenerated);
+    }
+  }
+  function syncAttributes(current, desired, preserveAttributes) {
+    const desiredNames = new Set(
+      [...desired.attributes].map((attribute) => attribute.name)
     );
-    return Object.freeze({
-      attr(name) {
-        const spec = definition.attributes[name];
-        if (!spec) return null;
-        const raw = host.getAttribute(name);
-        if (spec.type === "boolean") return raw !== null;
-        if (raw === null || raw === "") return spec.default ?? "";
-        if (spec.type === "enum" && !spec.values.includes(raw)) {
-          host._warnInvalidEnum(name, raw, spec.values);
-          return spec.default;
-        }
-        return raw;
-      },
-      escape: escapeHTML,
-      hasSlot(name = "default") {
-        return nodesForSlot(name).length > 0;
-      },
-      id(part) {
-        if (!host._astryxID) {
-          elementID += 1;
-          host._astryxID = host.id || `${definition.tag}-${elementID}`;
-        }
-        return `${host._astryxID}-${part}`;
-      },
-      slot(name = "default") {
-        return `data-ax-slot="${escapeHTML(name)}"`;
+    for (const attribute of [...current.attributes]) {
+      if (!desiredNames.has(attribute.name) && !preserveAttributes.has(attribute.name)) {
+        current.removeAttribute(attribute.name);
       }
-    });
+    }
+    for (const attribute of desired.attributes) {
+      if (current.getAttribute(attribute.name) !== attribute.value) {
+        current.setAttribute(attribute.name, attribute.value);
+      }
+    }
   }
-  function installDialogMethods(ElementClass) {
-    ElementClass.prototype.show = function show() {
-      const dialog = this._nativeDialog;
-      if (!dialog || dialog.open) return;
-      this._dialogReturnTarget = this.ownerDocument.activeElement;
-      const vanilla = globalThis.AstryxVanilla;
-      if (vanilla?.openDialog)
-        vanilla.openDialog(dialog, this._dialogReturnTarget);
-      else dialog.showModal();
-      this._reflectAttribute("open", true);
-      queueMicrotask(() => {
-        const focusTarget = dialog.querySelector(
-          "[data-ax-dialog-initial-focus], [autofocus], .ax-dialog__title"
-        );
-        if (focusTarget instanceof HTMLElement) {
-          if (!focusTarget.matches("button, input, select, textarea, a[href]")) {
-            focusTarget.tabIndex = -1;
+  function morphChildren(currentParent, desiredParent, authorNodes, desiredGenerated, nextGenerated, preserveAttributes) {
+    const desiredChildren = [...desiredParent.childNodes];
+    let index = 0;
+    for (const desired of desiredChildren) {
+      const current = currentParent.childNodes[index] ?? null;
+      if (authorNodes.has(desired)) {
+        if (current !== desired) currentParent.insertBefore(desired, current);
+        index += 1;
+        continue;
+      }
+      if (current && !authorNodes.has(current) && sameNodeKind(current, desired)) {
+        if (current instanceof Element && desired instanceof Element) {
+          syncAttributes(current, desired, preserveAttributes);
+          morphChildren(
+            current,
+            desired,
+            authorNodes,
+            desiredGenerated,
+            nextGenerated,
+            preserveAttributes
+          );
+        } else if (current.nodeValue !== desired.nodeValue) {
+          current.nodeValue = desired.nodeValue;
+        }
+        if (desiredGenerated.has(desired)) nextGenerated.add(current);
+        index += 1;
+        continue;
+      }
+      currentParent.insertBefore(desired, current);
+      markGeneratedSubtree(desired, desiredGenerated, nextGenerated);
+      index += 1;
+    }
+    while (currentParent.childNodes.length > desiredChildren.length) {
+      currentParent.lastChild.remove();
+    }
+  }
+  function installElementAPI(ElementClass, definition, metadata) {
+    const descriptors = /* @__PURE__ */ new Map();
+    for (const [attribute, spec] of Object.entries(definition.attributes)) {
+      const names = [spec.property ?? kebabToCamel(attribute)];
+      for (const aliasProperty of spec.aliasProperties ?? [])
+        names.push(aliasProperty);
+      for (const alias of spec.aliases ?? []) {
+        if (!(spec.aliasProperties ?? []).length) names.push(kebabToCamel(alias));
+      }
+      for (const property of names) {
+        if (descriptors.has(property)) continue;
+        descriptors.set(property, attribute);
+        Object.defineProperty(ElementClass.prototype, property, {
+          configurable: true,
+          enumerable: true,
+          get() {
+            if (spec.liveProperty && this._control) {
+              return this._control[spec.liveProperty];
+            }
+            return this._readAttribute(attribute);
+          },
+          set(value) {
+            this._setAttributeValue(attribute, value);
           }
-          focusTarget.focus({ preventScroll: true });
+        });
+      }
+    }
+    if (definition.control) {
+      for (const method of ["focus", "click"]) {
+        Object.defineProperty(ElementClass.prototype, method, {
+          configurable: true,
+          value(...args) {
+            return this._control?.[method](...args);
+          }
+        });
+      }
+    }
+    for (const property of definition.delegates?.properties ?? []) {
+      Object.defineProperty(ElementClass.prototype, property, {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return this._control?.[property] ?? null;
         }
       });
-    };
-    ElementClass.prototype.close = function close(returnValue = "") {
-      const dialog = this._nativeDialog;
-      if (!dialog?.open) return;
-      const vanilla = globalThis.AstryxVanilla;
-      if (vanilla?.closeDialog) vanilla.closeDialog(dialog, false);
-      else dialog.close(returnValue);
-      this._reflectAttribute("open", false);
-      const returnTarget = this._dialogReturnTarget;
-      this._dialogReturnTarget = null;
-      if (returnTarget instanceof HTMLElement && returnTarget.isConnected) {
-        returnTarget.focus({ preventScroll: true });
-      }
-    };
+    }
+    for (const method of definition.delegates?.methods ?? []) {
+      Object.defineProperty(ElementClass.prototype, method, {
+        configurable: true,
+        value(...args) {
+          return this._control?.[method](...args);
+        }
+      });
+    }
+    for (const [method, spec] of Object.entries(definition.methods ?? {})) {
+      Object.defineProperty(ElementClass.prototype, method, {
+        configurable: true,
+        value(...args) {
+          return spec.call.apply(this, [this._api, ...args]);
+        }
+      });
+    }
+    ElementClass.attributeAliases = metadata.aliases;
   }
   function registerElement(definition) {
     if (customElements.get(definition.tag))
       return customElements.get(definition.tag);
+    const metadata = attributeMetadata(definition);
+    const preserveAttributes = new Set(definition.preserveAttributes ?? []);
     class AstryxElement extends HTMLElement {
-      static observedAttributes = Object.keys(definition.attributes);
+      static observedAttributes = metadata.observed;
       constructor() {
         super();
         this._authorNodes = [];
-        this._captured = false;
+        this._slotByNode = /* @__PURE__ */ new WeakMap();
+        this._generatedNodes = /* @__PURE__ */ new WeakSet();
+        this._regions = /* @__PURE__ */ new Map();
+        this._runtimeRoots = [];
         this._renderQueued = false;
         this._reflecting = false;
-        this._warnedAttributes = /* @__PURE__ */ new Set();
-        this._slotsByNode = /* @__PURE__ */ new WeakMap();
+        this._warned = /* @__PURE__ */ new Set();
+        this._renderCleanup = [];
+        this._connectionCleanup = null;
         this._observer = new MutationObserver(
           (records) => this._handleMutations(records)
         );
-        this._handleEvent = this._handleEvent.bind(this);
+        this._api = this._createAPI();
       }
       connectedCallback() {
-        this._captureAuthorNodes();
+        if (this._runtimeRoots.length === 0)
+          this._resetAuthorNodes([...this.childNodes]);
         for (const attribute of this.attributes)
           this._validateAttribute(attribute.name);
-        this.addEventListener("input", this._handleEvent);
-        this.addEventListener("change", this._handleEvent);
-        this.addEventListener("close", this._handleEvent, true);
-        this.addEventListener("astryx:dialog-open", this._handleEvent);
-        this.addEventListener("astryx:dialog-close", this._handleEvent);
-        this.addEventListener("astryx:tab-change", this._handleEvent);
+        this._connectionCleanup = definition.hooks?.connected?.(this, this._api) ?? null;
         this._observe();
-        this._scheduleRender();
+        if (document.readyState === "loading") {
+          this._readyListener = () => {
+            this._readyListener = null;
+            this._scheduleRender();
+          };
+          document.addEventListener("DOMContentLoaded", this._readyListener, {
+            once: true
+          });
+        } else {
+          this._scheduleRender();
+        }
       }
       disconnectedCallback() {
         this._observer.disconnect();
-        this.removeEventListener("input", this._handleEvent);
-        this.removeEventListener("change", this._handleEvent);
-        this.removeEventListener("close", this._handleEvent, true);
-        this.removeEventListener("astryx:dialog-open", this._handleEvent);
-        this.removeEventListener("astryx:dialog-close", this._handleEvent);
-        this.removeEventListener("astryx:tab-change", this._handleEvent);
+        if (this._readyListener) {
+          document.removeEventListener("DOMContentLoaded", this._readyListener);
+          this._readyListener = null;
+        }
+        this._clearRenderCleanup();
+        this._connectionCleanup?.();
+        this._connectionCleanup = null;
+        definition.hooks?.disconnected?.(this, this._api);
       }
       attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
+        const canonical = metadata.aliases.get(name) ?? name;
         this._validateAttribute(name);
-        if (!this._reflecting) this._scheduleRender();
+        if (this._reflecting) return;
+        const handled = definition.hooks?.attributeChanged?.(
+          this,
+          canonical,
+          oldValue,
+          newValue,
+          this._api
+        );
+        if (handled !== true) this._scheduleRender();
       }
-      _captureAuthorNodes() {
-        if (this._captured) return;
-        this._captured = true;
-        this._authorNodes = [...this.childNodes];
-        for (const node of this._authorNodes) {
-          const slot = node instanceof Element ? node.getAttribute("slot") || "default" : "default";
-          this._slotsByNode.set(node, slot);
-        }
-      }
-      _handleMutations(records) {
-        let shouldRender = false;
-        for (const record of records) {
-          if (record.type === "attributes") {
-            this._validateAttribute(record.attributeName);
-            continue;
+      _createAPI() {
+        const host = this;
+        return Object.freeze({
+          get control() {
+            return host._control;
+          },
+          query(selector) {
+            return host.querySelector(selector);
+          },
+          queryAll(selector) {
+            return [...host.querySelectorAll(selector)];
+          },
+          read(name) {
+            return host._readAttribute(name);
+          },
+          reflect(name, value) {
+            host._reflectAttribute(name, value);
+          },
+          render() {
+            host._scheduleRender();
+          },
+          dispatch(type, detail = {}, target = host) {
+            target.dispatchEvent(
+              new CustomEvent(type, { bubbles: true, composed: true, detail })
+            );
+          },
+          warn(key, message) {
+            host._warn(key, message);
+          },
+          listen(target, type, listener, options) {
+            target.addEventListener(type, listener, options);
+            const cleanup = () => target.removeEventListener(type, listener, options);
+            host._renderCleanup.push(cleanup);
+            return cleanup;
           }
-          for (const node of record.addedNodes) {
-            if (this._authorNodes.includes(node)) continue;
-            this._authorNodes.push(node);
-            const slot = node instanceof Element ? node.getAttribute("slot") || "default" : "default";
-            this._slotsByNode.set(node, slot);
-            shouldRender = true;
-          }
-        }
-        if (shouldRender) this._scheduleRender();
+        });
       }
       _observe() {
         this._observer.observe(this, {
           attributes: true,
-          childList: true
+          childList: true,
+          subtree: true
         });
+      }
+      _resetAuthorNodes(nodes) {
+        this._authorNodes = [];
+        this._slotByNode = /* @__PURE__ */ new WeakMap();
+        for (const node of nodes)
+          this._addAuthorNode(node, this._declaredSlot(node));
+      }
+      _declaredSlot(node, fallback = "default") {
+        if (!(node instanceof Element)) return fallback;
+        return node.getAttribute("slot") || fallback;
+      }
+      _slotForContainer(container) {
+        for (const [name, region] of this._regions) {
+          if (region === container || region.contains(container)) return name;
+        }
+        return "default";
+      }
+      _addAuthorNode(node, slot) {
+        if (this._authorNodes.includes(node)) return;
+        this._authorNodes.push(node);
+        this._slotByNode.set(node, slot);
+      }
+      _removeAuthorSubtree(node) {
+        this._authorNodes = this._authorNodes.filter((author) => {
+          if (author === node) return false;
+          return !(node instanceof Element && node.contains(author));
+        });
+      }
+      _handleMutations(records) {
+        let reset = false;
+        let changed = false;
+        for (const record of records) {
+          if (record.type === "attributes") {
+            if (record.target === this)
+              this._validateAttribute(record.attributeName);
+            continue;
+          }
+          if (this._authorNodes.some(
+            (author) => author instanceof Element && author.contains(record.target)
+          )) {
+            continue;
+          }
+          if (record.target === this && [...record.removedNodes].some(
+            (node) => this._runtimeRoots.includes(node)
+          )) {
+            reset = true;
+            continue;
+          }
+          for (const node of record.removedNodes) {
+            this._removeAuthorSubtree(node);
+            changed = true;
+          }
+          const fallbackSlot = this._slotForContainer(record.target);
+          for (const node of record.addedNodes) {
+            if (this._generatedNodes.has(node)) continue;
+            this._addAuthorNode(node, this._declaredSlot(node, fallbackSlot));
+            changed = true;
+          }
+        }
+        if (reset) {
+          this._runtimeRoots = [];
+          this._regions.clear();
+          this._generatedNodes = /* @__PURE__ */ new WeakSet();
+          this._resetAuthorNodes([...this.childNodes]);
+          changed = true;
+        }
+        if (changed) this._scheduleRender();
+      }
+      _syncAuthorNodes() {
+        if (this._runtimeRoots.length > 0 && this._runtimeRoots.some((root) => root.parentNode !== this)) {
+          this._runtimeRoots = [];
+          this._regions.clear();
+          this._generatedNodes = /* @__PURE__ */ new WeakSet();
+          this._resetAuthorNodes([...this.childNodes]);
+          return;
+        }
+        this._authorNodes = this._authorNodes.filter((node) => this.contains(node));
+        for (const [slot, region] of this._regions) {
+          for (const node of region.childNodes) {
+            if (!this._generatedNodes.has(node)) this._addAuthorNode(node, slot);
+          }
+        }
+        for (const node of this.childNodes) {
+          if (!this._generatedNodes.has(node)) {
+            this._addAuthorNode(node, this._declaredSlot(node));
+          }
+        }
       }
       _scheduleRender() {
         if (this._renderQueued) return;
@@ -845,128 +1497,238 @@ var AstryxElements = (() => {
           if (this.isConnected) this._render();
         });
       }
+      _createHelpers(authorSet) {
+        const host = this;
+        const nodesForSlot = (name) => this._authorNodes.filter(
+          (node) => isMeaningfulNode(node) && this._slotByNode.get(node) === name
+        );
+        return Object.freeze({
+          attr(name) {
+            return host._readAttribute(name);
+          },
+          hasAttribute(name) {
+            return host._hasAttributeValue(name);
+          },
+          escape: escapeHTML,
+          hasSlot(name = "default") {
+            return nodesForSlot(name).length > 0;
+          },
+          content(attribute, slot = "default", fallback = "") {
+            const slotted = nodesForSlot(slot).length > 0;
+            const attributed = host._hasAttributeValue(attribute);
+            if (slotted && attributed) {
+              host._warn(
+                `content:${attribute}:${slot}`,
+                `[Astryx] <${definition.tag}> received both ${attribute} and slot="${slot}"; slotted content wins.`
+              );
+            }
+            return slotted ? { html: "", slotted: true } : {
+              html: escapeHTML(
+                attributed ? host._readAttribute(attribute) : fallback
+              ),
+              slotted: false
+            };
+          },
+          id(part) {
+            if (!host._astryxID) {
+              elementID += 1;
+              host._astryxID = host.id || `${definition.tag}-${elementID}`;
+            }
+            return `${host._astryxID}-${part}`;
+          },
+          slot(name = "default") {
+            return `data-ax-slot="${escapeHTML(name)}"`;
+          },
+          warn(key, message) {
+            host._warn(key, message);
+          },
+          authorNodes: authorSet
+        });
+      }
       _render() {
         this._observer.disconnect();
-        for (const node of this._authorNodes) node.remove();
-        const helpers = createHelpers(
-          this,
-          definition,
-          this._authorNodes,
-          this._slotsByNode
-        );
+        this._syncAuthorNodes();
+        this._clearRenderCleanup();
+        const authorSet = new Set(this._authorNodes);
+        const helpers = this._createHelpers(authorSet);
         const template = document.createElement("template");
         template.innerHTML = definition.render(this, helpers).trim();
-        this.replaceChildren(template.content);
-        const regions = /* @__PURE__ */ new Map();
-        for (const region of this.querySelectorAll("[data-ax-slot]")) {
-          regions.set(region.getAttribute("data-ax-slot"), region);
+        const desiredGenerated = /* @__PURE__ */ new WeakSet();
+        walkNodes(template.content, (node) => desiredGenerated.add(node));
+        const desiredRegions = /* @__PURE__ */ new Map();
+        for (const region of template.content.querySelectorAll(
+          "[data-ax-slot]"
+        )) {
+          desiredRegions.set(region.getAttribute("data-ax-slot"), region);
         }
         for (const node of this._authorNodes) {
-          const slot = this._slotsByNode.get(node) || "default";
-          const region = regions.get(slot) ?? regions.get("default");
-          if (region) region.append(node);
-        }
-        for (const region of regions.values())
-          region.removeAttribute("data-ax-slot");
-        this._valueControl = this.querySelector("[data-ax-reflect-value]");
-        this._checkedControl = this.querySelector("[data-ax-reflect-checked]");
-        this._nativeDialog = this.querySelector("dialog[data-ax-dialog]");
-        this._nativeTab = this.querySelector('[role="tab"]');
-        this._valueControl?.removeAttribute("data-ax-reflect-value");
-        this._checkedControl?.removeAttribute("data-ax-reflect-checked");
-        if (this._valueControl && this.hasAttribute("value")) {
-          this._valueControl.value = this.getAttribute("value");
-        }
-        if (definition.tag === "ax-tab-list" && this.hasAttribute("value")) {
-          const selectedValue = this.getAttribute("value");
-          for (const tab of this.querySelectorAll("ax-tab")) {
-            tab.toggleAttribute(
-              "selected",
-              tab.getAttribute("value") === selectedValue
+          let slot = this._slotByNode.get(node) || this._declaredSlot(node);
+          if (!Object.hasOwn(definition.slots, slot)) {
+            this._warn(
+              `slot:${slot}`,
+              `[Astryx] <${definition.tag}> received unknown slot "${slot}"; using the default slot.`
             );
+            slot = Object.hasOwn(definition.slots, "default") ? "default" : slot;
+            this._slotByNode.set(node, slot);
           }
+          const region = desiredRegions.get(slot) ?? desiredRegions.get("default");
+          if (region) region.append(node);
+          else template.content.append(node);
         }
-        if (this._checkedControl) {
-          this._checkedControl.checked = this.hasAttribute("checked");
+        const nextGenerated = /* @__PURE__ */ new WeakSet();
+        morphChildren(
+          this,
+          template.content,
+          authorSet,
+          desiredGenerated,
+          nextGenerated,
+          preserveAttributes
+        );
+        this._generatedNodes = nextGenerated;
+        this._runtimeRoots = [...this.childNodes].filter(
+          (node) => this._generatedNodes.has(node)
+        );
+        this._regions = /* @__PURE__ */ new Map();
+        for (const region of this.querySelectorAll("[data-ax-slot]")) {
+          const name = region.getAttribute("data-ax-slot");
+          this._regions.set(name, region);
+          region.removeAttribute("data-ax-slot");
         }
-        if (definition.tag === "ax-dialog" && this.hasAttribute("open")) {
-          queueMicrotask(() => this.show());
-        }
+        this._control = definition.control ? this.querySelector(definition.control) : null;
+        this._setupReflections();
+        const cleanup = definition.hooks?.afterRender?.(this, this._api);
+        if (typeof cleanup === "function") this._renderCleanup.push(cleanup);
         this._observe();
       }
-      _handleEvent(event) {
-        if ((event.type === "input" || event.type === "change") && event.target === this._valueControl) {
-          if (definition.tag === "ax-selector" && this.hasAttribute("is-read-only")) {
-            event.preventDefault();
-            event.target.value = this.getAttribute("value") || "";
-            return;
+      _setupReflections() {
+        for (const [attribute, spec] of Object.entries(definition.attributes)) {
+          if (!spec.reflect || !this._control) continue;
+          const target = spec.reflect.selector ? this.querySelector(spec.reflect.selector) : this._control;
+          if (!target) continue;
+          const reflect = (event) => {
+            const value = spec.reflect.get ? spec.reflect.get(this, target, event, this._api) : target[spec.reflect.property ?? spec.liveProperty ?? attribute];
+            if (value !== void 0) this._reflectAttribute(attribute, value);
+          };
+          for (const event of spec.reflect.events ?? []) {
+            this._api.listen(target, event, reflect);
           }
-          this._reflectAttribute("value", event.target.value);
-        }
-        if (event.type === "change" && event.target === this._checkedControl) {
-          this._reflectAttribute("checked", event.target.checked);
-        }
-        if (definition.tag === "ax-dialog") {
-          if (event.type === "astryx:dialog-open")
-            this._reflectAttribute("open", true);
-          if (event.type === "astryx:dialog-close" || event.type === "close") {
-            this._reflectAttribute("open", false);
-            const returnTarget = this._dialogReturnTarget;
-            this._dialogReturnTarget = null;
-            if (returnTarget instanceof HTMLElement && returnTarget.isConnected) {
-              returnTarget.focus({ preventScroll: true });
-            }
+          if (target.form) {
+            this._api.listen(target.form, "reset", () => queueMicrotask(reflect));
           }
-        }
-        if (definition.tag === "ax-tab-list" && event.type === "astryx:tab-change") {
-          const selectedTab = event.target instanceof Element ? event.target.closest("ax-tab") : null;
-          const value = selectedTab?.getAttribute("value") || event.detail?.value;
-          if (value) this._reflectAttribute("value", value);
-          for (const tab of this.querySelectorAll("ax-tab"))
-            tab._syncNativeState?.();
         }
       }
-      _syncNativeState() {
-        if (definition.tag !== "ax-tab" || !this._nativeTab) return;
-        this._reflectAttribute(
-          "selected",
-          this._nativeTab.getAttribute("aria-selected") === "true"
-        );
+      _clearRenderCleanup() {
+        for (const cleanup of this._renderCleanup.splice(0)) cleanup();
+      }
+      _canonicalAttribute(name) {
+        return metadata.aliases.get(name) ?? name;
+      }
+      _hasAttributeValue(name) {
+        const spec = definition.attributes[name];
+        if (!spec) return this.hasAttribute(name);
+        return this.hasAttribute(name) || (spec.aliases ?? []).some((alias) => this.hasAttribute(alias));
+      }
+      _rawAttribute(name) {
+        const spec = definition.attributes[name];
+        if (this.hasAttribute(name)) return this.getAttribute(name);
+        for (const alias of spec?.aliases ?? []) {
+          if (this.hasAttribute(alias)) return this.getAttribute(alias);
+        }
+        return null;
+      }
+      _readAttribute(name) {
+        const spec = definition.attributes[name];
+        if (!spec) return this.getAttribute(name);
+        const raw = this._rawAttribute(name);
+        if (spec.type === "boolean") return raw !== null;
+        if (raw === null || raw === "") return spec.default ?? "";
+        if (spec.type === "enum" && !spec.values.includes(raw)) {
+          this._warnInvalidEnum(name, raw, spec.values);
+          return spec.default;
+        }
+        return raw;
+      }
+      _setAttributeValue(name, value) {
+        const spec = definition.attributes[name];
+        this._reflecting = false;
+        if (spec.type === "boolean") {
+          if (value) this.setAttribute(name, "");
+          else {
+            this.removeAttribute(name);
+            for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
+          }
+          return;
+        }
+        if (value === null || value === void 0) {
+          this.removeAttribute(name);
+          for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
+        } else {
+          this.setAttribute(name, String(value));
+        }
       }
       _reflectAttribute(name, value) {
+        const spec = definition.attributes[name];
+        if (!spec) return;
         this._reflecting = true;
-        if (typeof value === "boolean") this.toggleAttribute(name, value);
-        else if (this.getAttribute(name) !== String(value)) {
-          this.setAttribute(name, String(value));
+        const presentAliases = (spec.aliases ?? []).filter(
+          (alias) => this.hasAttribute(alias)
+        );
+        if (spec.type === "boolean") {
+          if (value) {
+            if (this.hasAttribute(name) || presentAliases.length === 0) {
+              this.setAttribute(name, "");
+            }
+            for (const alias of presentAliases) this.setAttribute(alias, "");
+          } else {
+            this.removeAttribute(name);
+            for (const alias of spec.aliases ?? []) this.removeAttribute(alias);
+          }
+        } else {
+          const text = String(value ?? "");
+          if (this.hasAttribute(name) || presentAliases.length === 0) {
+            if (this.getAttribute(name) !== text) this.setAttribute(name, text);
+          }
+          for (const alias of presentAliases) {
+            if (this.getAttribute(alias) !== text) this.setAttribute(alias, text);
+          }
         }
         this._reflecting = false;
       }
       _validateAttribute(name) {
-        if (isKnownAttribute(definition, name)) {
-          const spec = definition.attributes[name];
+        const canonical = this._canonicalAttribute(name);
+        const spec = definition.attributes[canonical];
+        if (spec || GLOBAL_ATTRIBUTES.has(name) || name.startsWith("aria-") || name.startsWith("data-") || /^on[a-z]+$/i.test(name)) {
           const value = this.getAttribute(name);
+          if (spec?.type === "boolean" && value === "false") {
+            this._warn(
+              `boolean-false:${canonical}`,
+              `[Astryx] <${definition.tag}> treats ${name}="false" as present and therefore true; remove the attribute for false.`
+            );
+          }
           if (spec?.type === "enum" && value !== null && value !== "" && !spec.values.includes(value)) {
-            this._warnInvalidEnum(name, value, spec.values);
+            this._warnInvalidEnum(canonical, value, spec.values);
           }
           return;
         }
-        const key = `unknown:${name}`;
-        if (this._warnedAttributes.has(key)) return;
-        this._warnedAttributes.add(key);
-        console.warn(
-          `[Astryx] <${definition.tag}> received unknown attribute "${name}".`
+        const suggestion = definition.attributeSuggestions?.[name];
+        this._warn(
+          `unknown:${name}`,
+          `[Astryx] <${definition.tag}> received unknown attribute "${name}".${suggestion ? ` Did you mean "${suggestion}"?` : ""}`
         );
       }
       _warnInvalidEnum(name, value, values) {
-        const key = `enum:${name}`;
-        if (this._warnedAttributes.has(key)) return;
-        this._warnedAttributes.add(key);
-        console.warn(
+        this._warn(
+          `enum:${name}`,
           `[Astryx] <${definition.tag}> received invalid ${name}="${value}"; expected ${values.join(", ")}.`
         );
       }
+      _warn(key, message) {
+        if (this._warned.has(key)) return;
+        this._warned.add(key);
+        console.warn(message);
+      }
     }
-    if (definition.tag === "ax-dialog") installDialogMethods(AstryxElement);
+    installElementAPI(AstryxElement, definition, metadata);
     customElements.define(definition.tag, AstryxElement);
     return AstryxElement;
   }
@@ -974,8 +1736,18 @@ var AstryxElements = (() => {
     return definitions2.map(registerElement);
   }
 
-  // elements/astryx-elements.entry.mjs
-  var definitions = [Badge_element_default, Button_element_default, Card_element_default, Dialog_element_default, Layout_element_default, Selector_element_default, Tab_element_default, TabList_element_default, TextInput_element_default];
+  // elements/src/index.generated.mjs
+  var definitions = [
+    Badge_element_default,
+    Button_element_default,
+    Card_element_default,
+    Dialog_element_default,
+    Layout_element_default,
+    Selector_element_default,
+    Tab_element_default,
+    TabList_element_default,
+    TextInput_element_default
+  ];
   registerElements(definitions);
-  return __toCommonJS(astryx_elements_entry_exports);
+  return __toCommonJS(index_generated_exports);
 })();

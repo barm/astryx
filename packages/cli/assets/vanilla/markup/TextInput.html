@@ -1,19 +1,30 @@
 <!-- docs: Collect a single line of text with an associated visible label. -->
 <!-- variant: default -->
-<label class="ax-stack ax-stack--gap-1">
-  <span class="ax-text ax-text--label">Project name</span>
+<div class="ax-stack ax-stack--gap-1">
+  <label class="ax-text ax-text--label" for="project-name-input"
+    >Project name</label
+  >
   <span class="ax-text-input"
-    ><input type="text" name="project" placeholder="Astryx"
+    ><input
+      id="project-name-input"
+      type="text"
+      name="project"
+      placeholder="Astryx"
   /></span>
-</label>
+</div>
 
 <!-- variant: error -->
-<label class="ax-stack ax-stack--gap-1">
-  <span class="ax-text ax-text--label">Email</span>
+<div class="ax-stack ax-stack--gap-1">
+  <label class="ax-text ax-text--label" for="email-input">Email</label>
   <span class="ax-text-input ax-text-input--error"
-    ><input type="email" name="email" aria-invalid="true"
+    ><input
+      id="email-input"
+      type="email"
+      name="email"
+      aria-invalid="true"
+      aria-describedby="email-status"
   /></span>
-  <span class="ax-text ax-text--supporting" role="alert"
+  <span class="ax-text ax-text--supporting" id="email-status" role="alert"
     >Enter a valid email address.</span
   >
-</label>
+</div>

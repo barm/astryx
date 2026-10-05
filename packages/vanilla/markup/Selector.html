@@ -1,49 +1,59 @@
 <!-- docs: Choose one value from a moderate list. Theme and mode hooks persist the active appearance across reloads. -->
 <!-- variant: default -->
-<label class="ax-selector">
-  <span class="ax-selector__label">Workspace</span>
+<div class="ax-selector">
+  <label class="ax-selector__label" for="workspace-selector">Workspace</label>
   <span class="ax-selector__control">
-    <select class="ax-selector__select" name="workspace">
+    <select
+      class="ax-selector__select"
+      id="workspace-selector"
+      name="workspace"
+      aria-describedby="workspace-description">
       <option>Design systems</option>
       <option>Developer tools</option>
       <option>Business platform</option>
     </select>
     <span class="ax-selector__indicator" aria-hidden="true"></span>
   </span>
-  <span class="ax-selector__description"
+  <span class="ax-selector__description" id="workspace-description"
     >Choose where this project belongs.</span
   >
-</label>
+</div>
 
 <!-- variant: compact -->
-<label class="ax-selector ax-selector--sm">
-  <span class="ax-selector__label">Status</span>
+<div class="ax-selector ax-selector--sm">
+  <label class="ax-selector__label" for="status-selector">Status</label>
   <span class="ax-selector__control">
-    <select class="ax-selector__select">
+    <select class="ax-selector__select" id="status-selector">
       <option>Active</option>
       <option>Paused</option>
       <option>Archived</option>
     </select>
     <span class="ax-selector__indicator" aria-hidden="true"></span>
   </span>
-</label>
+</div>
 
 <!-- variant: error -->
-<label class="ax-selector ax-selector--error">
-  <span class="ax-selector__label">Owner</span>
+<div class="ax-selector ax-selector--error">
+  <label class="ax-selector__label" for="owner-selector">Owner</label>
   <span class="ax-selector__control">
-    <select class="ax-selector__select" aria-invalid="true">
+    <select
+      class="ax-selector__select"
+      id="owner-selector"
+      aria-invalid="true"
+      aria-describedby="owner-status">
       <option value="">Choose an owner</option>
       <option>Alex Morgan</option>
       <option>Sam Rivera</option>
     </select>
     <span class="ax-selector__indicator" aria-hidden="true"></span>
   </span>
-  <span class="ax-selector__description">Select an owner to continue.</span>
-</label>
+  <span class="ax-selector__description" id="owner-status"
+    >Select an owner to continue.</span
+  >
+</div>
 
 <!-- variant: ghost -->
-<label class="ax-selector ax-selector--ghost">
+<div class="ax-selector ax-selector--ghost">
   <span class="ax-selector__control">
     <select class="ax-selector__select" aria-label="Sort results">
       <option>Newest first</option>
@@ -51,13 +61,16 @@
     </select>
     <span class="ax-selector__indicator" aria-hidden="true"></span>
   </span>
-</label>
+</div>
 
 <!-- variant: theme-switcher -->
-<label class="ax-selector">
-  <span class="ax-selector__label">Theme</span>
+<div class="ax-selector">
+  <label class="ax-selector__label" for="theme-selector">Theme</label>
   <span class="ax-selector__control">
-    <select class="ax-selector__select" data-ax-theme-switch>
+    <select
+      class="ax-selector__select"
+      id="theme-selector"
+      data-ax-theme-switch>
       <option value="neutral">Neutral</option>
       <option value="butter">Butter</option>
       <option value="y2k">Y2K</option>
@@ -68,7 +81,7 @@
     </select>
     <span class="ax-selector__indicator" aria-hidden="true"></span>
   </span>
-</label>
+</div>
 
 <!-- variant: dark-mode-toggle -->
 <button

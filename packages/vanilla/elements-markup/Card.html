@@ -8,14 +8,24 @@ header: Optional heading content.
 default: Card body content.
 footer: Optional actions or supporting content.
 -->
+<!-- events:
+none
+-->
+<!-- methods:
+none
+-->
+<!-- properties:
+variant: string read/write | Card surface variant.
+elevation: string read/write | Resting shadow depth.
+-->
 <!-- variant: default -->
-<ax-card
-  ><h2 slot="header">Card title</h2>
-  <p>Card content</p></ax-card
->
+<ax-card>
+  <h2 slot="header">Card title</h2>
+  <p>Card content</p>
+</ax-card>
 
 <!-- variant: elevated -->
-<ax-card elevation="low"
-  ><p>Elevated card</p>
-  <ax-button slot="footer" variant="primary">Action</ax-button></ax-card
->
+<ax-card elevation="low">
+  <p>Elevated card</p>
+  <ax-button slot="footer" variant="primary">Action</ax-button>
+</ax-card>

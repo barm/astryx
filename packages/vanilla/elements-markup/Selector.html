@@ -1,27 +1,57 @@
 <!-- docs: Choose one value from a moderate list with a native select control. -->
 <!-- attributes:
-label: string | — | Visible and accessible field label.
+label*: string | — | Visible and accessible field label.
 value: string | — | Selected option value, reflected after native change events.
 size: sm, md, lg | md | Control size matching Selector size.
 variant: input, ghost | input | Bordered input or ghost toolbar presentation.
 status: none, error, success | none | Validation state.
 description: string | — | Supporting field description.
-is-required: presence | absent | Marks the native select required.
-is-disabled: presence | absent | Disables the native select.
-is-read-only: presence | absent | Prevents value changes while preserving focus and submission.
-html-name: string | — | Native form field name.
+status-message: string | — | Validation message associated with the native select.
+is-required (required): boolean | absent | Marks the native select required.
+is-disabled (disabled): boolean | absent | Disables the native select.
+is-read-only (readonly): boolean | absent | Prevents value changes while preserving focus and submission.
+html-name (name): string | — | Native form field name.
 -->
 <!-- slots:
-default: Native option and optgroup children.
+label*: Visible field label.
+default*: Native option and optgroup children.
+description: Supporting field description.
+status-message: Validation message.
+-->
+<!-- events:
+change: Native selection event; value is reflected to the host.
+-->
+<!-- methods:
+focus(): Delegate focus to the inner native control.
+click(): Delegate activation to the inner native control.
+checkValidity(): Delegate checkValidity() to the inner native control.
+reportValidity(): Delegate reportValidity() to the inner native control.
+-->
+<!-- properties:
+label: string read/write | Visible and accessible field label.
+value: string read/write | Selected option value, reflected after native change events.
+size: string read/write | Control size matching Selector size.
+variant: string read/write | Bordered input or ghost toolbar presentation.
+status: string read/write | Validation state.
+description: string read/write | Supporting field description.
+statusMessage: string read/write | Validation message associated with the native select.
+isRequired / required: boolean read/write | Marks the native select required.
+isDisabled / disabled: boolean read/write | Disables the native select.
+isReadOnly / readOnly: boolean read/write | Prevents value changes while preserving focus and submission.
+htmlName / name: string read/write | Native form field name.
+form: native read-only | Delegated from the inner native control.
+validity: native read-only | Delegated from the inner native control.
+validationMessage: native read-only | Delegated from the inner native control.
+willValidate: native read-only | Delegated from the inner native control.
 -->
 <!-- variant: default -->
-<ax-selector label="Workspace" html-name="workspace"
-  ><option value="design">Design systems</option>
-  <option value="tools">Developer tools</option></ax-selector
->
+<ax-selector label="Workspace" html-name="workspace">
+  <option value="design">Design systems</option>
+  <option value="tools">Developer tools</option>
+</ax-selector>
 
 <!-- variant: compact -->
-<ax-selector label="Status" size="sm"
-  ><option>Active</option>
-  <option>Paused</option></ax-selector
->
+<ax-selector label="Status" size="sm">
+  <option>Active</option>
+  <option>Paused</option>
+</ax-selector>

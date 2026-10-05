@@ -68,6 +68,8 @@ function canonicalHTML(html) {
     element.removeAttribute('aria-orientation');
     element.removeAttribute('tabindex');
     element.removeAttribute('data-ax-selected');
+    element.removeAttribute('data-ax-owned');
+    element.removeAttribute('hidden');
   }
   for (const titleSlot of template.content.querySelectorAll(
     '.ax-dialog__title > span',
@@ -304,7 +306,7 @@ test('native value events reflect to hosts and submit through a form', async () 
   assert.equal(data.get('workspace'), 'design');
 });
 
-test('generated docs expose attribute and slot contracts', async () => {
+test('generated docs expose complete API contracts', async () => {
   const files = (
     await readdir(path.join(packageRoot, 'elements-markup'))
   ).filter(file => file.endsWith('.html'));
@@ -316,21 +318,49 @@ test('generated docs expose attribute and slot contracts', async () => {
     );
     assert.match(content, /^<!-- docs: /);
     assert.match(content, /<!-- attributes:\n/);
+    assert.match(content, /<!-- slots:\n/);
+    assert.match(content, /<!-- events:\n/);
+    assert.match(content, /<!-- methods:\n/);
+    assert.match(content, /<!-- properties:\n/);
     assert.ok((content.match(/<!-- variant:/g) ?? []).length >= 2);
   }
+  const button = await readFile(
+    path.join(packageRoot, 'elements-markup/Button.html'),
+    'utf8',
+  );
+  assert.match(button, /label\*:/);
+  assert.match(button, /is-disabled \(disabled\):/);
+  const dialog = await readFile(
+    path.join(packageRoot, 'elements-markup/Dialog.html'),
+    'utf8',
+  );
+  assert.match(dialog, /is-open \(open\):/);
+  assert.match(dialog, /show\(\):/);
+  assert.match(dialog, /data-ax-dialog-open/);
 });
 
-test('bundles are self-contained and base CSS guards undefined hosts', async () => {
-  const [esm, classic, css] = await Promise.all([
+test('bundles and generated registries are self-contained and complete', async () => {
+  const [esm, classic, css, registry, runtime] = await Promise.all([
     readFile(path.join(packageRoot, 'dist/astryx-elements.js'), 'utf8'),
     readFile(path.join(packageRoot, 'dist/astryx-elements.classic.js'), 'utf8'),
     readFile(path.join(packageRoot, 'dist/astryx-vanilla.css'), 'utf8'),
+    readFile(
+      path.join(packageRoot, 'elements/src/index.generated.mjs'),
+      'utf8',
+    ),
+    readFile(path.join(packageRoot, 'elements/src/runtime.mjs'), 'utf8'),
   ]);
   for (const bundle of [esm, classic]) {
     assert.doesNotMatch(bundle, /from\s+["'][^./]/);
     assert.match(bundle, /customElements\.define/);
   }
-  assert.match(css, /ax-button/);
+  for (const definition of definitions) {
+    assert.match(css, new RegExp(definition.tag));
+    assert.match(registry, new RegExp(definition.name + '\\.element\\.mjs'));
+  }
   assert.match(css, /:not\(:defined\)/);
+  assert.match(css, /\[hidden\]/);
+  assert.match(css, /display: none !important/);
   assert.match(css, /display: contents/);
+  assert.doesNotMatch(runtime, /definition\.tag\s*===/);
 });

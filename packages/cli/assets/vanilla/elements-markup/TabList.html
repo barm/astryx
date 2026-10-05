@@ -1,4 +1,4 @@
-<!-- docs: Switch between related in-page views with arrow-key navigation. -->
+<!-- docs: Switch between related in-page views; non-selected slotted panels are hidden automatically. -->
 <!-- attributes:
 value: string | — | Selected child tab value, reflected after activation.
 size: sm, md, lg | md | Tab size matching TabList size.
@@ -7,20 +7,32 @@ orientation: horizontal, vertical | horizontal | Arrow-key and ARIA orientation.
 label: string | Views | Accessible label for the native tablist.
 -->
 <!-- slots:
-default: ax-tab children.
+default*: ax-tab children.
 panels: Panel elements whose IDs match child panel-id attributes.
 -->
+<!-- events:
+astryx:tab-change: Bubbles from the activated ax-tab with detail.value.
+-->
+<!-- methods:
+select(): Select a tab by value.
+-->
+<!-- properties:
+value: string read/write | Selected child tab value, reflected after activation.
+size: string read/write | Tab size matching TabList size.
+layout: string read/write | Tabs hug content or fill the available width.
+orientation: string read/write | Arrow-key and ARIA orientation.
+label: string read/write | Accessible label for the native tablist.
+-->
 <!-- variant: panels -->
-<ax-tab-list value="overview" label="Project views"
-  ><ax-tab value="overview" panel-id="panel-overview">Overview</ax-tab
-  ><ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab>
+<ax-tab-list value="overview" label="Project views">
+  <ax-tab value="overview" panel-id="panel-overview">Overview</ax-tab>
+  <ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab>
   <section slot="panels" id="panel-overview">Overview content</section>
-  <section slot="panels" id="panel-activity">
-    Activity content
-  </section></ax-tab-list
->
+  <section slot="panels" id="panel-activity">Activity content</section>
+</ax-tab-list>
 
 <!-- variant: fill -->
-<ax-tab-list layout="fill"
-  ><ax-tab value="one">One</ax-tab><ax-tab value="two">Two</ax-tab></ax-tab-list
->
+<ax-tab-list layout="fill">
+  <ax-tab value="one">One</ax-tab>
+  <ax-tab value="two">Two</ax-tab>
+</ax-tab-list>

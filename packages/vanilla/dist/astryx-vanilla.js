@@ -86,6 +86,10 @@
     return dialog instanceof HTMLDialogElement ? dialog : null;
   }
 
+  function isElementOwned(dialog) {
+    return dialog.hasAttribute('data-ax-owned');
+  }
+
   function focusDialog(dialog) {
     const target = dialog.querySelector(
       '[data-ax-dialog-initial-focus], [autofocus], .ax-dialog__title',
@@ -143,14 +147,16 @@
 
   function enhanceDialogs(root) {
     for (const dialog of elementsMatching(root, 'dialog[data-ax-dialog]')) {
+      if (isElementOwned(dialog)) continue;
       ensureID(dialog, 'ax-dialog');
     }
     for (const trigger of elementsMatching(root, '[data-ax-dialog-open]')) {
-      trigger.setAttribute('aria-haspopup', 'dialog');
       const dialog = getDialog(
         trigger.ownerDocument,
         trigger.dataset.axDialogOpen,
       );
+      if (dialog && isElementOwned(dialog)) continue;
+      trigger.setAttribute('aria-haspopup', 'dialog');
       trigger.setAttribute('aria-expanded', String(Boolean(dialog?.open)));
     }
   }
@@ -166,7 +172,7 @@
       const openTrigger = target.closest('[data-ax-dialog-open]');
       if (openTrigger instanceof HTMLElement) {
         const dialog = getDialog(doc, openTrigger.dataset.axDialogOpen);
-        if (dialog) {
+        if (dialog && !isElementOwned(dialog)) {
           event.preventDefault();
           openDialog(dialog, openTrigger);
         }
@@ -176,7 +182,7 @@
       const closeTrigger = target.closest('[data-ax-dialog-close]');
       if (closeTrigger) {
         const dialog = closeTrigger.closest('dialog[data-ax-dialog]');
-        if (dialog instanceof HTMLDialogElement) {
+        if (dialog instanceof HTMLDialogElement && !isElementOwned(dialog)) {
           event.preventDefault();
           closeDialog(dialog);
         }
@@ -185,7 +191,8 @@
 
       if (
         target instanceof HTMLDialogElement &&
-        target.matches('[data-ax-dialog]')
+        target.matches('[data-ax-dialog]') &&
+        !isElementOwned(target)
       ) {
         closeDialog(target);
       }
@@ -197,7 +204,8 @@
         const dialog = event.target;
         if (
           !(dialog instanceof HTMLDialogElement) ||
-          !dialog.matches('[data-ax-dialog]')
+          !dialog.matches('[data-ax-dialog]') ||
+          isElementOwned(dialog)
         )
           return;
         if (dialog.hasAttribute('data-ax-dialog-required')) {
@@ -435,7 +443,7 @@
 
   function activateTab(tab, focus = false) {
     const list = tab.closest('[data-ax-tab-list], [role="tablist"]');
-    if (!list) return;
+    if (!list || list.hasAttribute('data-ax-owned')) return;
     for (const candidate of tabsFor(list)) {
       const selected = candidate === tab;
       candidate.setAttribute('aria-selected', String(selected));
@@ -453,6 +461,7 @@
       root,
       '[data-ax-tab-list], [role="tablist"]',
     )) {
+      if (list.hasAttribute('data-ax-owned')) continue;
       if (!list.hasAttribute('role')) list.setAttribute('role', 'tablist');
       const tabs = tabsFor(list);
       let selected =
@@ -477,7 +486,8 @@
         target instanceof Element ? target.closest('[role="tab"]') : null;
       if (
         tab instanceof HTMLElement &&
-        tab.closest('[data-ax-tab-list], [role="tablist"]')
+        tab.closest('[data-ax-tab-list], [role="tablist"]') &&
+        !tab.closest('[data-ax-owned]')
       )
         activateTab(tab);
     });
@@ -487,7 +497,7 @@
       if (!(tab instanceof HTMLElement) || tab.getAttribute('role') !== 'tab')
         return;
       const list = tab.closest('[data-ax-tab-list], [role="tablist"]');
-      if (!list) return;
+      if (!list || list.hasAttribute('data-ax-owned')) return;
       const vertical = list.getAttribute('aria-orientation') === 'vertical';
       const previousKey = vertical ? 'ArrowUp' : 'ArrowLeft';
       const nextKey = vertical ? 'ArrowDown' : 'ArrowRight';

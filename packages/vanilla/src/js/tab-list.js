@@ -18,7 +18,7 @@ function panelFor(tab) {
 
 export function activateTab(tab, focus = false) {
   const list = tab.closest('[data-ax-tab-list], [role="tablist"]');
-  if (!list) return;
+  if (!list || list.hasAttribute('data-ax-owned')) return;
   for (const candidate of tabsFor(list)) {
     const selected = candidate === tab;
     candidate.setAttribute('aria-selected', String(selected));
@@ -36,6 +36,7 @@ export function enhanceTabLists(root) {
     root,
     '[data-ax-tab-list], [role="tablist"]',
   )) {
+    if (list.hasAttribute('data-ax-owned')) continue;
     if (!list.hasAttribute('role')) list.setAttribute('role', 'tablist');
     const tabs = tabsFor(list);
     let selected =
@@ -60,7 +61,8 @@ export function setupTabLists(doc) {
       target instanceof Element ? target.closest('[role="tab"]') : null;
     if (
       tab instanceof HTMLElement &&
-      tab.closest('[data-ax-tab-list], [role="tablist"]')
+      tab.closest('[data-ax-tab-list], [role="tablist"]') &&
+      !tab.closest('[data-ax-owned]')
     )
       activateTab(tab);
   });
@@ -70,7 +72,7 @@ export function setupTabLists(doc) {
     if (!(tab instanceof HTMLElement) || tab.getAttribute('role') !== 'tab')
       return;
     const list = tab.closest('[data-ax-tab-list], [role="tablist"]');
-    if (!list) return;
+    if (!list || list.hasAttribute('data-ax-owned')) return;
     const vertical = list.getAttribute('aria-orientation') === 'vertical';
     const previousKey = vertical ? 'ArrowUp' : 'ArrowLeft';
     const nextKey = vertical ? 'ArrowDown' : 'ArrowRight';

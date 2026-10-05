@@ -8,6 +8,10 @@ export default {
   name: 'Button',
   tag: 'ax-button',
   attributes: {
+    label: {
+      type: 'string',
+      description: 'Visible button label when no child content is authored.',
+    },
     variant: {
       type: 'enum',
       values: variants,
@@ -28,41 +32,79 @@ export default {
     },
     'is-disabled': {
       type: 'boolean',
+      aliases: ['disabled'],
+      aliasProperties: ['disabled'],
       default: false,
       description: 'Disables native activation.',
     },
     name: {type: 'string', description: 'Native form field name.'},
     value: {type: 'string', description: 'Native form submission value.'},
     form: {type: 'string', description: 'ID of the associated form.'},
+    href: {type: 'string', description: 'Optional native link destination.'},
   },
   slots: {
-    default: 'Visible button label and inline content.',
+    default: {
+      description: 'Visible button label and inline content.',
+      required: true,
+    },
+  },
+  content: [{attribute: 'label', slot: 'default', required: true}],
+  control: 'button, a',
+  delegates: {
+    properties: ['validity', 'validationMessage', 'willValidate'],
+    methods: ['checkValidity', 'reportValidity'],
+  },
+  events: {
+    click: 'Native activation event from the inner button or link.',
   },
   docs: 'Trigger an action with primary, secondary, ghost, or destructive emphasis.',
   examples: [
     {
       name: 'primary',
-      html: '<ax-button variant="primary">Continue</ax-button>',
+      html: `<ax-button variant="primary">
+  Continue
+</ax-button>`,
     },
     {
-      name: 'disabled',
-      html: '<ax-button variant="primary" is-disabled>Continue</ax-button>',
+      name: 'disabled-label',
+      html: `<ax-button label="Continue" variant="primary" is-disabled></ax-button>`,
     },
   ],
+  hooks: {
+    afterRender(host, api) {
+      if (api.read('href') && api.read('is-disabled')) {
+        api.listen(api.control, 'click', event => event.preventDefault());
+      }
+      if (
+        host.hasAttribute('autofocus') &&
+        document.activeElement === document.body
+      ) {
+        api.control?.focus();
+      }
+    },
+  },
   render(_host, h) {
     const variant = h.attr('variant');
     const size = h.attr('size');
+    const href = h.attr('href');
+    const content = h.content('label');
     const classes = ['ax-button', `ax-button--${variant}`];
     if (size !== 'md') classes.push(`ax-button--${size}`);
-    const attributes = [
-      `class="${classes.join(' ')}"`,
-      `type="${h.escape(h.attr('type'))}"`,
-    ];
-    if (h.attr('is-disabled')) attributes.push('disabled');
-    for (const name of ['name', 'value', 'form']) {
-      const value = h.attr(name);
-      if (value) attributes.push(`${name}="${h.escape(value)}"`);
+    const attributes = [`class="${classes.join(' ')}"`];
+    if (href) {
+      attributes.push(`href="${h.escape(href)}"`);
+      if (h.attr('is-disabled')) {
+        attributes.push('aria-disabled="true"', 'tabindex="-1"');
+      }
+    } else {
+      attributes.push(`type="${h.escape(h.attr('type'))}"`);
+      if (h.attr('is-disabled')) attributes.push('disabled');
+      for (const name of ['name', 'value', 'form']) {
+        const value = h.attr(name);
+        if (value) attributes.push(`${name}="${h.escape(value)}"`);
+      }
     }
-    return `<button ${attributes.join(' ')} ${h.slot()}></button>`;
+    const contentRegion = content.slotted ? ` ${h.slot()}` : '';
+    return `<${href ? 'a' : 'button'} ${attributes.join(' ')}${contentRegion}>${content.html}</${href ? 'a' : 'button'}>`;
   },
 };

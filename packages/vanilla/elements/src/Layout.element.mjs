@@ -24,11 +24,19 @@ export default {
   examples: [
     {
       name: 'page-shell',
-      html: '<ax-layout><h1 slot="header">Page title</h1><p>Page content</p><small slot="footer">Footer</small></ax-layout>',
+      html: `<ax-layout>
+  <h1 slot="header">Page title</h1>
+  <p>Page content</p>
+  <small slot="footer">Footer</small>
+</ax-layout>`,
     },
     {
       name: 'named-regions',
-      html: '<ax-layout><nav slot="start">Navigation</nav><main>Main content</main><aside slot="end">Inspector</aside></ax-layout>',
+      html: `<ax-layout>
+  <nav slot="start">Navigation</nav>
+  <main>Main content</main>
+  <aside slot="end">Inspector</aside>
+</ax-layout>`,
     },
   ],
   render(_host, h) {

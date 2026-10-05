@@ -1,35 +1,36 @@
 # Vanilla Astryx web components
 
-This package is a build-less experiment that wraps existing Vanilla Astryx markup in standard custom elements. It deliberately uses **light DOM**, so `astryx-vanilla.css`, shipped theme CSS, and `astryx-vanilla.js` continue to style and enhance the same native elements and `ax-` BEM classes.
+This build-less experiment wraps existing Vanilla Astryx markup in standard custom elements. It deliberately uses **light DOM**, so `astryx-vanilla.css`, shipped theme CSS, and the existing `ax-` BEM classes style the same native elements. `astryx-vanilla.js` is optional: interactive elements own their behavior and mark their native roots so the progressive-enhancement bundle defers rather than double-enhancing them.
 
 ## API conventions
 
 - Tags are `ax-` plus the React component name in kebab case: `Button` becomes `ax-button`, `TextInput` becomes `ax-text-input`, and `TabList` becomes `ax-tab-list`.
-- Attributes mirror React Astryx prop names in kebab case where the HTML surface exposes that concept. Boolean props use presence attributes (`is-disabled`), while enum attributes declare allowed values and a default in the generated markup docs.
-- `open`, `selected`, `checked`, and `value` are state attributes. The runtime reflects native state changes to them without replacing the active native control.
+- Canonical attributes are React prop names in kebab case. Boolean props use presence attributes such as `is-disabled` and `is-open`.
+- Common native spellings are exact, warning-free aliases where applicable: `disabled`, `open`, `required`, `readonly`, and `name`. Generated docs list the canonical attribute first and its aliases second.
+- String content props work as attributes. For example, `<ax-button label="Save">` renders `Save`. Authored children or named slots win when both forms are present, with one development warning for the conflict.
+- Generated JavaScript properties include canonical camel-case names and native aliases such as `isDisabled`/`disabled`, `isOpen`/`open`, `value`, and `name`. `focus()` and `click()` delegate to the native control; form-facing getters and validation methods are delegated where applicable.
 - Native events bubble from the rendered button, input, select, or dialog. The wrapper does not synthesize competing click, input, change, or close events.
-- Unknown attributes and invalid enum values warn once per element and attribute.
+- Unknown attributes, unknown slots, invalid enum values, and boolean attributes written as `="false"` warn once. Global `role`, `aria-*`, `data-*`, and inline `on*` attributes are accepted.
 
-Each `src/<ComponentName>.element.mjs` file is the single source for its tag, attributes, slots, docs, examples, and light-DOM renderer. `scripts/build-elements.mjs` discovers those definitions, generates `elements-markup/*.html`, and bundles the registration runtime.
+Each `src/<ComponentName>.element.mjs` file is the source for its tag, attributes, aliases, slots, properties, methods, events, behavior hooks, docs, examples, and light-DOM renderer. `scripts/build-elements.mjs` discovers and validates those definitions, then generates the registration index, host/FOUC CSS, `elements-markup/*.html`, and both bundles.
 
 ## Light DOM and slots
 
-Shadow DOM would isolate the native markup from the existing stylesheet, theme scopes, progressive-enhancement script, labels, and document-level behavior handlers. These elements therefore render no shadow root.
+Shadow DOM would isolate native markup from the existing stylesheet, theme scopes, labels, and document-level integrations, so these elements render no shadow root.
 
-Author children are retained as the same nodes across idempotent renders. A child with `slot="header"`, `slot="footer"`, `slot="start"`, `slot="end"`, `slot="title"`, or `slot="panels"` moves into the matching BEM region. Remaining children use the default slot. Card, Layout, Dialog, and TabList demonstrate named regions.
+Rendered slot regions are the source of truth after connection. Author nodes retain identity across attribute updates; removals stay removed, replacements stay replaced, and nodes appended either to a host or a rendered slot region are adopted on the next render. Unknown named slots warn before falling back to the default region.
 
-`ax-selector` intentionally accepts native `<option>` and `<optgroup>` children rather than introducing `ax-option`. The rendered control remains a real `<select>`, preserving browser keyboard behavior and native form submission with no form-associated-custom-element shim.
+`ax-selector` intentionally accepts native `<option>` and `<optgroup>` children rather than introducing `ax-option`. The rendered control remains a real `<select>`, preserving browser keyboard behavior and native form submission without a form-associated-custom-element shim.
 
-## Native wiring and state
+## Native wiring and behavior ownership
 
-- `ax-text-input` generates label, description, status, `aria-describedby`, and `aria-invalid` wiring around a real `<input>`.
-- `ax-selector` generates equivalent field wiring around a real `<select>`.
-- `ax-dialog` renders a real `<dialog>`, exposes `show()` and `close()`, restores focus to its connected invoker, and interoperates with `data-ax-dialog` behavior from `astryx-vanilla.js`.
-- `ax-tab-list` and `ax-tab` render the existing tablist/button contract, including `aria-selected`, `aria-controls`, roving `tabindex`, mouse activation, and arrow/Home/End navigation from `astryx-vanilla.js`.
+- `ax-text-input` and `ax-selector` use a separate `<label for>` plus description/status nodes, so supporting text does not become part of the control's accessible name.
+- `ax-dialog` renders a real `<dialog>`, supports canonical `is-open` plus the `open` alias, exposes `show()` and `close()`, handles external `data-ax-dialog-open`/`data-ax-dialog-close` triggers, and restores focus to its connected invoker. Required dialogs omit the automatic close button and resist Escape/backdrop dismissal.
+- `ax-tab-list` and `ax-tab` own panel hiding, `aria-selected`, `aria-controls`, roving `tabindex`, pointer activation, and arrow/Home/End navigation. Their behavior is synchronous after registration with or without `astryx-vanilla.js`.
 
 ## Layout and FOUC
 
-Hosts use `display: contents`; the existing BEM root is the layout box. This avoids an extra flex/grid participant while retaining a custom-element ownership boundary. The explicit `ax-*:not(:defined)` tag list in `src/base.css` hides author children until registration, preventing an unstyled flash without relying on an unsupported wildcard selector.
+Hosts use `display: contents`; the existing BEM root is the layout box. `scripts/build-elements.mjs` generates the complete tag registry used by `src/elements.generated.css`, including the `:not(:defined)` FOUC guard and a `[hidden] { display: none !important; }` override that preserves the HTML hidden contract.
 
 ## Browser support
 
@@ -38,10 +39,10 @@ The experiment targets the repository's current browser baseline: custom element
 ## Build and validation
 
 ```bash
-pnpm -F @astryxdesign/vanilla build:elements
-pnpm -F @astryxdesign/vanilla check:elements
+pnpm -F @astryxdesign/vanilla build
+pnpm -F @astryxdesign/vanilla check
 pnpm -F @astryxdesign/vanilla test
 pnpm -F @astryxdesign/vanilla test:elements:browser
 ```
 
-The browser suite covers ESM and classic registration, keyboard and pointer behavior, form submission, warning deduplication, six theme/mode gallery states, and serious axe violations.
+The suites cover ESM/classic registration, operation with and without the progressive-enhancement bundle, control identity and focus preservation, live child replacement/removal, native properties and delegation, dialog and tab behavior, form submission/reset, generated-contract drift, warning fidelity, six theme/mode gallery states, and serious axe violations.
