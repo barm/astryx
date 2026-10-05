@@ -1,0 +1,27 @@
+<!-- docs: Explain an empty result or first-run state with a specific title and useful next actions. -->
+<!-- attributes:
+title* (data-ax-title):string|—|Required primary message; consumed so the host never shows a native title tooltip.
+description:string|—|Optional explanatory text.
+heading-level:1, 2, 3, 4, 5, 6|3|Semantic heading level for the title.
+is-compact:boolean|absent|Uses reduced spacing for constrained surfaces.
+-->
+<!-- slots:
+title*:Primary message; overrides the title attribute.
+description:Supporting explanation.
+icon:Decorative icon or illustration.
+actions:One or two useful next actions.
+default:Optional additional supporting content.
+-->
+<!-- events:
+none
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: default -->
+<ax-empty-state title="No projects yet">
+  <span slot="icon">＋</span>
+  <ax-button slot="actions" variant="primary">Create project</ax-button>
+</ax-empty-state>
+<!-- variant: compact -->
+<ax-empty-state title="No matching results" description="Try a broader search." is-compact>
+  <ax-button slot="actions">Clear filters</ax-button>
+</ax-empty-state>

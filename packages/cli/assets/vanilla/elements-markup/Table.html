@@ -1,0 +1,31 @@
+<!-- docs: Style an authored native table inside an accessible horizontal scroll region. -->
+<!-- attributes:
+label:string|Data table|Accessible label for the horizontal scroll region.
+density:compact, balanced, spacious|balanced|Body row density.
+dividers:rows, columns, grid, none|rows|Cell divider treatment.
+is-striped:boolean|absent|Adds alternating body-row surfaces.
+has-hover:boolean|absent|Adds pointer hover highlighting to body rows.
+vertical-align:middle, top, bottom|middle|Vertical alignment for body cells.
+text-overflow:wrap, truncate|wrap|Body-cell overflow behavior.
+-->
+<!-- slots:
+default*:A native table with semantic sections, rows, and cells.
+-->
+<!-- events:
+none
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: balanced -->
+<ax-table label="Project table" has-hover>
+  <table>
+    <thead><tr><th scope="col" style="color: var(--color-text-primary)">Project</th><th scope="col" style="color: var(--color-text-primary)">Status</th></tr></thead>
+    <tbody><tr><td>Astryx</td><td>Active</td></tr></tbody>
+  </table>
+</ax-table>
+<!-- variant: compact-grid -->
+<ax-table label="Release table" density="compact" dividers="grid" is-striped>
+  <table>
+    <thead><tr><th scope="col" style="color: var(--color-text-primary)">Version</th><th scope="col" style="color: var(--color-text-primary)">Channel</th></tr></thead>
+    <tbody><tr><td>0.6.5</td><td>Stable</td></tr></tbody>
+  </table>
+</ax-table>

@@ -1,0 +1,23 @@
+<!-- docs: Show a short navigation trail above the page heading and mark the current location. -->
+<!-- attributes:
+separator:string|/|Visible separator between authored breadcrumb items.
+variant:default, supporting|default|Default or supporting visual treatment.
+label:string|Breadcrumb|Accessible label for the navigation landmark.
+-->
+<!-- slots:
+default*:Native list-item breadcrumb steps, ending with aria-current="page".
+-->
+<!-- events:
+none
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: default -->
+<ax-breadcrumbs>
+  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><a class="ax-breadcrumbs__link" href="#home" style="color: var(--color-text-primary)">Home</a></li>
+  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><span class="ax-breadcrumbs__current" aria-current="page">Projects</span></li>
+</ax-breadcrumbs>
+<!-- variant: supporting -->
+<ax-breadcrumbs variant="supporting" label="Settings breadcrumb">
+  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><a class="ax-breadcrumbs__link" href="#settings">Settings</a></li>
+  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><span class="ax-breadcrumbs__current" aria-current="page">Notifications</span></li>
+</ax-breadcrumbs>

@@ -77,8 +77,8 @@
       <header class="ax-stack ax-stack--gap-2">
         <h1 class="ax-heading ax-heading--1">Astryx custom elements</h1>
         <p class="ax-text ax-text--secondary">
-          9 auto-discovered definitions rendered across neutral, butter, and Y2K
-          in light and dark modes.
+          25 auto-discovered definitions rendered across neutral, butter, and
+          Y2K in light and dark modes.
         </p>
       </header>
       <div class="gallery__matrix" id="gallery-matrix"></div>
@@ -86,6 +86,28 @@
 
     <template id="gallery-content">
       <div class="gallery__examples">
+        <section class="gallery__component" data-gallery-element="Avatar">
+          <h3 class="ax-heading ax-heading--3">Avatar</h3>
+          <div class="gallery__example" data-gallery-example="initials-status">
+            <ax-avatar
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+              name="Ada Lovelace"
+              alt="Ada Lovelace, Online">
+              <ax-status-dot
+                slot="status"
+                variant="success"
+                label="Online"></ax-status-dot>
+            </ax-avatar>
+          </div>
+          <div class="gallery__example" data-gallery-example="linked-image">
+            <ax-avatar
+              href="#profile"
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+              name="Grace Hopper"
+              size="lg"
+              shape="rounded"></ax-avatar>
+          </div>
+        </section>
         <section class="gallery__component" data-gallery-element="Badge">
           <h3 class="ax-heading ax-heading--3">Badge</h3>
           <div class="gallery__example" data-gallery-example="neutral">
@@ -93,6 +115,40 @@
           </div>
           <div class="gallery__example" data-gallery-example="success-label">
             <ax-badge label="Ready" variant="success"></ax-badge>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Banner">
+          <h3 class="ax-heading ax-heading--3">Banner</h3>
+          <div class="gallery__example" data-gallery-example="information">
+            <ax-banner status="info" title="Your trial ends in 5 days">
+              <ax-button slot="end-content" variant="primary" size="sm"
+                >View plans</ax-button
+              >
+            </ax-banner>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Breadcrumbs">
+          <h3 class="ax-heading ax-heading--3">Breadcrumbs</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-breadcrumbs>
+              <li class="ax-breadcrumbs__item">
+                <span class="ax-breadcrumbs__separator" aria-hidden="true"
+                  >/</span
+                ><a
+                  class="ax-breadcrumbs__link"
+                  href="#home"
+                  style="color: var(--color-text-primary)"
+                  >Home</a
+                >
+              </li>
+              <li class="ax-breadcrumbs__item">
+                <span class="ax-breadcrumbs__separator" aria-hidden="true"
+                  >/</span
+                ><span class="ax-breadcrumbs__current" aria-current="page"
+                  >Projects</span
+                >
+              </li>
+            </ax-breadcrumbs>
           </div>
         </section>
         <section class="gallery__component" data-gallery-element="Button">
@@ -135,6 +191,38 @@
             </ax-dialog>
           </div>
         </section>
+        <section class="gallery__component" data-gallery-element="Divider">
+          <h3 class="ax-heading ax-heading--3">Divider</h3>
+          <div class="gallery__example" data-gallery-example="horizontal">
+            <ax-divider></ax-divider>
+          </div>
+          <div class="gallery__example" data-gallery-example="strong">
+            <ax-divider variant="strong"></ax-divider>
+          </div>
+          <div class="gallery__example" data-gallery-example="labeled">
+            <ax-divider label="Or"></ax-divider>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="EmptyState">
+          <h3 class="ax-heading ax-heading--3">EmptyState</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-empty-state title="No projects yet">
+              <span slot="icon">＋</span>
+              <ax-button slot="actions" variant="primary"
+                >Create project</ax-button
+              >
+            </ax-empty-state>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Heading">
+          <h3 class="ax-heading ax-heading--3">Heading</h3>
+          <div class="gallery__example" data-gallery-example="page-title">
+            <ax-heading level="1">Page title</ax-heading>
+          </div>
+          <div class="gallery__example" data-gallery-example="section-title">
+            <ax-heading level="2" color="secondary">Section title</ax-heading>
+          </div>
+        </section>
         <section class="gallery__component" data-gallery-element="Layout">
           <h3 class="ax-heading ax-heading--3">Layout</h3>
           <div class="gallery__example" data-gallery-example="page-shell">
@@ -143,6 +231,23 @@
               <p>Page content</p>
               <small slot="footer">Footer</small>
             </ax-layout>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Link">
+          <h3 class="ax-heading ax-heading--3">Link</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-link href="#destination">Learn more</ax-link>
+          </div>
+          <div class="gallery__example" data-gallery-example="disabled">
+            <ax-link is-disabled>Unavailable</ax-link>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="ProgressBar">
+          <h3 class="ax-heading ax-heading--3">ProgressBar</h3>
+          <div class="gallery__example" data-gallery-example="indeterminate">
+            <ax-progress-bar
+              label="Processing report"
+              is-indeterminate></ax-progress-bar>
           </div>
         </section>
         <section class="gallery__component" data-gallery-element="Selector">
@@ -158,6 +263,120 @@
               <option>Active</option>
               <option>Paused</option>
             </ax-selector>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="SideNav">
+          <h3 class="ax-heading ax-heading--3">SideNav</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-side-nav label="Application navigation">
+              <a slot="header" class="ax-side-nav__brand" href="#">Astryx</a>
+              <a class="ax-side-nav__item" href="#" aria-current="page"
+                >Overview</a
+              >
+            </ax-side-nav>
+          </div>
+          <div class="gallery__example" data-gallery-example="collapsed">
+            <ax-side-nav label="Collapsed navigation" is-collapsed>
+              <a
+                slot="header"
+                class="ax-side-nav__brand"
+                href="#"
+                aria-label="Astryx"
+                >A</a
+              >
+              <a class="ax-side-nav__item" href="#" aria-label="Overview">●</a>
+            </ax-side-nav>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Skeleton">
+          <h3 class="ax-heading ax-heading--3">Skeleton</h3>
+          <div class="gallery__example" data-gallery-example="text">
+            <ax-skeleton width="100%" height="12px"></ax-skeleton>
+          </div>
+          <div class="gallery__example" data-gallery-example="avatar">
+            <ax-skeleton
+              width="40px"
+              height="40px"
+              radius="rounded"></ax-skeleton>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Stack">
+          <h3 class="ax-heading ax-heading--3">Stack</h3>
+          <div class="gallery__example" data-gallery-example="vertical">
+            <ax-stack gap="3">
+              <span>First item</span>
+              <span>Second item</span>
+            </ax-stack>
+          </div>
+          <div class="gallery__example" data-gallery-example="horizontal-wrap">
+            <ax-stack direction="horizontal" gap="2" wrap="wrap">
+              <span>One</span>
+              <span>Two</span>
+              <span>Three</span>
+            </ax-stack>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="StatusDot">
+          <h3 class="ax-heading ax-heading--3">StatusDot</h3>
+          <div class="gallery__example" data-gallery-example="online">
+            <ax-status-dot variant="success" label="Online"></ax-status-dot>
+          </div>
+          <div class="gallery__example" data-gallery-example="incident">
+            <ax-status-dot
+              variant="error"
+              label="Service incident"
+              is-pulsing></ax-status-dot>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Table">
+          <h3 class="ax-heading ax-heading--3">Table</h3>
+          <div class="gallery__example" data-gallery-example="balanced">
+            <ax-table label="Project table" has-hover>
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col" style="color: var(--color-text-primary)">
+                      Project
+                    </th>
+                    <th scope="col" style="color: var(--color-text-primary)">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Astryx</td>
+                    <td>Active</td>
+                  </tr>
+                </tbody>
+              </table>
+            </ax-table>
+          </div>
+          <div class="gallery__example" data-gallery-example="compact-grid">
+            <ax-table
+              label="Release table"
+              density="compact"
+              dividers="grid"
+              is-striped>
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col" style="color: var(--color-text-primary)">
+                      Version
+                    </th>
+                    <th scope="col" style="color: var(--color-text-primary)">
+                      Channel
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>0.6.5</td>
+                    <td>Stable</td>
+                  </tr>
+                </tbody>
+              </table>
+            </ax-table>
           </div>
         </section>
         <section class="gallery__component" data-gallery-element="TabList">
@@ -185,6 +404,15 @@
             </ax-tab-list>
           </div>
         </section>
+        <section class="gallery__component" data-gallery-element="Text">
+          <h3 class="ax-heading ax-heading--3">Text</h3>
+          <div class="gallery__example" data-gallery-example="body">
+            <ax-text as="p">Readable body copy.</ax-text>
+          </div>
+          <div class="gallery__example" data-gallery-example="code">
+            <ax-text as="code" type="code">const ready = true;</ax-text>
+          </div>
+        </section>
         <section class="gallery__component" data-gallery-element="TextInput">
           <h3 class="ax-heading ax-heading--3">TextInput</h3>
           <div class="gallery__example" data-gallery-example="default">
@@ -199,6 +427,57 @@
               label="Email"
               status="error"
               status-message="Enter a valid email address."></ax-text-input>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Theme">
+          <h3 class="ax-heading ax-heading--3">Theme</h3>
+          <div class="gallery__example" data-gallery-example="neutral-light">
+            <ax-theme theme="neutral" mode="light"
+              ><p class="ax-text">Neutral theme</p></ax-theme
+            >
+          </div>
+          <div class="gallery__example" data-gallery-example="butter-dark">
+            <ax-theme theme="butter" mode="dark"
+              ><p class="ax-text">Butter theme</p></ax-theme
+            >
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="TopNav">
+          <h3 class="ax-heading ax-heading--3">TopNav</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-top-nav label="Primary navigation">
+              <span slot="heading"
+                ><span class="ax-top-nav__brand-mark" aria-hidden="true">A</span
+                ><span>Astryx</span></span
+              >
+              <a
+                slot="start-content"
+                class="ax-top-nav__item"
+                href="#"
+                aria-current="page"
+                >Overview</a
+              >
+              <a slot="start-content" class="ax-top-nav__item" href="#projects"
+                >Projects</a
+              >
+              <ax-button slot="end-content" size="sm">Help</ax-button>
+            </ax-top-nav>
+          </div>
+          <div class="gallery__example" data-gallery-example="centered">
+            <ax-top-nav label="Workspace navigation">
+              <span slot="heading"
+                ><span class="ax-top-nav__brand-mark" aria-hidden="true">W</span
+                ><span>Workspace</span></span
+              >
+              <a
+                slot="center-content"
+                class="ax-top-nav__item"
+                href="#"
+                aria-current="page"
+                >Home</a
+              >
+              <ax-button slot="end-content" size="sm">Invite</ax-button>
+            </ax-top-nav>
           </div>
         </section>
       </div>

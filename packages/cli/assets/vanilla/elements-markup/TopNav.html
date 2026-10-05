@@ -1,0 +1,28 @@
+<!-- docs: Arrange product identity, primary navigation, and utility actions in an application header. -->
+<!-- attributes:
+label:string|Top navigation|Accessible label for the navigation landmark.
+-->
+<!-- slots:
+default:Primary navigation items when start-content is omitted.
+heading*:Product mark and name.
+start-content:Primary navigation items after the heading.
+center-content:Centered navigation, search, or tabs.
+end-content:End-aligned actions and profile controls.
+-->
+<!-- events:
+none
+-->
+<!-- properties: attrs/aliases: camelCase properties -->
+<!-- variant: default -->
+<ax-top-nav label="Primary navigation">
+  <span slot="heading"><span class="ax-top-nav__brand-mark" aria-hidden="true">A</span><span>Astryx</span></span>
+  <a slot="start-content" class="ax-top-nav__item" href="#" aria-current="page">Overview</a>
+  <a slot="start-content" class="ax-top-nav__item" href="#projects">Projects</a>
+  <ax-button slot="end-content" size="sm">Help</ax-button>
+</ax-top-nav>
+<!-- variant: centered -->
+<ax-top-nav label="Workspace navigation">
+  <span slot="heading"><span class="ax-top-nav__brand-mark" aria-hidden="true">W</span><span>Workspace</span></span>
+  <a slot="center-content" class="ax-top-nav__item" href="#" aria-current="page">Home</a>
+  <ax-button slot="end-content" size="sm">Invite</ax-button>
+</ax-top-nav>

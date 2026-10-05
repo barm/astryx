@@ -291,9 +291,10 @@ test('generated docs expose complete API contracts', async () => {
     );
     assert.ok((content.match(/<!-- variant:/g) ?? []).length >= 2);
   }
+  const averageBytes = totalBytes / definitions.length;
   assert.ok(
-    totalBytes <= 9_900,
-    `generated element docs must stay compact; received ${totalBytes} bytes`,
+    averageBytes <= 1_100,
+    `generated element docs must average at most 1100 bytes; received ${averageBytes.toFixed(1)} bytes`,
   );
   const button = await readFile(
     path.join(packageRoot, 'elements-markup/Button.html'),
