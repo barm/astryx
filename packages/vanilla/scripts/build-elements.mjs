@@ -369,6 +369,21 @@ function validateDefinitions(definitions) {
           `${definition.name} example "${example.name}" omits <${definition.tag}>.`,
         );
       }
+      for (const element of host.querySelectorAll('[class], [style]')) {
+        if (element.hasAttribute('style')) {
+          throw new Error(
+            `${definition.name} example "${example.name}" uses inline style inside <${definition.tag}>.`,
+          );
+        }
+        const internalClass = [...element.classList].find(className =>
+          /^ax-[a-z0-9-]+(?:__|--)[a-z0-9-]+$/i.test(className),
+        );
+        if (internalClass) {
+          throw new Error(
+            `${definition.name} example "${example.name}" uses internal BEM class "${internalClass}" inside <${definition.tag}>.`,
+          );
+        }
+      }
       if (
         definition.exampleItemSelector &&
         host.querySelectorAll(definition.exampleItemSelector).length < 2

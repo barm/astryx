@@ -405,52 +405,55 @@ var AstryxElements = (() => {
       afterRender(_host, api) {
         const list = api.query(".ax-breadcrumbs__list");
         if (!list) return;
-        for (const emptyWrapper of list.querySelectorAll(
-          ":scope > li[data-ax-breadcrumb-wrapper]:empty"
-        )) {
-          emptyWrapper.remove();
-        }
-        for (const child of [...list.children]) {
-          if (child.localName === "li") continue;
-          if (!child.matches("a, span, strong")) continue;
-          const wrapper = document.createElement("li");
-          wrapper.setAttribute("data-ax-breadcrumb-wrapper", "");
-          child.before(wrapper);
-          wrapper.append(child);
-        }
-        const items2 = [...list.children].filter(
-          (child) => child.localName === "li"
-        );
-        for (const item of items2) {
-          item.classList.add("ax-breadcrumbs__item");
-          let separator = item.querySelector(
-            ":scope > .ax-breadcrumbs__separator"
-          );
-          if (!separator) {
-            separator = document.createElement("span");
-            separator.className = "ax-breadcrumbs__separator";
-            separator.setAttribute("aria-hidden", "true");
-            item.prepend(separator);
+        api.mutate(() => {
+          for (const emptyWrapper of list.querySelectorAll(
+            ":scope > li[data-ax-breadcrumb-wrapper]:empty"
+          )) {
+            emptyWrapper.remove();
           }
-          separator.textContent = api.read("separator");
-        }
-        if (items2.length && !list.querySelector('[aria-current="page"]')) {
-          items2.at(-1).querySelector(
-            ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong"
-          )?.setAttribute("aria-current", "page");
-        }
-        for (const item of items2) {
-          const content = item.querySelector(
-            ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong"
+          for (const child of [...list.children]) {
+            if (child.localName === "li") continue;
+            if (!child.matches("a, span:not(.ax-breadcrumbs__separator), strong"))
+              continue;
+            const wrapper = document.createElement("li");
+            wrapper.setAttribute("data-ax-breadcrumb-wrapper", "");
+            child.before(wrapper);
+            wrapper.append(child);
+          }
+          const items2 = [...list.children].filter(
+            (child) => child.localName === "li"
           );
-          if (!content) continue;
-          const isCurrent = content.getAttribute("aria-current") === "page";
-          content.classList.toggle("ax-breadcrumbs__current", isCurrent);
-          content.classList.toggle(
-            "ax-breadcrumbs__link",
-            content.localName === "a" && !isCurrent
-          );
-        }
+          for (const item of items2) {
+            item.classList.add("ax-breadcrumbs__item");
+            let separator = item.querySelector(
+              ":scope > .ax-breadcrumbs__separator"
+            );
+            if (!separator) {
+              separator = document.createElement("span");
+              separator.className = "ax-breadcrumbs__separator";
+              separator.setAttribute("aria-hidden", "true");
+              item.prepend(separator);
+            }
+            separator.textContent = api.read("separator");
+          }
+          if (items2.length && !list.querySelector('[aria-current="page"]')) {
+            items2.at(-1).querySelector(
+              ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong"
+            )?.setAttribute("aria-current", "page");
+          }
+          for (const item of items2) {
+            const content = item.querySelector(
+              ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong"
+            );
+            if (!content) continue;
+            const isCurrent = content.getAttribute("aria-current") === "page";
+            content.classList.toggle("ax-breadcrumbs__current", isCurrent);
+            content.classList.toggle(
+              "ax-breadcrumbs__link",
+              content.localName === "a" && !isCurrent
+            );
+          }
+        });
       }
     },
     render(_host, h) {
@@ -925,11 +928,11 @@ var AstryxElements = (() => {
     examples: [
       {
         name: "default",
-        html: `<ax-collapsible trigger="Details"><span class="ax-text ax-text--primary">Content</span></ax-collapsible>`
+        html: `<ax-collapsible trigger="Details"><span>Content</span></ax-collapsible>`
       },
       {
         name: "open",
-        html: `<ax-collapsible trigger="More" is-open><span class="ax-text ax-text--primary">Open</span></ax-collapsible>`
+        html: `<ax-collapsible trigger="More" is-open><span>Open</span></ax-collapsible>`
       }
     ],
     render(_host, h) {
@@ -3727,7 +3730,7 @@ var AstryxElements = (() => {
         name: "balanced",
         html: `<ax-table label="Project table" has-hover>
   <table>
-    <thead><tr><th scope="col" style="color: var(--color-text-primary)">Project</th><th scope="col" style="color: var(--color-text-primary)">Status</th></tr></thead>
+    <thead><tr><th scope="col">Project</th><th scope="col">Status</th></tr></thead>
     <tbody><tr><td>Astryx</td><td>Active</td></tr></tbody>
   </table>
 </ax-table>`
@@ -3736,7 +3739,7 @@ var AstryxElements = (() => {
         name: "compact-grid",
         html: `<ax-table label="Release table" density="compact" dividers="grid" is-striped>
   <table>
-    <thead><tr><th scope="col" style="color: var(--color-text-primary)">Version</th><th scope="col" style="color: var(--color-text-primary)">Channel</th></tr></thead>
+    <thead><tr><th scope="col">Version</th><th scope="col">Channel</th></tr></thead>
     <tbody><tr><td>0.6.5</td><td>Stable</td></tr></tbody>
   </table>
 </ax-table>`
@@ -4425,11 +4428,11 @@ var AstryxElements = (() => {
     examples: [
       {
         name: "neutral-light",
-        html: '<ax-theme theme="neutral" mode="light"><p class="ax-text">Neutral theme</p></ax-theme>'
+        html: '<ax-theme theme="neutral" mode="light"><p>Neutral theme</p></ax-theme>'
       },
       {
         name: "butter-dark",
-        html: '<ax-theme theme="butter" mode="dark"><p class="ax-text">Butter theme</p></ax-theme>'
+        html: '<ax-theme theme="butter" mode="dark"><p>Butter theme</p></ax-theme>'
       }
     ],
     render(_host, h) {
@@ -4872,6 +4875,13 @@ var AstryxElements = (() => {
   };
 
   // elements/src/TopNav.element.mjs
+  function enhanceNavigationItems2(api) {
+    for (const container of api.queryAll(".ax-top-nav__items")) {
+      for (const child of container.children) {
+        if (child.matches("a, button")) child.classList.add("ax-top-nav__item");
+      }
+    }
+  }
   var TopNav_element_default = {
     name: "TopNav",
     tag: "ax-top-nav",
@@ -4896,21 +4906,27 @@ var AstryxElements = (() => {
       {
         name: "default",
         html: `<ax-top-nav label="Primary navigation">
-  <span slot="heading"><span class="ax-top-nav__brand-mark" aria-hidden="true">A</span><span>Astryx</span></span>
-  <a slot="start-content" class="ax-top-nav__item" href="#" aria-current="page">Overview</a>
-  <a slot="start-content" class="ax-top-nav__item" href="#projects">Projects</a>
+  <span slot="heading">Astryx</span>
+  <a slot="start-content" href="#overview" aria-current="page">Overview</a>
+  <a slot="start-content" href="#projects">Projects</a>
   <ax-button slot="end-content" size="sm">Help</ax-button>
 </ax-top-nav>`
       },
       {
         name: "centered",
         html: `<ax-top-nav label="Workspace navigation">
-  <span slot="heading"><span class="ax-top-nav__brand-mark" aria-hidden="true">W</span><span>Workspace</span></span>
-  <a slot="center-content" class="ax-top-nav__item" href="#" aria-current="page">Home</a>
+  <span slot="heading">Workspace</span>
+  <a slot="center-content" href="#home" aria-current="page">Home</a>
+  <a slot="center-content" href="#activity">Activity</a>
   <ax-button slot="end-content" size="sm">Invite</ax-button>
 </ax-top-nav>`
       }
     ],
+    hooks: {
+      afterRender(_host, api) {
+        enhanceNavigationItems2(api);
+      }
+    },
     render(_host, h) {
       const centered = h.hasSlot("center-content");
       return `<nav class="ax-top-nav${centered ? " ax-top-nav--centered" : ""}" aria-label="${h.escape(h.attr("label"))}">

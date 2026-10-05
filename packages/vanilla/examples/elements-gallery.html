@@ -178,16 +178,12 @@
           <h3 class="ax-heading ax-heading--3">Collapsible</h3>
           <div class="gallery__example" data-gallery-example="default">
             <ax-collapsible trigger="Details"
-              ><span class="ax-text ax-text--primary"
-                >Content</span
-              ></ax-collapsible
+              ><span>Content</span></ax-collapsible
             >
           </div>
           <div class="gallery__example" data-gallery-example="open">
             <ax-collapsible trigger="More" is-open
-              ><span class="ax-text ax-text--primary"
-                >Open</span
-              ></ax-collapsible
+              ><span>Open</span></ax-collapsible
             >
           </div>
         </section>
@@ -430,12 +426,8 @@
               <table>
                 <thead>
                   <tr>
-                    <th scope="col" style="color: var(--color-text-primary)">
-                      Project
-                    </th>
-                    <th scope="col" style="color: var(--color-text-primary)">
-                      Status
-                    </th>
+                    <th scope="col">Project</th>
+                    <th scope="col">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -456,12 +448,8 @@
               <table>
                 <thead>
                   <tr>
-                    <th scope="col" style="color: var(--color-text-primary)">
-                      Version
-                    </th>
-                    <th scope="col" style="color: var(--color-text-primary)">
-                      Channel
-                    </th>
+                    <th scope="col">Version</th>
+                    <th scope="col">Channel</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -537,13 +525,11 @@
           <h3 class="ax-heading ax-heading--3">Theme</h3>
           <div class="gallery__example" data-gallery-example="neutral-light">
             <ax-theme theme="neutral" mode="light"
-              ><p class="ax-text">Neutral theme</p></ax-theme
+              ><p>Neutral theme</p></ax-theme
             >
           </div>
           <div class="gallery__example" data-gallery-example="butter-dark">
-            <ax-theme theme="butter" mode="dark"
-              ><p class="ax-text">Butter theme</p></ax-theme
-            >
+            <ax-theme theme="butter" mode="dark"><p>Butter theme</p></ax-theme>
           </div>
         </section>
         <section class="gallery__component" data-gallery-element="TimeInput">
@@ -583,36 +569,19 @@
           <h3 class="ax-heading ax-heading--3">TopNav</h3>
           <div class="gallery__example" data-gallery-example="default">
             <ax-top-nav label="Primary navigation">
-              <span slot="heading"
-                ><span class="ax-top-nav__brand-mark" aria-hidden="true">A</span
-                ><span>Astryx</span></span
-              >
-              <a
-                slot="start-content"
-                class="ax-top-nav__item"
-                href="#"
-                aria-current="page"
+              <span slot="heading">Astryx</span>
+              <a slot="start-content" href="#overview" aria-current="page"
                 >Overview</a
               >
-              <a slot="start-content" class="ax-top-nav__item" href="#projects"
-                >Projects</a
-              >
+              <a slot="start-content" href="#projects">Projects</a>
               <ax-button slot="end-content" size="sm">Help</ax-button>
             </ax-top-nav>
           </div>
           <div class="gallery__example" data-gallery-example="centered">
             <ax-top-nav label="Workspace navigation">
-              <span slot="heading"
-                ><span class="ax-top-nav__brand-mark" aria-hidden="true">W</span
-                ><span>Workspace</span></span
-              >
-              <a
-                slot="center-content"
-                class="ax-top-nav__item"
-                href="#"
-                aria-current="page"
-                >Home</a
-              >
+              <span slot="heading">Workspace</span>
+              <a slot="center-content" href="#home" aria-current="page">Home</a>
+              <a slot="center-content" href="#activity">Activity</a>
               <ax-button slot="end-content" size="sm">Invite</ax-button>
             </ax-top-nav>
           </div>

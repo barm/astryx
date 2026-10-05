@@ -34,5 +34,5 @@
 }
 :where(.ax-collapsible__content) {
   padding: 0 0 var(--spacing-4);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }

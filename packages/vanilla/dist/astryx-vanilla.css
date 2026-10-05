@@ -963,7 +963,7 @@
   }
   :where(.ax-collapsible__content) {
     padding: 0 0 var(--spacing-4);
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
   }
 
   /* DateInput */
@@ -2674,7 +2674,7 @@
     vertical-align: middle;
   }
   :where(.ax-table th) {
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     font-size: var(--text-label-size);
     font-weight: var(--font-weight-semibold);
     line-height: var(--text-label-leading);

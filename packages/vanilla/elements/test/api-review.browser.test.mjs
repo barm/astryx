@@ -46,7 +46,17 @@ const body = `
   <ax-tooltip id="tooltip" content="Helpful context" delay="0"><button type="button">Help</button></ax-tooltip>
   <ax-hover-card id="hover" content="Profile details" delay="0" hide-delay="0"><button type="button">Profile</button></ax-hover-card>
   <ax-toast id="toast"><span slot="body">Saved changes</span></ax-toast>
-  <ax-lightbox id="lightbox" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Example"></ax-lightbox>`;
+  <ax-lightbox id="lightbox" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Example"></ax-lightbox>
+  <ax-breadcrumbs id="breadcrumbs" separator="›">
+    <a href="#home">Home</a>
+    <a href="#projects">Projects</a>
+    <span>Current</span>
+  </ax-breadcrumbs>
+  <ax-top-nav id="topnav" label="Primary navigation">
+    <span slot="heading">Astryx</span>
+    <a slot="start-content" href="#overview" aria-current="page">Overview</a>
+    <a slot="start-content" href="#projects">Projects</a>
+  </ax-top-nav>`;
 
 function startServer() {
   const server = createServer(async (request, response) => {
@@ -118,6 +128,59 @@ test('WC2a review regressions pass in every bundle load order', async t => {
         });
         await settle(page);
       }
+
+      assert.deepEqual(
+        await page.locator('#breadcrumbs').evaluate(host => {
+          const list = host.querySelector('ol');
+          return {
+            items: list.querySelectorAll(':scope > li').length,
+            nonItems: list.querySelectorAll(':scope > :not(li)').length,
+            separators: list.querySelectorAll('.ax-breadcrumbs__separator')
+              .length,
+          };
+        }),
+        {items: 3, nonItems: 0, separators: 3},
+        `${mode}: Breadcrumbs renders one item and separator per author child`,
+      );
+      await page.locator('#breadcrumbs').evaluate(host => {
+        const link = document.createElement('a');
+        link.href = '#added';
+        link.textContent = 'Added';
+        host.append(link);
+      });
+      await settle(page);
+      assert.deepEqual(
+        await page.locator('#breadcrumbs').evaluate(host => {
+          const list = host.querySelector('ol');
+          return {
+            items: list.querySelectorAll(':scope > li').length,
+            nonItems: list.querySelectorAll(':scope > :not(li)').length,
+            separators: list.querySelectorAll('.ax-breadcrumbs__separator')
+              .length,
+            last: list.lastElementChild?.textContent
+              .replace(/\s+/g, ' ')
+              .trim(),
+          };
+        }),
+        {items: 4, nonItems: 0, separators: 4, last: '›Added'},
+        `${mode}: dynamically appended Breadcrumbs links are wrapped exactly once`,
+      );
+
+      assert.deepEqual(
+        await page
+          .locator('#topnav .ax-top-nav__items > a')
+          .evaluateAll(links =>
+            links.map(link => ({
+              className: link.className,
+              current: link.getAttribute('aria-current'),
+            })),
+          ),
+        [
+          {className: 'ax-top-nav__item', current: 'page'},
+          {className: 'ax-top-nav__item', current: null},
+        ],
+        `${mode}: TopNav enhances plain links and preserves aria-current`,
+      );
 
       assert.deepEqual(
         await page.locator('#collapsible details').evaluate(details => ({

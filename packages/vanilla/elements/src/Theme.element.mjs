@@ -21,11 +21,11 @@ export default {
   examples: [
     {
       name: 'neutral-light',
-      html: '<ax-theme theme="neutral" mode="light"><p class="ax-text">Neutral theme</p></ax-theme>',
+      html: '<ax-theme theme="neutral" mode="light"><p>Neutral theme</p></ax-theme>',
     },
     {
       name: 'butter-dark',
-      html: '<ax-theme theme="butter" mode="dark"><p class="ax-text">Butter theme</p></ax-theme>',
+      html: '<ax-theme theme="butter" mode="dark"><p>Butter theme</p></ax-theme>',
     },
   ],
   render(_host, h) {

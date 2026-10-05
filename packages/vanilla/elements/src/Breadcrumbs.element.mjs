@@ -51,57 +51,60 @@ export default {
       const list = api.query('.ax-breadcrumbs__list');
       if (!list) return;
 
-      for (const emptyWrapper of list.querySelectorAll(
-        ':scope > li[data-ax-breadcrumb-wrapper]:empty',
-      )) {
-        emptyWrapper.remove();
-      }
-      for (const child of [...list.children]) {
-        if (child.localName === 'li') continue;
-        if (!child.matches('a, span, strong')) continue;
-        const wrapper = document.createElement('li');
-        wrapper.setAttribute('data-ax-breadcrumb-wrapper', '');
-        child.before(wrapper);
-        wrapper.append(child);
-      }
-
-      const items = [...list.children].filter(
-        child => child.localName === 'li',
-      );
-      for (const item of items) {
-        item.classList.add('ax-breadcrumbs__item');
-        let separator = item.querySelector(
-          ':scope > .ax-breadcrumbs__separator',
-        );
-        if (!separator) {
-          separator = document.createElement('span');
-          separator.className = 'ax-breadcrumbs__separator';
-          separator.setAttribute('aria-hidden', 'true');
-          item.prepend(separator);
+      api.mutate(() => {
+        for (const emptyWrapper of list.querySelectorAll(
+          ':scope > li[data-ax-breadcrumb-wrapper]:empty',
+        )) {
+          emptyWrapper.remove();
         }
-        separator.textContent = api.read('separator');
-      }
+        for (const child of [...list.children]) {
+          if (child.localName === 'li') continue;
+          if (!child.matches('a, span:not(.ax-breadcrumbs__separator), strong'))
+            continue;
+          const wrapper = document.createElement('li');
+          wrapper.setAttribute('data-ax-breadcrumb-wrapper', '');
+          child.before(wrapper);
+          wrapper.append(child);
+        }
 
-      if (items.length && !list.querySelector('[aria-current="page"]')) {
-        items
-          .at(-1)
-          .querySelector(
+        const items = [...list.children].filter(
+          child => child.localName === 'li',
+        );
+        for (const item of items) {
+          item.classList.add('ax-breadcrumbs__item');
+          let separator = item.querySelector(
+            ':scope > .ax-breadcrumbs__separator',
+          );
+          if (!separator) {
+            separator = document.createElement('span');
+            separator.className = 'ax-breadcrumbs__separator';
+            separator.setAttribute('aria-hidden', 'true');
+            item.prepend(separator);
+          }
+          separator.textContent = api.read('separator');
+        }
+
+        if (items.length && !list.querySelector('[aria-current="page"]')) {
+          items
+            .at(-1)
+            .querySelector(
+              ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
+            )
+            ?.setAttribute('aria-current', 'page');
+        }
+        for (const item of items) {
+          const content = item.querySelector(
             ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
-          )
-          ?.setAttribute('aria-current', 'page');
-      }
-      for (const item of items) {
-        const content = item.querySelector(
-          ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
-        );
-        if (!content) continue;
-        const isCurrent = content.getAttribute('aria-current') === 'page';
-        content.classList.toggle('ax-breadcrumbs__current', isCurrent);
-        content.classList.toggle(
-          'ax-breadcrumbs__link',
-          content.localName === 'a' && !isCurrent,
-        );
-      }
+          );
+          if (!content) continue;
+          const isCurrent = content.getAttribute('aria-current') === 'page';
+          content.classList.toggle('ax-breadcrumbs__current', isCurrent);
+          content.classList.toggle(
+            'ax-breadcrumbs__link',
+            content.localName === 'a' && !isCurrent,
+          );
+        }
+      });
     },
   },
   render(_host, h) {

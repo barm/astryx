@@ -56,7 +56,7 @@ export default {
       name: 'balanced',
       html: `<ax-table label="Project table" has-hover>
   <table>
-    <thead><tr><th scope="col" style="color: var(--color-text-primary)">Project</th><th scope="col" style="color: var(--color-text-primary)">Status</th></tr></thead>
+    <thead><tr><th scope="col">Project</th><th scope="col">Status</th></tr></thead>
     <tbody><tr><td>Astryx</td><td>Active</td></tr></tbody>
   </table>
 </ax-table>`,
@@ -65,7 +65,7 @@ export default {
       name: 'compact-grid',
       html: `<ax-table label="Release table" density="compact" dividers="grid" is-striped>
   <table>
-    <thead><tr><th scope="col" style="color: var(--color-text-primary)">Version</th><th scope="col" style="color: var(--color-text-primary)">Channel</th></tr></thead>
+    <thead><tr><th scope="col">Version</th><th scope="col">Channel</th></tr></thead>
     <tbody><tr><td>0.6.5</td><td>Stable</td></tr></tbody>
   </table>
 </ax-table>`,

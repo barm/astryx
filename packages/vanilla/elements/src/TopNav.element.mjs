@@ -1,5 +1,13 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
+function enhanceNavigationItems(api) {
+  for (const container of api.queryAll('.ax-top-nav__items')) {
+    for (const child of container.children) {
+      if (child.matches('a, button')) child.classList.add('ax-top-nav__item');
+    }
+  }
+}
+
 export default {
   name: 'TopNav',
   tag: 'ax-top-nav',
@@ -24,21 +32,27 @@ export default {
     {
       name: 'default',
       html: `<ax-top-nav label="Primary navigation">
-  <span slot="heading"><span class="ax-top-nav__brand-mark" aria-hidden="true">A</span><span>Astryx</span></span>
-  <a slot="start-content" class="ax-top-nav__item" href="#" aria-current="page">Overview</a>
-  <a slot="start-content" class="ax-top-nav__item" href="#projects">Projects</a>
+  <span slot="heading">Astryx</span>
+  <a slot="start-content" href="#overview" aria-current="page">Overview</a>
+  <a slot="start-content" href="#projects">Projects</a>
   <ax-button slot="end-content" size="sm">Help</ax-button>
 </ax-top-nav>`,
     },
     {
       name: 'centered',
       html: `<ax-top-nav label="Workspace navigation">
-  <span slot="heading"><span class="ax-top-nav__brand-mark" aria-hidden="true">W</span><span>Workspace</span></span>
-  <a slot="center-content" class="ax-top-nav__item" href="#" aria-current="page">Home</a>
+  <span slot="heading">Workspace</span>
+  <a slot="center-content" href="#home" aria-current="page">Home</a>
+  <a slot="center-content" href="#activity">Activity</a>
   <ax-button slot="end-content" size="sm">Invite</ax-button>
 </ax-top-nav>`,
     },
   ],
+  hooks: {
+    afterRender(_host, api) {
+      enhanceNavigationItems(api);
+    },
+  },
   render(_host, h) {
     const centered = h.hasSlot('center-content');
     return `<nav class="ax-top-nav${centered ? ' ax-top-nav--centered' : ''}" aria-label="${h.escape(h.attr('label'))}">

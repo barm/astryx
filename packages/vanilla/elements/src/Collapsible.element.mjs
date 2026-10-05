@@ -111,11 +111,11 @@ export default {
   examples: [
     {
       name: 'default',
-      html: `<ax-collapsible trigger="Details"><span class="ax-text ax-text--primary">Content</span></ax-collapsible>`,
+      html: `<ax-collapsible trigger="Details"><span>Content</span></ax-collapsible>`,
     },
     {
       name: 'open',
-      html: `<ax-collapsible trigger="More" is-open><span class="ax-text ax-text--primary">Open</span></ax-collapsible>`,
+      html: `<ax-collapsible trigger="More" is-open><span>Open</span></ax-collapsible>`,
     },
   ],
   render(_host, h) {
