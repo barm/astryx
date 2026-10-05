@@ -19,6 +19,6 @@
     "demo": "node scripts/render-demo.mjs",
     "test": "node --test",
     "test:browser": "node src/js/browser-test.mjs",
-    "test:elements:browser": "node elements/test/browser.test.mjs"
+    "test:elements:browser": "node elements/test/browser.test.mjs && node elements/test/templates.browser.test.mjs"
   }
 }

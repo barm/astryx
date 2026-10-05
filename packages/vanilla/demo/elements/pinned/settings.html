@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components settings</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .page {
+          width: min(100% - 2 * var(--spacing-4), 76rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-6);
+        }
+        .settings {
+          display: grid;
+          grid-template-columns: minmax(14rem, 0.45fr) minmax(0, 1fr);
+          gap: var(--spacing-6);
+          align-items: start;
+        }
+        .actions {
+          display: flex;
+          justify-content: end;
+          gap: var(--spacing-2);
+        }
+        @media (max-width: 52rem) {
+          .settings {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    </style>
+    <script defer src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <ax-top-nav label="Workspace navigation"
+      ><span slot="heading">Astryx Workspace</span
+      ><a slot="start-content" href="#projects">Projects</a
+      ><ax-button slot="end-content" size="sm">Invite</ax-button></ax-top-nav
+    >
+    <main class="page">
+      <ax-stack gap="5">
+        <ax-stack gap="1"
+          ><ax-heading level="1">Settings</ax-heading
+          ><ax-text color="secondary"
+            >Manage your profile and workspace preferences.</ax-text
+          ></ax-stack
+        >
+        <div class="settings">
+          <ax-side-nav label="Settings sections"
+            ><a href="#profile" aria-current="page">Profile</a
+            ><a href="#notifications">Notifications</a
+            ><a href="#appearance">Appearance</a
+            ><a href="#security">Security</a></ax-side-nav
+          >
+          <ax-card elevation="low" id="profile">
+            <ax-heading slot="header" level="2">Profile</ax-heading>
+            <form>
+              <ax-stack gap="4">
+                <ax-text-input
+                  label="Display name"
+                  html-name="display-name"
+                  value="Jordan Lee"
+                  auto-complete="name"></ax-text-input>
+                <ax-text-input
+                  label="Email"
+                  html-name="email"
+                  type="email"
+                  value="jordan@example.com"
+                  auto-complete="email"></ax-text-input>
+                <ax-selector label="Time zone" html-name="timezone"
+                  ><option value="america-new-york">Eastern time</option>
+                  <option value="europe-london">London</option>
+                  <option value="asia-tokyo">Tokyo</option></ax-selector
+                >
+                <ax-divider></ax-divider>
+                <ax-heading level="3" id="notifications"
+                  >Notifications</ax-heading
+                >
+                <ax-switch
+                  label="Product updates"
+                  description="Monthly highlights and release notes"
+                  value></ax-switch>
+                <ax-switch
+                  label="Security alerts"
+                  description="Important sign-in and account changes"
+                  value
+                  is-disabled></ax-switch>
+                <div class="actions">
+                  <ax-button type="reset">Cancel</ax-button
+                  ><ax-button type="submit" variant="primary"
+                    >Save changes</ax-button
+                  >
+                </div>
+              </ax-stack>
+            </form>
+          </ax-card>
+        </div>
+      </ax-stack>
+    </main>
+  </body>
+</html>

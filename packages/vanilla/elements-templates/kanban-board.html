@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components kanban board</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="__ASTRYX_VANILLA_CDN__/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .page {
+          width: min(100% - 2 * var(--spacing-4), 92rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-6);
+        }
+        .board {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(18rem, 1fr));
+          gap: var(--spacing-4);
+          overflow-x: auto;
+          align-items: start;
+        }
+        .lane {
+          min-width: 18rem;
+          padding: var(--spacing-3);
+          border-radius: var(--radius-container);
+          background: var(--color-background-muted);
+        }
+      }
+    </style>
+    <script defer src="__ASTRYX_VANILLA_CDN__/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="__ASTRYX_VANILLA_CDN__/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <ax-top-nav label="Workspace navigation">
+      <span slot="heading">Astryx Studio</span>
+      <a slot="start-content" href="#board">Board</a>
+      <a slot="start-content" href="#reports">Reports</a>
+      <ax-button slot="end-content" variant="primary" size="sm"
+        >New task</ax-button
+      >
+    </ax-top-nav>
+    <main class="page" id="board">
+      <ax-stack gap="5">
+        <ax-stack gap="1"
+          ><ax-heading level="1">Launch board</ax-heading
+          ><ax-text color="secondary"
+            >Nine tasks across the current delivery cycle.</ax-text
+          ></ax-stack
+        >
+        <section class="board" aria-label="Project board">
+          <section class="lane">
+            <ax-stack gap="3"
+              ><ax-heading level="3">To do</ax-heading
+              ><ax-card elevation="low"
+                ><ax-badge variant="info">Design</ax-badge
+                ><ax-heading level="4">Review empty states</ax-heading
+                ><ax-text color="secondary"
+                  >Audit the first-run experience.</ax-text
+                ><ax-avatar
+                  slot="footer"
+                  name="Mina Park"
+                  size="sm"></ax-avatar></ax-card
+              ><ax-card elevation="low"
+                ><ax-badge variant="warning">Research</ax-badge
+                ><ax-heading level="4">Interview customers</ax-heading
+                ><ax-text color="secondary"
+                  >Prepare six discovery calls.</ax-text
+                ></ax-card
+              ></ax-stack
+            >
+          </section>
+          <section class="lane">
+            <ax-stack gap="3"
+              ><ax-heading level="3">In progress</ax-heading
+              ><ax-card elevation="low"
+                ><ax-badge variant="success">Engineering</ax-badge
+                ><ax-heading level="4">Build dashboard filters</ax-heading
+                ><ax-progress-bar
+                  label="Implementation"
+                  value="68"
+                  max="100"
+                  has-value-label></ax-progress-bar></ax-card
+              ><ax-card elevation="low"
+                ><ax-badge variant="info">Content</ax-badge
+                ><ax-heading level="4">Draft release notes</ax-heading
+                ><ax-avatar
+                  slot="footer"
+                  name="Theo Grant"
+                  size="sm"></ax-avatar></ax-card
+            ></ax-stack>
+          </section>
+          <section class="lane">
+            <ax-stack gap="3"
+              ><ax-heading level="3">Done</ax-heading
+              ><ax-card variant="muted"
+                ><ax-badge variant="success">Complete</ax-badge
+                ><ax-heading level="4">Map onboarding flow</ax-heading
+                ><ax-text color="secondary"
+                  >Approved by product and design.</ax-text
+                ></ax-card
+              ><ax-card variant="muted"
+                ><ax-badge variant="success">Complete</ax-badge
+                ><ax-heading level="4">Publish token guide</ax-heading
+                ><ax-text color="secondary"
+                  >Shared with all contributors.</ax-text
+                ></ax-card
+              ></ax-stack
+            >
+          </section>
+        </section>
+      </ax-stack>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components filterable table</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .page {
+          width: min(100% - 2 * var(--spacing-4), 86rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-6);
+        }
+        .filters {
+          display: grid;
+          grid-template-columns: minmax(16rem, 1.5fr) repeat(
+              2,
+              minmax(11rem, 0.6fr)
+            );
+          gap: var(--spacing-3);
+          align-items: end;
+        }
+        @media (max-width: 54rem) {
+          .filters {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    </style>
+    <script defer src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <ax-top-nav label="Operations navigation"
+      ><span slot="heading">Service desk</span
+      ><a slot="start-content" href="#requests">Requests</a
+      ><a slot="start-content" href="#reports">Reports</a
+      ><ax-button slot="end-content" variant="primary" size="sm"
+        >New request</ax-button
+      ></ax-top-nav
+    >
+    <main class="page" id="requests">
+      <ax-stack gap="5">
+        <ax-stack gap="1"
+          ><ax-heading level="1">Service requests</ax-heading
+          ><ax-text color="secondary"
+            >Search and filter active customer work.</ax-text
+          ></ax-stack
+        >
+        <ax-card elevation="low">
+          <form class="filters">
+            <ax-text-input
+              label="Search"
+              html-name="query"
+              placeholder="Customer, topic, or request ID"></ax-text-input>
+            <ax-selector label="Status" html-name="status"
+              ><option value="all">All statuses</option>
+              <option value="open">Open</option>
+              <option value="pending">Pending</option>
+              <option value="closed">Closed</option></ax-selector
+            >
+            <ax-selector label="Priority" html-name="priority"
+              ><option value="all">All priorities</option>
+              <option value="urgent">Urgent</option>
+              <option value="normal">Normal</option></ax-selector
+            >
+          </form>
+        </ax-card>
+        <ax-card elevation="low">
+          <ax-stack slot="header" direction="horizontal" gap="2" align="center"
+            ><ax-heading level="3">42 requests</ax-heading
+            ><ax-badge variant="info">7 new</ax-badge></ax-stack
+          >
+          <ax-table
+            label="Service requests"
+            density="compact"
+            is-striped
+            has-hover>
+            <table>
+              <thead>
+                <tr>
+                  <th>Request</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Reset production key</td>
+                  <td>Northstar Labs</td>
+                  <td>Open</td>
+                  <td>Urgent</td>
+                  <td>4 min ago</td>
+                </tr>
+                <tr>
+                  <td>Add invoice contact</td>
+                  <td>Juniper Studio</td>
+                  <td>Pending</td>
+                  <td>Normal</td>
+                  <td>38 min ago</td>
+                </tr>
+                <tr>
+                  <td>Export audit history</td>
+                  <td>Rook Systems</td>
+                  <td>Open</td>
+                  <td>Normal</td>
+                  <td>2 hr ago</td>
+                </tr>
+                <tr>
+                  <td>Update SSO metadata</td>
+                  <td>Cedar Health</td>
+                  <td>Closed</td>
+                  <td>Urgent</td>
+                  <td>Yesterday</td>
+                </tr>
+              </tbody>
+            </table>
+          </ax-table>
+          <ax-button slot="footer" size="sm">Load more</ax-button>
+        </ax-card>
+      </ax-stack>
+    </main>
+  </body>
+</html>

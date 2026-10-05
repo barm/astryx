@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components detail page</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="__ASTRYX_VANILLA_CDN__/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .page {
+          display: grid;
+          width: min(100% - 2 * var(--spacing-4), 78rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-6);
+          gap: var(--spacing-5);
+        }
+        .summary {
+          display: grid;
+          grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
+          gap: var(--spacing-4);
+        }
+        @media (max-width: 56rem) {
+          .summary {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    </style>
+    <script defer src="__ASTRYX_VANILLA_CDN__/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="__ASTRYX_VANILLA_CDN__/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <ax-top-nav label="Primary navigation">
+      <span slot="heading">Astryx Orders</span>
+      <a slot="start-content" href="#orders">Orders</a>
+      <a slot="start-content" href="#customers">Customers</a>
+      <ax-dropdown-menu slot="end-content" button-label="Actions"
+        ><button type="button">Duplicate order</button
+        ><button type="button">Archive order</button></ax-dropdown-menu
+      >
+    </ax-top-nav>
+    <main class="page">
+      <ax-breadcrumbs
+        ><a href="#orders">Orders</a><span>Order 1048</span></ax-breadcrumbs
+      >
+      <ax-stack gap="5">
+        <ax-stack gap="2">
+          <ax-badge variant="success">Paid</ax-badge>
+          <ax-heading level="1">Order 1048</ax-heading>
+          <ax-text color="secondary"
+            >Placed October 2 · three items · $248.00</ax-text
+          >
+        </ax-stack>
+        <section class="summary">
+          <ax-card elevation="low">
+            <ax-heading slot="header" level="3">Line items</ax-heading>
+            <ax-table label="Order line items" dividers="rows">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Field notebook</td>
+                    <td>2</td>
+                    <td>$48.00</td>
+                  </tr>
+                  <tr>
+                    <td>Canvas tote</td>
+                    <td>1</td>
+                    <td>$80.00</td>
+                  </tr>
+                  <tr>
+                    <td>Desk organizer</td>
+                    <td>1</td>
+                    <td>$120.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </ax-table>
+          </ax-card>
+          <ax-card elevation="low">
+            <ax-heading slot="header" level="3">Customer</ax-heading>
+            <ax-stack gap="2"
+              ><ax-avatar name="Jordan Lee" size="lg"></ax-avatar
+              ><ax-text>Jordan Lee</ax-text
+              ><ax-link href="mailto:jordan@example.com"
+                >jordan@example.com</ax-link
+              ><ax-text color="secondary">Brooklyn, New York</ax-text></ax-stack
+            >
+          </ax-card>
+        </section>
+        <ax-tab-list value="activity" label="Order views">
+          <ax-tab value="activity" panel-id="order-activity">Activity</ax-tab>
+          <ax-tab value="shipping" panel-id="order-shipping">Shipping</ax-tab>
+          <section slot="panels" id="order-activity">
+            <ax-card
+              ><ax-heading level="3">Recent activity</ax-heading
+              ><ax-text
+                >Payment captured and fulfillment started.</ax-text
+              ></ax-card
+            >
+          </section>
+          <section slot="panels" id="order-shipping">
+            <ax-card
+              ><ax-heading level="3">Shipping</ax-heading
+              ><ax-text>Estimated delivery: October 9.</ax-text></ax-card
+            >
+          </section>
+        </ax-tab-list>
+      </ax-stack>
+    </main>
+  </body>
+</html>

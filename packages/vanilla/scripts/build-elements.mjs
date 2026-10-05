@@ -23,6 +23,8 @@ const repoRoot = path.resolve(packageRoot, '../..');
 const elementsRoot = path.join(packageRoot, 'elements');
 const sourceRoot = path.join(elementsRoot, 'src');
 const markupRoot = path.join(packageRoot, 'elements-markup');
+const elementTemplatesRoot = path.join(packageRoot, 'elements-templates');
+const htmlTemplatesRoot = path.join(packageRoot, 'templates');
 const distRoot = path.join(packageRoot, 'dist');
 const indexPath = path.join(sourceRoot, 'index.generated.mjs');
 const elementCSSPath = path.join(packageRoot, 'src/elements.generated.css');
@@ -101,6 +103,7 @@ async function loadDefinitions() {
   if (definitions.length === 0)
     throw new Error('No element definitions found.');
   validateDefinitions(definitions.map(item => item.definition));
+  await validateElementTemplates(definitions.map(item => item.definition));
   return definitions;
 }
 
@@ -314,6 +317,107 @@ function descriptionWordCount(description) {
     .filter(Boolean).length;
 }
 
+function validateCustomElementUsage(
+  body,
+  byTag,
+  context,
+  {allowAliases = true, template = false} = {},
+) {
+  for (const element of body.querySelectorAll('*')) {
+    if (!element.localName.startsWith('ax-')) continue;
+    const targetDefinition = byTag.get(element.localName);
+    if (!targetDefinition) {
+      throw new Error(`${context} uses unknown <${element.localName}>.`);
+    }
+    const aliases = new Map();
+    for (const [name, spec] of Object.entries(targetDefinition.attributes)) {
+      for (const alias of spec.aliases ?? []) aliases.set(alias, name);
+    }
+    for (const attribute of element.attributes) {
+      if (!allowAliases && aliases.has(attribute.name)) {
+        throw new Error(
+          `${context} gives <${element.localName}> alias attribute "${attribute.name}"; use canonical "${aliases.get(attribute.name)}".`,
+        );
+      }
+      const canonical = aliases.get(attribute.name) ?? attribute.name;
+      const spec = targetDefinition.attributes[canonical];
+      if (
+        !spec &&
+        !GLOBAL_ATTRIBUTES.has(attribute.name) &&
+        !attribute.name.startsWith('aria-') &&
+        !attribute.name.startsWith('data-') &&
+        !/^on[a-z]+$/i.test(attribute.name)
+      ) {
+        throw new Error(
+          `${context} gives <${element.localName}> unknown attribute "${attribute.name}".`,
+        );
+      }
+      if (spec?.type === 'enum' && !spec.values.includes(attribute.value)) {
+        throw new Error(
+          `${context} gives ${attribute.name} invalid value "${attribute.value}".`,
+        );
+      }
+    }
+    for (const child of element.querySelectorAll(':scope > [slot]')) {
+      const slot = child.getAttribute('slot');
+      if (!Object.hasOwn(targetDefinition.slots, slot)) {
+        throw new Error(
+          `${context} uses unknown <${element.localName}> slot "${slot}".`,
+        );
+      }
+    }
+    for (const requirement of targetDefinition.content ?? []) {
+      const hasAttribute = element.hasAttribute(requirement.attribute);
+      const hasSlot =
+        requirement.slot === 'default'
+          ? isMeaningfulDefaultContent(element)
+          : Boolean(
+              element.querySelector(`:scope > [slot="${requirement.slot}"]`),
+            );
+      if (requirement.required && !hasAttribute && !hasSlot) {
+        throw new Error(
+          `${context} misses required ${requirement.attribute} or slot="${requirement.slot}" on <${element.localName}>.`,
+        );
+      }
+    }
+    for (const [name, rawSlot] of Object.entries(targetDefinition.slots)) {
+      const slot = normalizeSlot(rawSlot);
+      if (!slot.required) continue;
+      const alternative = (targetDefinition.content ?? []).find(
+        item => item.slot === name,
+      );
+      const hasAlternative =
+        alternative && element.hasAttribute(alternative.attribute);
+      const hasSlot =
+        name === 'default'
+          ? isMeaningfulDefaultContent(element)
+          : Boolean(element.querySelector(`:scope > [slot="${name}"]`));
+      if (!hasAlternative && !hasSlot) {
+        throw new Error(
+          `${context} misses required slot "${name}" on <${element.localName}>.`,
+        );
+      }
+    }
+    if (template) {
+      for (const authored of [element, ...element.querySelectorAll('*')]) {
+        if (authored.hasAttribute('style')) {
+          throw new Error(
+            `${context} uses inline style inside <${element.localName}>.`,
+          );
+        }
+        const bemClass = [...authored.classList].find(name =>
+          name.startsWith('ax-'),
+        );
+        if (bemClass) {
+          throw new Error(
+            `${context} uses BEM class "${bemClass}" inside <${element.localName}>.`,
+          );
+        }
+      }
+    }
+  }
+}
+
 function validateDefinitions(definitions) {
   const byTag = new Map(
     definitions.map(definition => [definition.tag, definition]),
@@ -364,10 +468,9 @@ function validateDefinitions(definitions) {
       const body = new JSDOM(`<!doctype html><body>${example.html}</body>`)
         .window.document.body;
       const host = body.querySelector(definition.tag);
+      const context = `${definition.name} example "${example.name}"`;
       if (!host) {
-        throw new Error(
-          `${definition.name} example "${example.name}" omits <${definition.tag}>.`,
-        );
+        throw new Error(`${context} omits <${definition.tag}>.`);
       }
       for (const element of host.querySelectorAll('[class], [style]')) {
         if (element.hasAttribute('style')) {
@@ -388,93 +491,60 @@ function validateDefinitions(definitions) {
         definition.exampleItemSelector &&
         host.querySelectorAll(definition.exampleItemSelector).length < 2
       ) {
-        throw new Error(
-          `${definition.name} example "${example.name}" must show at least two list items.`,
-        );
+        throw new Error(`${context} must show at least two list items.`);
       }
       if (definition.tag === 'ax-tab' && !host.closest('ax-tab-list')) {
         throw new Error(
           `Tab example "${example.name}" must place <ax-tab> inside <ax-tab-list>.`,
         );
       }
-      for (const element of body.querySelectorAll('*')) {
-        if (!element.localName.startsWith('ax-')) continue;
-        const targetDefinition = byTag.get(element.localName);
-        if (!targetDefinition) {
-          throw new Error(
-            `${definition.name} example "${example.name}" uses unknown <${element.localName}>.`,
-          );
-        }
-        const aliases = new Map();
-        for (const [name, spec] of Object.entries(
-          targetDefinition.attributes,
-        )) {
-          for (const alias of spec.aliases ?? []) aliases.set(alias, name);
-        }
-        for (const attribute of element.attributes) {
-          const canonical = aliases.get(attribute.name) ?? attribute.name;
-          const spec = targetDefinition.attributes[canonical];
-          if (
-            !spec &&
-            !GLOBAL_ATTRIBUTES.has(attribute.name) &&
-            !attribute.name.startsWith('aria-') &&
-            !attribute.name.startsWith('data-') &&
-            !/^on[a-z]+$/i.test(attribute.name)
-          ) {
-            throw new Error(
-              `${definition.name} example "${example.name}" gives <${element.localName}> unknown attribute "${attribute.name}".`,
-            );
-          }
-          if (spec?.type === 'enum' && !spec.values.includes(attribute.value)) {
-            throw new Error(
-              `${definition.name} example "${example.name}" gives ${attribute.name} invalid value "${attribute.value}".`,
-            );
-          }
-        }
-        for (const child of element.querySelectorAll(':scope > [slot]')) {
-          const slot = child.getAttribute('slot');
-          if (!Object.hasOwn(targetDefinition.slots, slot)) {
-            throw new Error(
-              `${definition.name} example "${example.name}" uses unknown <${element.localName}> slot "${slot}".`,
-            );
-          }
-        }
-        for (const requirement of targetDefinition.content ?? []) {
-          const hasAttribute = element.hasAttribute(requirement.attribute);
-          const hasSlot =
-            requirement.slot === 'default'
-              ? isMeaningfulDefaultContent(element)
-              : Boolean(
-                  element.querySelector(
-                    `:scope > [slot="${requirement.slot}"]`,
-                  ),
-                );
-          if (requirement.required && !hasAttribute && !hasSlot) {
-            throw new Error(
-              `${definition.name} example "${example.name}" misses required ${requirement.attribute} or slot="${requirement.slot}" on <${element.localName}>.`,
-            );
-          }
-        }
-        for (const [name, rawSlot] of Object.entries(targetDefinition.slots)) {
-          const slot = normalizeSlot(rawSlot);
-          if (!slot.required) continue;
-          const alternative = (targetDefinition.content ?? []).find(
-            item => item.slot === name,
-          );
-          const hasAlternative =
-            alternative && element.hasAttribute(alternative.attribute);
-          const hasSlot =
-            name === 'default'
-              ? isMeaningfulDefaultContent(element)
-              : Boolean(element.querySelector(`:scope > [slot="${name}"]`));
-          if (!hasAlternative && !hasSlot) {
-            throw new Error(
-              `${definition.name} example "${example.name}" misses required slot "${name}" on <${element.localName}>.`,
-            );
-          }
-        }
-      }
+      validateCustomElementUsage(body, byTag, context);
     }
+  }
+}
+
+async function validateElementTemplates(definitions) {
+  const [elementFiles, htmlFiles] = await Promise.all([
+    readdir(elementTemplatesRoot),
+    readdir(htmlTemplatesRoot),
+  ]);
+  const templateNames = files =>
+    files
+      .filter(file => file.endsWith('.html'))
+      .sort((left, right) => left.localeCompare(right));
+  const actual = templateNames(elementFiles);
+  const expected = templateNames(htmlFiles);
+  if (actual.length !== 9 || actual.join('\n') !== expected.join('\n')) {
+    throw new Error(
+      `Web-component templates must mirror the nine HTML template IDs. Expected ${expected.join(', ')}; found ${actual.join(', ')}.`,
+    );
+  }
+
+  const byTag = new Map(
+    definitions.map(definition => [definition.tag, definition]),
+  );
+  for (const file of actual) {
+    const source = await readFile(
+      path.join(elementTemplatesRoot, file),
+      'utf8',
+    );
+    if (!source.includes('__ASTRYX_VANILLA_CDN__')) {
+      throw new Error(`${file} is missing the Vanilla Astryx CDN placeholder.`);
+    }
+    const document = new JSDOM(source).window.document;
+    if (
+      ![...document.body.querySelectorAll('*')].some(element =>
+        element.localName.startsWith('ax-'),
+      )
+    ) {
+      throw new Error(`${file} must use Astryx custom elements.`);
+    }
+    validateCustomElementUsage(
+      document.body,
+      byTag,
+      `Web-component template ${file}`,
+      {allowAliases: false, template: true},
+    );
   }
 }
 
@@ -582,6 +652,10 @@ async function compare(pathname, expected) {
 
 async function main() {
   const definitions = await loadDefinitions();
+  if (process.argv.includes('--validate-templates')) {
+    console.log('Validated canonical APIs in all web-component templates.');
+    return;
+  }
   const prettierConfig = (await resolvePrettierConfig(indexPath)) ?? {};
   const index = await formatWithPrettier(entrySource(definitions), {
     ...prettierConfig,

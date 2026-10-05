@@ -25,7 +25,7 @@ describe('templateWebComponents()', () => {
     });
   });
 
-  it('falls back to an empty bundled template catalog outside a checkout', () => {
+  it('falls back to the bundled template catalog outside a checkout', () => {
     const outsideCheckout = fs.mkdtempSync(
       path.join(os.tmpdir(), 'astryx-cli-installed-web-templates-'),
     );
@@ -35,7 +35,20 @@ describe('templateWebComponents()', () => {
           cwd: outsideCheckout,
           list: true,
         }),
-      ).toEqual({type: 'template.web-components.list', data: []});
+      ).toEqual({
+        type: 'template.web-components.list',
+        data: [
+          {id: 'dashboard', file: 'dashboard.html'},
+          {id: 'detail-page', file: 'detail-page.html'},
+          {id: 'form-two-column', file: 'form-two-column.html'},
+          {id: 'kanban-board', file: 'kanban-board.html'},
+          {id: 'login', file: 'login.html'},
+          {id: 'product-detail', file: 'product-detail.html'},
+          {id: 'settings', file: 'settings.html'},
+          {id: 'shell-side-nav', file: 'shell-side-nav.html'},
+          {id: 'table-filter', file: 'table-filter.html'},
+        ],
+      });
     } finally {
       fs.rmSync(outsideCheckout, {recursive: true, force: true});
     }

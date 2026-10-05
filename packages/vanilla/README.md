@@ -17,10 +17,12 @@ Experimental no-build Astryx assets for plain HTML pages. Vanilla Astryx combine
   - [`product-detail.html`](templates/product-detail.html)
   - [`login.html`](templates/login.html)
   - [`kanban-board.html`](templates/kanban-board.html)
-- A browsable [`demo/index.html`](demo/index.html) with all seven shipped themes and light and dark modes.
-- A committed, ready-to-open [`demo/pinned/index.html`](demo/pinned/index.html) and nine pinned templates.
+- Generated custom-element docs in `elements-markup/` and nine standalone web-component templates in `elements-templates/`.
+- Self-contained custom-element bundles in `dist/astryx-elements.js` (ESM) and `dist/astryx-elements.classic.js`.
+- A browsable [`demo/index.html`](demo/index.html) for HTML templates and [`demo/elements/index.html`](demo/elements/index.html) for web-component templates.
+- Committed, ready-to-open pinned copies under [`demo/pinned/`](demo/pinned/) and [`demo/elements/pinned/`](demo/elements/pinned/).
 
-The canonical templates use `__ASTRYX_VANILLA_CDN__` as the base for their CSS and JavaScript URLs. The Astryx CLI and the demo renderer replace that placeholder with the same commit-pinned jsDelivr URL.
+The canonical HTML and web-component templates use `__ASTRYX_VANILLA_CDN__` as the base for their CSS and JavaScript URLs. The Astryx CLI and demo renderer replace that placeholder with the same commit-pinned jsDelivr URL.
 
 ## Try it
 
@@ -43,9 +45,13 @@ The command prints the ready-to-open `file://` URL. The committed copies intenti
 Run the CLI directly from a checkout:
 
 ```sh
-node packages/cli/clients/cli/bin/astryx.mjs template --list --html
-node packages/cli/clients/cli/bin/astryx.mjs template dashboard --html > dashboard.html
+node packages/cli/clients/cli/bin/astryx.mjs template --list --framework html
+node packages/cli/clients/cli/bin/astryx.mjs template dashboard --framework html > dashboard.html
+node packages/cli/clients/cli/bin/astryx.mjs template dashboard --framework web-components > dashboard-elements.html
+node packages/cli/clients/cli/bin/astryx.mjs component Button --framework web-components
 ```
+
+`--html` remains a deprecated alias for `--framework html`; new examples use `--framework` so the output target is explicit.
 
 For local development, replace `__ASTRYX_VANILLA_CDN__` in a canonical template or the source demo index with either:
 
@@ -64,6 +70,14 @@ Then serve the repository root with any static file server. The canonical HTML d
 - CSS custom-property defaults are generated from `packages/core/src/theme/tokens.stylex.ts`.
 - The document root selects a shipped or custom theme with `data-astryx-theme` and selects `light` or `dark` with `data-theme`.
 
+## Web-component contract
+
+- Every `ax-*` host renders light DOM that reuses the same Vanilla Astryx CSS and native controls; there is no shadow DOM.
+- Use canonical React-derived kebab-case attributes such as `is-disabled`, `html-name`, and `is-open`. Booleans are presence attributes unless the component docs explicitly describe a default-true value.
+- Named content uses the slots listed by `astryx component <Name> --framework web-components`; array-like content uses documented native children such as `option`, `button`, `a`, `input`, or `table`.
+- Do not put `ax-*` BEM classes or inline styles inside custom elements. The element owns its markup; page-specific layout stays outside it and uses Astryx tokens.
+- Load `astryx-vanilla.js` together with one of the self-contained element bundles. Native events bubble from inner controls, and component-specific `astryx:*` events are listed in generated docs.
+
 ## Theming
 
 Vanilla Astryx supports Neutral, Butter, Y2K, Stone, Matcha, Chocolate, and Gothic. Load the corresponding `@astryxdesign/theme-*` stylesheets, then switch themes by changing `data-astryx-theme` on the document root. Gothic is intentionally dark-only.
@@ -75,7 +89,7 @@ Custom themes override semantic CSS variables in the `astryx-theme` layer. Keep 
 See [`docs/theming.md`](docs/theming.md) for the complete stylesheet, font, switcher, persistence, and custom-theme examples. Copy the theme and mode controls from the CLI with:
 
 ```sh
-node packages/cli/clients/cli/bin/astryx.mjs component Selector --html
+node packages/cli/clients/cli/bin/astryx.mjs component Selector --framework html
 ```
 
 ## Known gaps

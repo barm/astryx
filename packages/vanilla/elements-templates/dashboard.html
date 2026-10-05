@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components dashboard</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="__ASTRYX_VANILLA_CDN__/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .page {
+          width: min(100% - 2 * var(--spacing-4), 88rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-6);
+        }
+        .metrics {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: var(--spacing-4);
+        }
+        .content {
+          display: grid;
+          grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
+          gap: var(--spacing-4);
+        }
+        @media (max-width: 64rem) {
+          .metrics {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .content {
+            grid-template-columns: 1fr;
+          }
+        }
+        @media (max-width: 40rem) {
+          .metrics {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    </style>
+    <script defer src="__ASTRYX_VANILLA_CDN__/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="__ASTRYX_VANILLA_CDN__/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <ax-top-nav label="Primary navigation">
+      <span slot="heading">Astryx Analytics</span>
+      <a slot="start-content" href="#overview">Overview</a>
+      <a slot="start-content" href="#activity">Activity</a>
+      <ax-button
+        slot="end-content"
+        size="sm"
+        data-ax-toast="Dashboard refreshed"
+        >Refresh</ax-button
+      >
+    </ax-top-nav>
+    <main class="page" id="overview">
+      <ax-stack gap="6">
+        <ax-stack gap="1">
+          <ax-badge variant="success">Live</ax-badge>
+          <ax-heading level="1">Product overview</ax-heading>
+          <ax-text color="secondary">Signals from the last 30 days.</ax-text>
+        </ax-stack>
+        <section class="metrics" aria-label="Key metrics">
+          <ax-card elevation="low"
+            ><ax-text type="label">Monthly visitors</ax-text
+            ><ax-heading level="2">27.3k</ax-heading
+            ><ax-badge variant="success">+18.2%</ax-badge></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-text type="label">Page views</ax-text
+            ><ax-heading level="2">48.2k</ax-heading
+            ><ax-badge variant="success">+12.5%</ax-badge></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-text type="label">Average session</ax-text
+            ><ax-heading level="2">4m 32s</ax-heading
+            ><ax-badge variant="warning">-2.1%</ax-badge></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-text type="label">Conversion</ax-text
+            ><ax-heading level="2">8.7%</ax-heading
+            ><ax-badge variant="info">+0.6 pts</ax-badge></ax-card
+          >
+        </section>
+        <section class="content" id="activity">
+          <ax-card elevation="low">
+            <ax-heading slot="header" level="3">Top pages</ax-heading>
+            <ax-table label="Page engagement" is-striped has-hover>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Page</th>
+                    <th>Views</th>
+                    <th>Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Home</td>
+                    <td>8,420</td>
+                    <td>+16%</td>
+                  </tr>
+                  <tr>
+                    <td>Products</td>
+                    <td>6,150</td>
+                    <td>+9%</td>
+                  </tr>
+                  <tr>
+                    <td>Pricing</td>
+                    <td>4,830</td>
+                    <td>-3%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </ax-table>
+          </ax-card>
+          <ax-card elevation="low">
+            <ax-heading slot="header" level="3">Goal progress</ax-heading>
+            <ax-stack gap="4">
+              <ax-progress-bar
+                label="Workspace created"
+                value="82"
+                max="100"
+                has-value-label></ax-progress-bar>
+              <ax-progress-bar
+                label="Teammates invited"
+                value="64"
+                max="100"
+                has-value-label></ax-progress-bar>
+              <ax-progress-bar
+                label="Project published"
+                value="47"
+                max="100"
+                has-value-label></ax-progress-bar>
+            </ax-stack>
+          </ax-card>
+        </section>
+      </ax-stack>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vanilla Astryx web-component templates</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .page {
+          width: min(100% - 2 * var(--spacing-4), 78rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-8);
+        }
+        .hero {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: var(--spacing-5);
+          align-items: end;
+        }
+        .controls {
+          display: flex;
+          gap: var(--spacing-3);
+          align-items: end;
+          flex-wrap: wrap;
+        }
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: var(--spacing-4);
+        }
+        @media (max-width: 64rem) {
+          .grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media (max-width: 44rem) {
+          .hero,
+          .grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    </style>
+    <script defer src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <ax-stack gap="7">
+        <header class="hero">
+          <ax-stack gap="2"
+            ><ax-badge variant="info">No build step</ax-badge
+            ><ax-heading level="1">Web-component templates</ax-heading
+            ><ax-text color="secondary"
+              >Nine complete pages built with light-DOM Astryx custom
+              elements.</ax-text
+            ></ax-stack
+          >
+          <div class="controls">
+            <ax-selector label="Theme" value="neutral" data-ax-theme-switch
+              ><option value="neutral">Neutral</option>
+              <option value="butter">Butter</option></ax-selector
+            >
+            <ax-selector label="Mode" value="light" data-ax-mode-switch
+              ><option value="light">Light</option>
+              <option value="dark">Dark</option></ax-selector
+            >
+          </div>
+        </header>
+        <ax-banner
+          status="info"
+          title="Open any template"
+          description="Each page is standalone and uses the same pinned CSS and JavaScript assets."></ax-banner>
+        <section class="grid" aria-label="Web-component page templates">
+          <ax-card elevation="low"
+            ><ax-badge variant="success">Analytics</ax-badge
+            ><ax-heading level="3">Dashboard</ax-heading
+            ><ax-text color="secondary"
+              >Metrics, progress, and a results table.</ax-text
+            ><ax-button
+              slot="footer"
+              href="./dashboard.html"
+              >Open dashboard</ax-button
+            ></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-badge variant="info">Operations</ax-badge
+            ><ax-heading level="3">Table + filters</ax-heading
+            ><ax-text color="secondary"
+              >Search, selectors, and a compact data table.</ax-text
+            ><ax-button
+              slot="footer"
+              href="./table-filter.html"
+              >Open table</ax-button
+            ></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-badge variant="warning">Lead capture</ax-badge
+            ><ax-heading level="3">Two-column form</ax-heading
+            ><ax-text color="secondary"
+              >Accessible native controls and supporting context.</ax-text
+            ><ax-button
+              slot="footer"
+              href="./form-two-column.html"
+              >Open form</ax-button
+            ></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-badge variant="error">Commerce</ax-badge
+            ><ax-heading level="3">Detail page</ax-heading
+            ><ax-text color="secondary"
+              >Order line items, tabs, and customer details.</ax-text
+            ><ax-button
+              slot="footer"
+              href="./detail-page.html"
+              >Open detail</ax-button
+            ></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-badge variant="info">Configuration</ax-badge
+            ><ax-heading level="3">Settings</ax-heading
+            ><ax-text color="secondary"
+              >Profile, notifications, and workspace choices.</ax-text
+            ><ax-button
+              slot="footer"
+              href="./settings.html"
+              >Open settings</ax-button
+            ></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-badge variant="neutral">Administration</ax-badge
+            ><ax-heading level="3">Side-nav shell</ax-heading
+            ><ax-text color="secondary"
+              >Persistent navigation and an overview workspace.</ax-text
+            ><ax-button
+              slot="footer"
+              href="./shell-side-nav.html"
+              >Open shell</ax-button
+            ></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-badge variant="success">Storefront</ax-badge
+            ><ax-heading level="3">Product detail</ax-heading
+            ><ax-text color="secondary"
+              >Media, options, quantity, and disclosures.</ax-text
+            ><ax-button
+              slot="footer"
+              href="./product-detail.html"
+              >Open product</ax-button
+            ></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-badge variant="info">Account</ax-badge
+            ><ax-heading level="3">Login</ax-heading
+            ><ax-text color="secondary"
+              >A focused credential and passkey form.</ax-text
+            ><ax-button slot="footer" href="./login.html"
+              >Open login</ax-button
+            ></ax-card
+          >
+          <ax-card elevation="low"
+            ><ax-badge variant="warning">Planning</ax-badge
+            ><ax-heading level="3">Kanban board</ax-heading
+            ><ax-text color="secondary"
+              >Three lanes of project work and progress.</ax-text
+            ><ax-button
+              slot="footer"
+              href="./kanban-board.html"
+              >Open board</ax-button
+            ></ax-card
+          >
+        </section>
+      </ax-stack>
+    </main>
+    <script>
+      for (const link of document.querySelectorAll('ax-button[href]')) {
+        link.addEventListener('click', event => {
+          const href = link.getAttribute('href');
+          const url = new URL(href, location.href);
+          url.searchParams.set(
+            'theme',
+            document.documentElement.dataset.astryxTheme,
+          );
+          url.searchParams.set('mode', document.documentElement.dataset.theme);
+          event.preventDefault();
+          location.href = url;
+        });
+      }
+    </script>
+  </body>
+</html>

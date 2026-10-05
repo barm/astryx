@@ -20,7 +20,9 @@ const cssPath = path.join(packageRoot, 'dist/astryx-vanilla.css');
 const componentsDir = path.join(packageRoot, 'src/components');
 const markupDir = path.join(packageRoot, 'markup');
 const templatesDir = path.join(packageRoot, 'templates');
+const elementTemplatesDir = path.join(packageRoot, 'elements-templates');
 const pinnedDemoDir = path.join(packageRoot, 'demo/pinned');
+const pinnedElementDemoDir = path.join(packageRoot, 'demo/elements/pinned');
 
 async function listStems(directory, extension) {
   const entries = await readdir(directory, {withFileTypes: true});
@@ -56,17 +58,20 @@ const forbiddenTemplateLiterals = [
 ];
 
 test('template CSS and inline styles use tokens instead of raw literals', async () => {
-  const templateNames = (await readdir(templatesDir))
-    .filter(name => name.endsWith('.html'))
-    .sort((a, b) => a.localeCompare(b));
   const violations = [];
-
-  for (const name of templateNames) {
-    const html = await readFile(path.join(templatesDir, name), 'utf8');
-    const styles = authoredStyleSources(html).join('\n');
-    for (const [kind, pattern] of forbiddenTemplateLiterals) {
-      for (const match of styles.matchAll(pattern)) {
-        violations.push(`${name}: ${kind} ${JSON.stringify(match[0])}`);
+  for (const templateDir of [templatesDir, elementTemplatesDir]) {
+    const templateNames = (await readdir(templateDir))
+      .filter(name => name.endsWith('.html'))
+      .sort((a, b) => a.localeCompare(b));
+    for (const name of templateNames) {
+      const html = await readFile(path.join(templateDir, name), 'utf8');
+      const styles = authoredStyleSources(html).join('\n');
+      for (const [kind, pattern] of forbiddenTemplateLiterals) {
+        for (const match of styles.matchAll(pattern)) {
+          violations.push(
+            `${path.basename(templateDir)}/${name}: ${kind} ${JSON.stringify(match[0])}`,
+          );
+        }
       }
     }
   }
@@ -157,7 +162,18 @@ test('pseudo-elements stay outside :where() and :is() in source and dist', async
   }
 });
 
-test('the committed pinned demo matches the canonical sources and CDN ref', async () => {
+test('web-component templates match IDs and pass the element API validator', () => {
+  execFileSync(
+    process.execPath,
+    ['scripts/build-elements.mjs', '--validate-templates'],
+    {
+      cwd: packageRoot,
+      stdio: 'pipe',
+    },
+  );
+});
+
+test('the committed pinned demos match the canonical sources and CDN ref', async () => {
   execFileSync(process.execPath, ['scripts/render-demo.mjs', '--check'], {
     cwd: packageRoot,
     stdio: 'pipe',
@@ -165,17 +181,22 @@ test('the committed pinned demo matches the canonical sources and CDN ref', asyn
 
   const cdnBase = astryxVanillaCdnBase(ASTRYX_VANILLA_CDN_REF);
   const names = ['dashboard', 'detail-page', 'form-two-column', 'table-filter'];
-  const index = await readFile(path.join(pinnedDemoDir, 'index.html'), 'utf8');
-  assert.doesNotMatch(index, new RegExp(ASTRYX_VANILLA_CDN_PLACEHOLDER));
-  assert.match(index, new RegExp(cdnBase, 'g'));
+  for (const [demoRoot, label] of [
+    [pinnedDemoDir, 'html'],
+    [pinnedElementDemoDir, 'web-components'],
+  ]) {
+    const index = await readFile(path.join(demoRoot, 'index.html'), 'utf8');
+    assert.doesNotMatch(index, new RegExp(ASTRYX_VANILLA_CDN_PLACEHOLDER));
+    assert.match(index, new RegExp(cdnBase, 'g'));
 
-  for (const name of names) {
-    assert.match(index, new RegExp(`href="\\./${name}\\.html"`));
-    const template = await readFile(
-      path.join(pinnedDemoDir, `${name}.html`),
-      'utf8',
-    );
-    assert.doesNotMatch(template, new RegExp(ASTRYX_VANILLA_CDN_PLACEHOLDER));
-    assert.match(template, new RegExp(cdnBase, 'g'));
+    for (const name of names) {
+      assert.match(index, new RegExp(`href="\\./${name}\\.html"`), label);
+      const template = await readFile(
+        path.join(demoRoot, `${name}.html`),
+        'utf8',
+      );
+      assert.doesNotMatch(template, new RegExp(ASTRYX_VANILLA_CDN_PLACEHOLDER));
+      assert.match(template, new RegExp(cdnBase, 'g'));
+    }
   }
 });

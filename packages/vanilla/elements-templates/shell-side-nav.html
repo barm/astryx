@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components side navigation shell</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="__ASTRYX_VANILLA_CDN__/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          min-height: 100vh;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .shell {
+          display: grid;
+          grid-template-columns: minmax(15rem, 0.35fr) minmax(0, 1fr);
+          min-height: 100vh;
+        }
+        .rail {
+          padding: var(--spacing-4);
+          border-inline-end: var(--border-width) solid var(--color-border);
+          background: var(--color-background-surface);
+        }
+        .content {
+          padding: var(--spacing-6);
+        }
+        .cards {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: var(--spacing-4);
+        }
+        @media (max-width: 58rem) {
+          .shell {
+            grid-template-columns: 1fr;
+          }
+          .rail {
+            border-inline-end: 0;
+            border-block-end: var(--border-width) solid var(--color-border);
+          }
+          .cards {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    </style>
+    <script defer src="__ASTRYX_VANILLA_CDN__/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="__ASTRYX_VANILLA_CDN__/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="rail">
+        <ax-side-nav label="Administration navigation"
+          ><ax-heading slot="header" level="3">Admin</ax-heading
+          ><a href="#overview" aria-current="page">Overview</a
+          ><a href="#members">Members</a><a href="#billing">Billing</a
+          ><a href="#integrations">Integrations</a
+          ><ax-button slot="footer" size="sm">Get help</ax-button></ax-side-nav
+        >
+      </aside>
+      <main class="content" id="overview">
+        <ax-stack gap="6">
+          <ax-stack gap="1"
+            ><ax-badge variant="info">Workspace</ax-badge
+            ><ax-heading level="1">Administration overview</ax-heading
+            ><ax-text color="secondary"
+              >Review membership, usage, and security at a glance.</ax-text
+            ></ax-stack
+          >
+          <section class="cards">
+            <ax-card elevation="low"
+              ><ax-heading level="3">Members</ax-heading
+              ><ax-heading level="2">128</ax-heading
+              ><ax-link slot="footer" href="#members"
+                >Manage members</ax-link
+              ></ax-card
+            >
+            <ax-card elevation="low"
+              ><ax-heading level="3">Storage</ax-heading
+              ><ax-progress-bar
+                label="Storage used"
+                value="62"
+                max="100"
+                has-value-label></ax-progress-bar
+              ><ax-link slot="footer" href="#billing"
+                >View plan</ax-link
+              ></ax-card
+            >
+            <ax-card elevation="low"
+              ><ax-heading level="3">Security</ax-heading
+              ><ax-status-dot
+                variant="success"
+                label="All checks passing"></ax-status-dot
+              ><ax-link slot="footer" href="#security"
+                >Open report</ax-link
+              ></ax-card
+            >
+          </section>
+          <ax-banner
+            status="info"
+            title="Invite your team"
+            description="Add collaborators now, or share an invite link later."
+            ><ax-button slot="end-content" size="sm" variant="primary"
+              >Invite members</ax-button
+            ></ax-banner
+          >
+          <ax-card elevation="low"
+            ><ax-heading slot="header" level="3">Recent activity</ax-heading
+            ><ax-table label="Recent administration activity" dividers="rows"
+              ><table>
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Actor</th>
+                    <th>When</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Member invited</td>
+                    <td>Mina Park</td>
+                    <td>12 minutes ago</td>
+                  </tr>
+                  <tr>
+                    <td>Billing method updated</td>
+                    <td>Theo Grant</td>
+                    <td>Yesterday</td>
+                  </tr>
+                </tbody>
+              </table></ax-table
+            ></ax-card
+          >
+        </ax-stack>
+      </main>
+    </div>
+  </body>
+</html>

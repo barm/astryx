@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components login</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="__ASTRYX_VANILLA_CDN__/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          min-height: 100vh;
+          display: grid;
+          place-items: center;
+          padding: var(--spacing-4);
+          background: var(--color-background-muted);
+          color: var(--color-text-primary);
+        }
+        .login {
+          width: min(100%, 28rem);
+        }
+        .actions {
+          display: grid;
+          gap: var(--spacing-2);
+        }
+      }
+    </style>
+    <script defer src="__ASTRYX_VANILLA_CDN__/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="__ASTRYX_VANILLA_CDN__/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <main class="login">
+      <ax-card elevation="med">
+        <ax-stack gap="5">
+          <ax-stack gap="2"
+            ><ax-badge variant="info">Astryx Cloud</ax-badge
+            ><ax-heading level="1">Welcome back</ax-heading
+            ><ax-text color="secondary"
+              >Sign in to continue to your workspace.</ax-text
+            ></ax-stack
+          >
+          <form>
+            <ax-stack gap="4">
+              <ax-text-input
+                label="Email"
+                type="email"
+                html-name="email"
+                auto-complete="email"
+                is-required></ax-text-input>
+              <ax-text-input
+                label="Password"
+                type="password"
+                html-name="password"
+                auto-complete="current-password"
+                is-required></ax-text-input>
+              <ax-switch
+                label="Remember this device"
+                html-name="remember"></ax-switch>
+              <div class="actions">
+                <ax-button type="submit" variant="primary" size="lg"
+                  >Sign in</ax-button
+                ><ax-button type="button" size="lg"
+                  >Continue with a passkey</ax-button
+                >
+              </div>
+            </ax-stack>
+          </form>
+          <ax-divider label="or"></ax-divider>
+          <ax-text type="supporting" color="secondary"
+            >New to Astryx?
+            <ax-link href="#create-account">Create an account</ax-link
+            >.</ax-text
+          >
+        </ax-stack>
+      </ax-card>
+    </main>
+  </body>
+</html>

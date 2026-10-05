@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components two-column form</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .page {
+          width: min(100% - 2 * var(--spacing-4), 72rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-8);
+        }
+        .columns {
+          display: grid;
+          grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+          gap: var(--spacing-6);
+          align-items: start;
+        }
+        .actions {
+          display: flex;
+          justify-content: end;
+          gap: var(--spacing-2);
+        }
+        @media (max-width: 52rem) {
+          .columns {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    </style>
+    <script defer src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <ax-stack gap="6">
+        <ax-stack gap="2"
+          ><ax-badge variant="info">Contact</ax-badge
+          ><ax-heading level="1">Tell us about your project</ax-heading
+          ><ax-text color="secondary"
+            >We will use these details to prepare a focused first
+            conversation.</ax-text
+          ></ax-stack
+        >
+        <div class="columns">
+          <ax-card elevation="low">
+            <form>
+              <ax-stack gap="4">
+                <ax-text-input
+                  label="Full name"
+                  html-name="name"
+                  auto-complete="name"
+                  is-required></ax-text-input>
+                <ax-text-input
+                  label="Work email"
+                  html-name="email"
+                  type="email"
+                  auto-complete="email"
+                  is-required></ax-text-input>
+                <ax-selector label="Project type" html-name="project-type"
+                  ><option value="product">Product design</option>
+                  <option value="platform">Design system</option>
+                  <option value="research">
+                    Research prototype
+                  </option></ax-selector
+                >
+                <ax-text-area
+                  label="What are you building?"
+                  html-name="details"
+                  rows="5"
+                  placeholder="Share the goal and current constraints"></ax-text-area>
+                <ax-checkbox-input
+                  label="Send me a copy"
+                  html-name="copy"
+                  html-value="yes"></ax-checkbox-input>
+                <div class="actions">
+                  <ax-button type="reset">Clear</ax-button
+                  ><ax-button type="submit" variant="primary"
+                    >Send request</ax-button
+                  >
+                </div>
+              </ax-stack>
+            </form>
+          </ax-card>
+          <ax-card variant="muted">
+            <ax-heading slot="header" level="3">What happens next</ax-heading>
+            <ax-stack gap="3"
+              ><ax-status-dot
+                variant="success"
+                label="A specialist reviews your goals"></ax-status-dot
+              ><ax-status-dot
+                variant="accent"
+                label="We send a tailored agenda"></ax-status-dot
+              ><ax-status-dot
+                variant="neutral"
+                label="You choose a meeting time"></ax-status-dot
+            ></ax-stack>
+            <ax-text slot="footer" type="supporting" color="secondary"
+              >Typical response time: one business day.</ax-text
+            >
+          </ax-card>
+        </div>
+      </ax-stack>
+    </main>
+  </body>
+</html>

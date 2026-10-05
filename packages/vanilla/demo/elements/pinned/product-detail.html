@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astryx web components product detail</title>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const params = new URLSearchParams(location.search);
+        const theme = params.get('theme');
+        const mode = params.get('mode');
+        if (/^[a-z][a-z0-9-]*$/.test(theme || ''))
+          root.dataset.astryxTheme = theme;
+        if (['light', 'dark'].includes(mode)) root.dataset.theme = mode;
+      })();
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+        }
+        .page {
+          display: grid;
+          width: min(100% - 2 * var(--spacing-4), 76rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-6);
+          gap: var(--spacing-5);
+        }
+        .product {
+          display: grid;
+          grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
+          gap: var(--spacing-8);
+          align-items: start;
+        }
+        .media {
+          display: grid;
+          place-items: center;
+          min-height: 30rem;
+          border-radius: var(--radius-container);
+          background: var(--color-background-muted);
+        }
+        @media (max-width: 58rem) {
+          .product {
+            grid-template-columns: 1fr;
+          }
+          .media {
+            min-height: 20rem;
+          }
+        }
+      }
+    </style>
+    <script defer src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <ax-top-nav label="Store navigation"
+      ><span slot="heading">Astryx Supply</span
+      ><a slot="start-content" href="#new">New</a
+      ><a slot="start-content" href="#office">Office</a
+      ><ax-button slot="end-content" size="sm">Cart · 2</ax-button></ax-top-nav
+    >
+    <main class="page">
+      <ax-breadcrumbs
+        ><a href="#store">Store</a><a href="#office">Office</a
+        ><span>Field notebook</span></ax-breadcrumbs
+      >
+      <ax-stack gap="5">
+        <section class="product">
+          <div class="media" aria-label="Product image placeholder">
+            <ax-skeleton width="80%" height="22rem" radius="4"></ax-skeleton>
+          </div>
+          <ax-stack gap="5">
+            <ax-stack gap="2"
+              ><ax-badge variant="success">In stock</ax-badge
+              ><ax-heading level="1">Field notebook</ax-heading
+              ><ax-text type="large">$24.00</ax-text
+              ><ax-text color="secondary"
+                >A durable clothbound notebook with dot-grid pages and lay-flat
+                binding.</ax-text
+              ></ax-stack
+            >
+            <ax-selector label="Cover" html-name="cover" value="sand"
+              ><option value="sand">Sand</option>
+              <option value="forest">Forest</option>
+              <option value="ink">Ink</option></ax-selector
+            >
+            <ax-number-input
+              label="Quantity"
+              html-name="quantity"
+              value="1"
+              min="1"
+              max="8"
+              step="1"></ax-number-input>
+            <ax-button variant="primary" size="lg" data-ax-toast="Added to cart"
+              >Add to cart</ax-button
+            >
+            <ax-collapsible trigger="Materials"
+              ><ax-text color="secondary"
+                >Recycled paper, cotton book cloth, and soy-based ink.</ax-text
+              ></ax-collapsible
+            >
+            <ax-collapsible trigger="Shipping"
+              ><ax-text color="secondary"
+                >Ships within two business days in recyclable
+                packaging.</ax-text
+              ></ax-collapsible
+            >
+          </ax-stack>
+        </section>
+      </ax-stack>
+    </main>
+  </body>
+</html>

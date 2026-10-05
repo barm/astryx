@@ -2,8 +2,8 @@
 
 > An open source design system that's fully customizable and agent ready.
 > Astryx grew inside Meta over eight years and powers 13,000+ apps. It ships
-> two ways: React components (built on React + StyleX) and a build-less HTML
-> flavor (one CSS file + one JS file from a CDN, readable `ax-*` classes).
+> three ways: React components (React + StyleX), build-less HTML with readable
+> `ax-*` BEM classes, and build-less light-DOM web components with `ax-*` tags.
 
 Everything on this site — component docs, markup, page templates, tokens and
 design rules — is also available through the Astryx CLI, in a form built for
@@ -13,21 +13,24 @@ agents. Prefer the CLI (or the direct file URLs below) over crawling pages.
 
 Pick ONE path before writing any code:
 
-- **Path A — Build-less HTML.** Use when: there is no existing React project,
-  the user wants a single page / prototype / static file / "just an HTML
-  file", you cannot run a dev server, or you are producing an artifact that
-  must open directly in a browser. No install, no bundler, no React.
-- **Path B — React with a dev server.** Use when: the workspace already has
-  React (package.json lists `react`), or the user asks for a React/Next/Vite
-  app.
+- **Path A1 — Build-less HTML.** Use readable `ax-*` classes when the user wants
+  plain HTML with direct control over the native markup.
+- **Path A2 — Build-less web components.** Use light-DOM `<ax-*>` elements when
+  the user wants compact component tags and documented attributes/slots without
+  React or a build step.
+- **Path B — React with a dev server.** Use when the workspace already has React
+  (`package.json` lists `react`), or the user asks for a React/Next/Vite app.
 
-If unsure and there is no package.json, choose **Path A**.
+Both build-less paths produce standalone files that open directly in a browser,
+use the same CSS, themes, and native controls, and need no install or bundler.
+Choose A1 or A2 from the requested authoring style rather than treating either
+as the default. If the workspace already uses React, choose Path B.
 
 ---
 
-## Path A — Build-less HTML
+## Path A1 — Build-less HTML
 
-### A1. Page setup (copy exactly; versions are pinned)
+### A1.1. Page setup (copy exactly; versions are pinned)
 
 ```html
 <!doctype html>
@@ -90,7 +93,7 @@ If unsure and there is no package.json, choose **Path A**.
   `https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.mjs`
   (exports `setTheme`, `setMode`, `initThemeModeSwitchers`).
 
-### A2. Start every page from a template — never lay out a page from scratch
+### A1.2. Start every page from a template — never lay out a page from scratch
 
 Templates (complete, standalone, already wired to the CDN links above):
 
@@ -111,12 +114,14 @@ Templates (complete, standalone, already wired to the CDN links above):
 ```sh
 npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@58d9d777b33e79bcc3d0fff12be18f0718bc4e4f/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
 
-astryx template --list --html                  # the 9 template ids
-astryx template dashboard --html > page.html   # full standalone page
-astryx component --list --html                 # all HTML components
-astryx component Dialog --html                 # docs + copyable markup variants
-astryx component Selector --html               # theme switcher and dark mode controls
+astryx template --list --framework html                  # the 9 template ids
+astryx template dashboard --framework html > page.html   # full standalone page
+astryx component --list --framework html                 # all HTML components
+astryx component Dialog --framework html                 # docs + copyable markup variants
+astryx component Selector --framework html               # theme switcher and dark mode controls
 ```
+
+`--html` is a deprecated alias for `--framework html`; always use `--framework` in new commands.
 
 **Fallback — clone the pinned source commit:**
 
@@ -124,7 +129,7 @@ astryx component Selector --html               # theme switcher and dark mode co
 git clone https://github.com/facebook/astryx.git astryx
 git -C astryx checkout 58d9d777b33e79bcc3d0fff12be18f0718bc4e4f
 cd astryx && npx --yes pnpm@11.10.0 install --frozen-lockfile
-node packages/cli/clients/cli/bin/astryx.mjs template dashboard --html > page.html
+node packages/cli/clients/cli/bin/astryx.mjs template dashboard --framework html > page.html
 ```
 
 **Option 2 — direct file URLs (no shell needed; fetch and save as .html):**
@@ -138,9 +143,9 @@ These are served as plain text: download the content, don't link to it.
 Live preview of all templates (after a one-time notice page):
 https://raw.githack.com/facebook/astryx/58d9d777b33e79bcc3d0fff12be18f0718bc4e4f/packages/vanilla/demo/pinned/index.html
 
-### A3. Then add components
+### A1.3. Then add components
 
-Available components (use these exact names with `component <Name> --html`
+Available components (use these exact names with `component <Name> --framework html`
 or the markup URL): Badge, Button, Card, CheckboxInput, Collapsible, Dialog,
 Divider, DropdownMenu, Heading, Layout, Link, Selector, SideNav, Stack,
 Switch, TabList, Table, Text, TextInput, Toast, Tooltip, TopNav.
@@ -148,7 +153,7 @@ Switch, TabList, Table, Text, TextInput, Toast, Tooltip, TopNav.
 Each markup file starts with `<!-- docs: ... -->` and lists examples under
 `<!-- variant: <name> -->`. Copy a variant, then change its content.
 
-### A4. Rules for Path A
+### A1.4. Rules for Path A1
 
 - Classes are readable BEM: block `ax-button`, modifier `ax-button--primary`,
   element `ax-card__header`. Only use classes that appear in the CLI output or
@@ -168,6 +173,91 @@ Each markup file starts with `<!-- docs: ... -->` and lists examples under
 - No React, no JSX, no bundler, no npm install in the user's project.
 - Self-check: open the file in a browser; it must be fully styled with zero
   console errors, and switching `data-astryx-theme` / `data-theme` must work.
+
+---
+
+## Path A2 — Build-less web components
+
+### A2.1. Page setup (copy exactly; versions are pinned)
+
+```html
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-vanilla.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <ax-button variant="primary">Continue</ax-button>
+  </body>
+</html>
+```
+
+The classic elements bundle is self-contained and registers every `ax-*` tag.
+The ESM alternative is
+`https://cdn.jsdelivr.net/gh/facebook/astryx@3a3219da36ad6662fc59fda159f9fe2aa422db0e/packages/vanilla/dist/astryx-elements.js`.
+Load `astryx-vanilla.js` as shown for theme controls and progressive behaviors;
+element-owned interactions work in either script order.
+
+### A2.2. Start from a web-component template, then inspect components
+
+```sh
+astryx template --list --framework web-components
+astryx template dashboard --framework web-components > page.html
+astryx component --list --framework web-components
+astryx component Button --framework web-components
+astryx component TextInput --framework web-components
+```
+
+The same nine template IDs listed in Path A1 are available. Direct source files:
+
+```
+https://raw.githubusercontent.com/facebook/astryx/58d9d777b33e79bcc3d0fff12be18f0718bc4e4f/packages/vanilla/demo/elements/pinned/<template-id>.html
+https://raw.githubusercontent.com/facebook/astryx/58d9d777b33e79bcc3d0fff12be18f0718bc4e4f/packages/vanilla/elements-markup/<ComponentName>.html
+```
+
+Live template index (after a one-time notice page):
+https://raw.githack.com/facebook/astryx/58d9d777b33e79bcc3d0fff12be18f0718bc4e4f/packages/vanilla/demo/elements/pinned/index.html
+
+### A2.3. Rules for Path A2
+
+- Attributes mirror React prop names in kebab-case: `is-disabled`, `html-name`,
+  `auto-complete`, `is-open`. Use only the canonical names printed by the CLI,
+  never native aliases such as `disabled`, `name`, or `open`.
+- Booleans are presence attributes: `is-disabled` means true and absence means
+  false. Only a documented default-true attribute accepts `="false"`.
+- Use only documented slots. String content such as `label`, `title`, and
+  `description` can use the attribute or its named slot; authored slot content
+  wins. Native children model lists and data: `option`, `button`, `a`, radio
+  `input`, and `table`.
+- Never put `ax-*` BEM classes or inline styles inside an `ax-*` element. The
+  custom element generates the BEM markup. Keep page layout CSS outside the
+  component and use Astryx token variables.
+- Native events bubble from inner controls. Read each component's generated
+  `events`, `methods`, and `properties` blocks before scripting it; custom events
+  use the documented `astryx:*` names and detail shapes.
+- Use native semantics and authored content: real forms, options, tables, links,
+  and buttons. Do not add shadow DOM or `is=""` customized built-ins.
+- Keep every CDN URL pinned exactly as given. Never use unpinned or branch-name
+  URLs. Open every page in a browser and require zero console errors.
 
 ---
 
