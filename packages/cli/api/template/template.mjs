@@ -30,6 +30,9 @@ import {templateSkeleton} from './skeleton/skeleton.mjs';
 import {templateCopy} from './copy/copy.mjs';
 import {templateCdn} from './cdn/cdn.mjs';
 import {templateHtml} from './html/html.mjs';
+import {templateWebComponents} from './web-components/web-components.mjs';
+
+const FRAMEWORKS = ['react', 'html', 'web-components'];
 
 // Re-export the shared discovery/IO + cross-command helpers so this module
 // stays the single import surface for the template family (same exports as
@@ -66,8 +69,9 @@ export {
  * @param {boolean} [options.list]
  * @param {boolean} [options.skeleton]
  * @param {boolean | string} [options.cdn] - Write the no-build-step CDN starter page; a string is used as the destination path.
- * @param {boolean} [options.html] - Read vanilla HTML from packages/vanilla/templates.
- * @param {string} [options.cdnRef] - Git ref used for vanilla jsDelivr URLs; valid only with html.
+ * @param {boolean} [options.html] - Deprecated alias for framework='html'.
+ * @param {'react'|'html'|'web-components'} [options.framework] - Output framework; defaults to react.
+ * @param {string} [options.cdnRef] - Git ref used for vanilla jsDelivr URLs; valid only with html or web-components.
  * @param {boolean} [options.show]
  * @param {'page'|'block'} [options.type] - Filter list views / narrow lookups by template kind.
  * @param {string} [options.package] - Narrow lookups to a specific package (id-only matches across packages are ambiguous).
@@ -81,6 +85,7 @@ export async function template(name, options = {}) {
     show = false,
     cdn = false,
     html = false,
+    framework,
     cdnRef,
     targetPath,
     overwrite = false,
@@ -89,15 +94,32 @@ export async function template(name, options = {}) {
     cwd = process.cwd(),
   } = options;
 
-  if (cdnRef !== undefined && !html) {
+  if (framework !== undefined && !FRAMEWORKS.includes(framework)) {
     throw new AstryxError(
-      '--cdn-ref requires --html',
+      `Unknown framework "${String(framework)}". Valid frameworks: ${FRAMEWORKS.join(', ')}`,
+      undefined,
+      ERROR_CODES.ERR_INVALID_ARGUMENT,
+    );
+  }
+  if (html && framework !== undefined) {
+    throw new AstryxError(
+      '--html cannot be combined with --framework; use --framework html instead',
+      undefined,
+      ERROR_CODES.ERR_INVALID_ARGUMENT,
+    );
+  }
+  const selectedFramework = html ? 'html' : (framework ?? 'react');
+
+  if (cdnRef !== undefined && selectedFramework === 'react') {
+    throw new AstryxError(
+      '--cdn-ref requires --html or --framework html|web-components',
       undefined,
       ERROR_CODES.ERR_INVALID_ARGUMENT,
     );
   }
 
-  if (html) {
+  if (selectedFramework !== 'react') {
+    const frameworkFlag = html ? '--html' : `--framework ${selectedFramework}`;
     const incompatible = [
       cdn ? '--cdn' : null,
       skeleton ? '--skeleton' : null,
@@ -108,37 +130,40 @@ export async function template(name, options = {}) {
     ].filter(Boolean);
     if (incompatible.length > 0) {
       throw new AstryxError(
-        `--html cannot be combined with ${incompatible.join(', ')}`,
+        `${frameworkFlag} cannot be combined with ${incompatible.join(', ')}`,
         undefined,
         ERROR_CODES.ERR_INVALID_ARGUMENT,
       );
     }
     if (list && name) {
       throw new AstryxError(
-        '--list --html cannot be combined with a template id',
+        `--list ${frameworkFlag} cannot be combined with a template id`,
         undefined,
         ERROR_CODES.ERR_INVALID_ARGUMENT,
       );
     }
     if (list && cdnRef !== undefined) {
       throw new AstryxError(
-        '--cdn-ref is only valid with a named --html template',
+        `--cdn-ref is only valid with a named ${frameworkFlag} template`,
         undefined,
         ERROR_CODES.ERR_INVALID_ARGUMENT,
       );
     }
     if (!list && !name) {
       throw new AstryxError(
-        '--html requires a template id or --list',
+        `${frameworkFlag} requires a template id or --list`,
         undefined,
         ERROR_CODES.ERR_INVALID_ARGUMENT,
       );
     }
-    return templateHtml(name, {
+    const vanillaOptions = {
       cwd,
       list,
       ...(cdnRef !== undefined ? {cdnRef} : {}),
-    });
+    };
+    return selectedFramework === 'html'
+      ? templateHtml(name, vanillaOptions)
+      : templateWebComponents(name, vanillaOptions);
   }
 
   // The CDN starter ships as an asset rather than as a discovered template, so

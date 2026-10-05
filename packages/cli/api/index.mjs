@@ -22,11 +22,13 @@
 // ── Functions (runtime) ──────────────────────────────────────────────
 export {component} from './component/component.mjs';
 export {componentHtml} from './component/html/html.mjs';
+export {componentWebComponents} from './component/web-components/web-components.mjs';
 export {docs} from './docs/docs.mjs';
 export {blog} from './blog/blog.mjs';
 export {discover} from './discover/discover.mjs';
 export {template} from './template/template.mjs';
 export {templateHtml} from './template/html/html.mjs';
+export {templateWebComponents} from './template/web-components/web-components.mjs';
 export {
   themeBuild,
   themeAdd,
@@ -83,11 +85,13 @@ export {logger} from './logger.mjs';
 export * from '../foundation/response/batch.type.mjs';
 export * from './component/component.type.mjs';
 export * from './component/html/html.type.mjs';
+export * from './component/web-components/web-components.type.mjs';
 export * from './docs/docs.type.mjs';
 export * from './blog/blog.type.mjs';
 export * from './discover/discover.type.mjs';
 export * from './template/template.type.mjs';
 export * from './template/html/html.type.mjs';
+export * from './template/web-components/web-components.type.mjs';
 export * from './theme/theme.type.mjs';
 export * from './hook/hook.type.mjs';
 export * from './search/search.type.mjs';

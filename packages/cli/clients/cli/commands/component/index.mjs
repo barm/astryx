@@ -46,6 +46,8 @@ import {doc as componentFn} from '../../../../api/component/component.doc.mjs';
  *   | import('../../../../api/component/component.type.mjs').ComponentDetailBlocksResponse
  *   | import('../../../../api/component/html/html.type.mjs').ComponentHtmlListResponse
  *   | import('../../../../api/component/html/html.type.mjs').ComponentHtmlResponse
+ *   | import('../../../../api/component/web-components/web-components.type.mjs').ComponentWebComponentsListResponse
+ *   | import('../../../../api/component/web-components/web-components.type.mjs').ComponentWebComponentsResponse
  * )} ComponentResult
  */
 
@@ -81,8 +83,10 @@ function summarize(result) {
     case 'component.detail.showcase':
       return resultSet({count: 1, resultKind: 'component', directMatch: true});
     case 'component.html':
+    case 'component.web-components':
       return resultSet({count: 1, resultKind: 'component', directMatch: true});
     case 'component.html.list':
+    case 'component.web-components.list':
       return resultSet({count: result.data.length, resultKind: 'component'});
     case 'component.detail.blocks': {
       const {showcase, examples, related} = result.data;
@@ -181,7 +185,7 @@ export function registerComponent(program) {
     fn: componentFn,
     action: async (
       /** @type {string[] | undefined} */ names,
-      /** @type {{list?: boolean, category?: string, props?: boolean, source?: boolean, showcase?: boolean, blocks?: boolean, package?: string, html?: boolean}} */ options,
+      /** @type {{list?: boolean, category?: string, props?: boolean, source?: boolean, showcase?: boolean, blocks?: boolean, package?: string, html?: boolean, framework?: string}} */ options,
     ) => {
       const run = getCliInvocation();
       const name = names?.length === 1 ? names[0] : undefined;
@@ -225,6 +229,7 @@ export function registerComponent(program) {
           showcase: options.showcase,
           blocks: options.blocks,
           html: options.html,
+          framework: /** @type {'react'|'html'|'web-components'|undefined} */ (options.framework),
           detail,
           lang, zh, dense,
         }));
@@ -245,14 +250,22 @@ export function registerComponent(program) {
         return answered;
       }
 
-      if (result.type === 'component.html.list') {
+      if (
+        result.type === 'component.html.list' ||
+        result.type === 'component.web-components.list'
+      ) {
+        const framework =
+          result.type === 'component.html.list' ? 'HTML' : 'web-component';
         emit(
-          section('Vanilla HTML components'),
+          section(`Vanilla ${framework} components`),
           records(result.data, {fields: ['name', 'file']}),
         );
         return answered;
       }
-      if (result.type === 'component.html') {
+      if (
+        result.type === 'component.html' ||
+        result.type === 'component.web-components'
+      ) {
         emit(code(result.data.source));
         return answered;
       }

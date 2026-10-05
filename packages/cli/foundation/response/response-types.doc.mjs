@@ -75,6 +75,16 @@ export const doc = {
       description:
         'One vanilla component markup file as {component, file, source}, preserving docs and variant comments verbatim.',
     },
+    {
+      value: 'component.web-components.list',
+      description:
+        'The sorted packages/vanilla/elements-markup files as {name, file}.',
+    },
+    {
+      value: 'component.web-components',
+      description:
+        'One vanilla web-component markup file as {component, file, source}, preserving generated docs and variant comments verbatim.',
+    },
 
     // docs
     {
@@ -219,6 +229,16 @@ export const doc = {
       value: 'template.html',
       description:
         'One vanilla standalone page as {template, file, cdnRef, cdnBase, source}, with every CDN placeholder substituted.',
+    },
+    {
+      value: 'template.web-components.list',
+      description:
+        'The sorted packages/vanilla/elements-templates files as {id, file}.',
+    },
+    {
+      value: 'template.web-components',
+      description:
+        'One vanilla web-component page as {template, file, cdnRef, cdnBase, source}, with every CDN placeholder substituted.',
     },
 
     // hook

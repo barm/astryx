@@ -1,9 +1,9 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 /**
- * @file Filesystem adapter for vanilla HTML templates.
+ * @file Filesystem adapter for vanilla HTML and web-component templates.
  *
- * Environment access stays here so the template HTML leaf remains a pure
+ * Environment access stays here so each template projection remains a pure
  * projection over one adapter result. Checkout assets are preferred; installed
  * packages fall back to the generated copy bundled under assets/vanilla.
  */
@@ -14,9 +14,15 @@ import {AstryxError} from '../error.mjs';
 import {requireVanillaAssetsDir} from '../_vanilla-assets.mjs';
 import {ERROR_CODES} from '../../foundation/response/error-codes.mjs';
 
-/** @param {string} cwd @returns {{id: string, file: string}[]} */
-export function listVanillaTemplateHtml(cwd) {
-  const templatesDir = path.join(requireVanillaAssetsDir(cwd), 'templates');
+/**
+ * @param {string} cwd
+ * @param {'html'|'web-components'} framework
+ * @returns {{id: string, file: string}[]}
+ */
+export function listVanillaTemplateMarkup(cwd, framework) {
+  const assetDir =
+    framework === 'web-components' ? 'elements-templates' : 'templates';
+  const templatesDir = path.join(requireVanillaAssetsDir(cwd), assetDir);
   if (!fs.existsSync(templatesDir)) return [];
   return fs
     .readdirSync(templatesDir, {withFileTypes: true})
@@ -28,13 +34,19 @@ export function listVanillaTemplateHtml(cwd) {
     .sort((a, b) => a.id.localeCompare(b.id));
 }
 
+/** @param {string} cwd @returns {{id: string, file: string}[]} */
+export function listVanillaTemplateHtml(cwd) {
+  return listVanillaTemplateMarkup(cwd, 'html');
+}
+
 /**
  * @param {string} id
  * @param {string} cwd
+ * @param {'html'|'web-components'} framework
  * @returns {{template: string, file: string, source: string}}
  */
-export function readVanillaTemplateHtml(id, cwd) {
-  const entries = listVanillaTemplateHtml(cwd);
+export function readVanillaTemplateMarkup(id, cwd, framework) {
+  const entries = listVanillaTemplateMarkup(cwd, framework);
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
     throw new AstryxError(
       `Invalid vanilla template id "${id}"`,
@@ -43,16 +55,22 @@ export function readVanillaTemplateHtml(id, cwd) {
     );
   }
   const match = entries.find(entry => entry.id === id);
+  const label = framework === 'web-components' ? 'web-component' : 'HTML';
   if (!match) {
     throw new AstryxError(
-      `Unknown vanilla HTML template "${id}"`,
-      entries.map(entry => ({name: entry.id, reason: 'vanilla HTML template'})),
+      `Unknown vanilla ${label} template "${id}"`,
+      entries.map(entry => ({
+        name: entry.id,
+        reason: `vanilla ${label} template`,
+      })),
       ERROR_CODES.ERR_UNKNOWN_TEMPLATE,
     );
   }
+  const assetDir =
+    framework === 'web-components' ? 'elements-templates' : 'templates';
   const filePath = path.join(
     requireVanillaAssetsDir(cwd),
-    'templates',
+    assetDir,
     match.file,
   );
   return {
@@ -60,4 +78,13 @@ export function readVanillaTemplateHtml(id, cwd) {
     file: match.file,
     source: fs.readFileSync(filePath, 'utf8'),
   };
+}
+
+/**
+ * @param {string} id
+ * @param {string} cwd
+ * @returns {{template: string, file: string, source: string}}
+ */
+export function readVanillaTemplateHtml(id, cwd) {
+  return readVanillaTemplateMarkup(id, cwd, 'html');
 }

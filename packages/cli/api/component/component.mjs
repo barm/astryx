@@ -36,6 +36,9 @@ import {componentDetailSource} from './detail/source/source.mjs';
 import {componentDetailShowcase} from './detail/showcase/showcase.mjs';
 import {componentDetailBlocks} from './detail/blocks/blocks.mjs';
 import {componentHtml} from './html/html.mjs';
+import {componentWebComponents} from './web-components/web-components.mjs';
+
+const FRAMEWORKS = ['react', 'html', 'web-components'];
 
 /** Maximum selectors accepted before any component resolution starts. */
 export const COMPONENT_BATCH_SELECTOR_LIMIT = 100;
@@ -239,7 +242,8 @@ async function componentBatch(selectors, options, coreDir) {
  * @param {boolean} [options.source]
  * @param {boolean} [options.showcase]
  * @param {boolean} [options.blocks]
- * @param {boolean} [options.html] - Read vanilla markup from packages/vanilla/markup.
+ * @param {boolean} [options.html] - Deprecated alias for framework='html'.
+ * @param {'react'|'html'|'web-components'} [options.framework] - Output framework; defaults to react.
  * @param {'full'|'compact'|'brief'} [options.detail] - Defaults to 'full' for a single component, 'brief' for list views (list/category/no name), matching the CLI.
  * @param {string} [options.lang]
  * @param {boolean} [options.zh]
@@ -254,6 +258,8 @@ async function componentBatch(selectors, options, coreDir) {
  *   | import('./component.type.mjs').ComponentDetailBlocksResponse
  *   | import('./html/html.type.mjs').ComponentHtmlListResponse
  *   | import('./html/html.type.mjs').ComponentHtmlResponse
+ *   | import('./web-components/web-components.type.mjs').ComponentWebComponentsListResponse
+ *   | import('./web-components/web-components.type.mjs').ComponentWebComponentsResponse
  * )>}
  */
 export async function component(name, options = {}) {
@@ -267,6 +273,7 @@ export async function component(name, options = {}) {
     showcase = false,
     blocks = false,
     html = false,
+    framework,
     detail: detailOption,
     lang = null,
     zh = false,
@@ -276,7 +283,24 @@ export async function component(name, options = {}) {
   const selectorList = Array.isArray(name) ? name : null;
   const noName = selectorList == null && !name;
 
-  if (html) {
+  if (framework !== undefined && !FRAMEWORKS.includes(framework)) {
+    throw new AstryxError(
+      `Unknown framework "${String(framework)}". Valid frameworks: ${FRAMEWORKS.join(', ')}`,
+      undefined,
+      ERROR_CODES.ERR_INVALID_ARGUMENT,
+    );
+  }
+  if (html && framework !== undefined) {
+    throw new AstryxError(
+      '--html cannot be combined with --framework; use --framework html instead',
+      undefined,
+      ERROR_CODES.ERR_INVALID_ARGUMENT,
+    );
+  }
+  const selectedFramework = html ? 'html' : (framework ?? 'react');
+
+  if (selectedFramework !== 'react') {
+    const frameworkFlag = html ? '--html' : `--framework ${selectedFramework}`;
     const incompatible = [
       category != null ? '--category' : null,
       packageScope ? '--package' : null,
@@ -287,36 +311,42 @@ export async function component(name, options = {}) {
     ].filter(Boolean);
     if (incompatible.length > 0) {
       throw new AstryxError(
-        `--html cannot be combined with ${incompatible.join(', ')}`,
+        `${frameworkFlag} cannot be combined with ${incompatible.join(', ')}`,
         undefined,
         ERROR_CODES.ERR_INVALID_ARGUMENT,
       );
     }
     if (selectorList) {
       throw new AstryxError(
-        '--html accepts exactly one component name, or --list with no name',
+        `${frameworkFlag} accepts exactly one component name, or --list with no name`,
         undefined,
         ERROR_CODES.ERR_INVALID_ARGUMENT,
       );
     }
     if (list && name) {
       throw new AstryxError(
-        '--list --html cannot be combined with a component name',
+        `--list ${frameworkFlag} cannot be combined with a component name`,
         undefined,
         ERROR_CODES.ERR_INVALID_ARGUMENT,
       );
     }
     if (!list && !name) {
       throw new AstryxError(
-        '--html requires a component name or --list',
+        `${frameworkFlag} requires a component name or --list`,
         undefined,
         ERROR_CODES.ERR_INVALID_ARGUMENT,
       );
     }
-    return componentHtml(typeof name === 'string' ? name : undefined, {
-      cwd,
-      list,
-    });
+    const vanillaOptions = {cwd, list};
+    return selectedFramework === 'html'
+      ? componentHtml(
+          typeof name === 'string' ? name : undefined,
+          vanillaOptions,
+        )
+      : componentWebComponents(
+          typeof name === 'string' ? name : undefined,
+          vanillaOptions,
+        );
   }
 
   // Default detail level mirrors the CLI (see commands/component/index.mjs):

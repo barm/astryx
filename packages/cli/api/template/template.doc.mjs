@@ -22,11 +22,12 @@ export const doc = {
     'addresses the Core original. Other duplicate ids remain ambiguous and can be ' +
     'narrowed by type and/or package. The cdn option writes the annotated ' +
     'no-build-step CDN starter page, which ships as an asset rather than as ' +
-    'a discovered template. The html option instead reads standalone pages from ' +
-    'packages/vanilla/templates and substitutes a commit-pinned jsDelivr base URL.',
+    'a discovered template. The framework option selects React templates (default), ' +
+    'standalone HTML pages, or standalone web-component pages. Vanilla pages ' +
+    'substitute a commit-pinned jsDelivr base URL; html is a deprecated alias for framework=html.',
   importPath: '@astryxdesign/cli/api',
   signature:
-    'template(name?: string, options?: TemplateOptions): Promise<TemplateListResponse | TemplateShowResponse | TemplateSkeletonResponse | TemplateCopyResponse | TemplateCdnResponse | TemplateHtmlListResponse | TemplateHtmlResponse>',
+    'template(name?: string, options?: TemplateOptions): Promise<TemplateListResponse | TemplateShowResponse | TemplateSkeletonResponse | TemplateCopyResponse | TemplateCdnResponse | TemplateHtmlListResponse | TemplateHtmlResponse | TemplateWebComponentsListResponse | TemplateWebComponentsResponse>',
   keywords: [
     'template',
     'scaffold',
@@ -67,17 +68,23 @@ export const doc = {
       default: 'false',
     },
     {
+      name: 'options.framework',
+      type: "'react' | 'html' | 'web-components'",
+      description:
+        'Choose React templates (default), standalone vanilla HTML, or standalone vanilla web-component pages.',
+      default: "'react'",
+    },
+    {
       name: 'options.html',
       type: 'boolean',
-      description:
-        'Read a standalone page from packages/vanilla/templates, or list those files with options.list.',
+      description: 'Deprecated alias for options.framework=html.',
       default: 'false',
     },
     {
       name: 'options.cdnRef',
       type: 'string',
       description:
-        'Override the Git ref inserted into the vanilla jsDelivr base URL. Requires options.html and a named template.',
+        'Override the Git ref inserted into the vanilla jsDelivr base URL. Requires framework=html or web-components and a named template.',
       default: 'ASTRYX_VANILLA_CDN_REF',
     },
     {
@@ -155,11 +162,20 @@ export const doc = {
       description:
         'One vanilla standalone page as {template, file, cdnRef, cdnBase, source}, with every CDN placeholder substituted.',
     },
+    {
+      type: 'template.web-components.list',
+      description: 'The sorted vanilla web-component page files as {id, file}.',
+    },
+    {
+      type: 'template.web-components',
+      description:
+        'One vanilla web-component page as {template, file, cdnRef, cdnBase, source}, with every CDN placeholder substituted.',
+    },
   ],
   throws: [
     {
       code: 'ERR_INVALID_ARGUMENT',
-      when: 'options.cdnRef is used without html, or html is missing its required name/list shape or is combined with cdn, skeleton, targetPath, overwrite, type, or package',
+      when: 'the framework is unknown; html and framework are combined; cdnRef is used with react/list; or a vanilla framework is missing its required name/list shape or combined with cdn, skeleton, targetPath, overwrite, type, or package',
     },
     {
       code: 'ERR_UNKNOWN_TEMPLATE',
@@ -207,7 +223,11 @@ export const doc = {
     },
     {
       label: 'Vanilla standalone HTML',
-      code: "await template('dashboard', {html: true});",
+      code: "await template('dashboard', {framework: 'html'});",
+    },
+    {
+      label: 'Vanilla web-component page',
+      code: "await template('dashboard', {framework: 'web-components'});",
     },
   ],
   command: 'template',

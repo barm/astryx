@@ -1,0 +1,15 @@
+<!-- docs: Represent one selectable view inside an ax-tab-list. -->
+<!-- attributes:
+value: string | — | Unique value reported by the parent TabList.
+panel-id: string | — | ID of the tab panel controlled by this tab.
+selected: presence | absent | Selected state reflected from the native tab button.
+is-disabled: presence | absent | Disables the native tab button.
+-->
+<!-- slots:
+default: Visible tab label and inline content.
+-->
+<!-- variant: selected -->
+<ax-tab value="overview" panel-id="panel-overview" selected>Overview</ax-tab>
+
+<!-- variant: default -->
+<ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab>

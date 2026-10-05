@@ -15,17 +15,18 @@ export const doc = {
   namespace: 'cli/api',
   displayName: 'component()',
   summary:
-    'Resolve one or several components by name, list the catalog, or read vanilla HTML markup, with optional focused slices (props, source, showcase, blocks).',
+    'Resolve components by name, list the catalog, or read vanilla HTML/web-component markup, with optional focused slices (props, source, showcase, blocks).',
   description:
     'Routes on its arguments: one string resolves that component across core and ' +
     'integration packages; an array returns one ordered result row per selector at ' +
     'every array length; and no name returns the catalog grouped by category. ' +
     'Boolean flags narrow each resolved component to just its props, source, ' +
-    'showcase, or example blocks. The html option instead reads the vanilla ' +
-    'markup catalog under packages/vanilla.',
+    'showcase, or example blocks. The framework option selects React docs (default), ' +
+    'vanilla HTML markup, or vanilla web-component markup. The html option is a ' +
+    'deprecated alias for framework=html.',
   importPath: '@astryxdesign/cli/api',
   signature:
-    'component(name?: string | string[], options?: ComponentOptions): Promise<ComponentListResponse | ComponentBatchResponse | ComponentDetailResponse | ComponentDetailPropsResponse | ComponentDetailSourceResponse | ComponentDetailShowcaseResponse | ComponentDetailBlocksResponse | ComponentHtmlListResponse | ComponentHtmlResponse>',
+    'component(name?: string | string[], options?: ComponentOptions): Promise<ComponentListResponse | ComponentBatchResponse | ComponentDetailResponse | ComponentDetailPropsResponse | ComponentDetailSourceResponse | ComponentDetailShowcaseResponse | ComponentDetailBlocksResponse | ComponentHtmlListResponse | ComponentHtmlResponse | ComponentWebComponentsListResponse | ComponentWebComponentsResponse>',
   keywords: [
     'component',
     'components',
@@ -87,10 +88,16 @@ export const doc = {
         "Return the component's example blocks (showcase, examples, related).",
     },
     {
+      name: 'options.framework',
+      type: "'react' | 'html' | 'web-components'",
+      description:
+        'Choose React component docs (default), vanilla HTML markup, or vanilla web-component markup.',
+      default: "'react'",
+    },
+    {
       name: 'options.html',
       type: 'boolean',
-      description:
-        'Read one packages/vanilla/markup file verbatim, or list the available files when options.list is also set.',
+      description: 'Deprecated alias for options.framework=html.',
     },
     {
       name: 'options.detail',
@@ -159,11 +166,21 @@ export const doc = {
       description:
         'One vanilla markup file as {component, file, source}; source includes its docs and variant comments verbatim.',
     },
+    {
+      type: 'component.web-components.list',
+      description:
+        'The sorted vanilla web-component markup files as {name, file}.',
+    },
+    {
+      type: 'component.web-components',
+      description:
+        'One vanilla web-component markup file as {component, file, source}.',
+    },
   ],
   throws: [
     {
       code: 'ERR_INVALID_ARGUMENT',
-      when: 'a selector array has more than 100 entries, a package-shaped selector has no component item, its package conflicts with options.package, or options.html is missing its required name/list shape or is combined with another component projection',
+      when: 'the framework is unknown; html and framework are combined; a selector array has more than 100 entries; a package-shaped selector has no component item; its package conflicts with options.package; or a vanilla framework is missing its required name/list shape or combined with another projection',
     },
     {
       code: 'ERR_INVALID_DETAIL',
@@ -216,7 +233,14 @@ export const doc = {
       code: "await component(['Button', 'Badge']);",
     },
     {label: 'Props only', code: "await component('Button', {props: true});"},
-    {label: 'Vanilla HTML', code: "await component('Button', {html: true});"},
+    {
+      label: 'Vanilla HTML',
+      code: "await component('Button', {framework: 'html'});",
+    },
+    {
+      label: 'Vanilla web component',
+      code: "await component('Button', {framework: 'web-components'});",
+    },
     {
       label: 'Browse one group',
       code: "await component(undefined, {category: 'Layout', detail: 'compact'});",

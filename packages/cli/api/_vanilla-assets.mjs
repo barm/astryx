@@ -1,13 +1,13 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 /**
- * @file Resolves vanilla HTML assets from the source checkout or the CLI bundle.
+ * @file Resolves vanilla framework assets from the source checkout or the CLI bundle.
  *
  * @input A caller working directory.
  * @output The checkout's packages/vanilla directory when present, otherwise the
  *         generated assets/vanilla copy shipped with @astryxdesign/cli.
  * @position Shared environment adapter used only by the component and template
- *           HTML adapters so installed and source-checkout behavior agree.
+ *           vanilla framework adapters so installed and source-checkout behavior agree.
  */
 
 import * as fs from 'node:fs';
@@ -52,7 +52,7 @@ export function requireVanillaAssetsDir(cwd) {
   if (checkoutDir) return checkoutDir;
   if (isDirectory(BUNDLED_VANILLA_DIR)) return BUNDLED_VANILLA_DIR;
   throw new AstryxError(
-    `Could not find vanilla HTML assets from "${cwd}" or in the installed CLI`,
+    `Could not find vanilla framework assets from "${cwd}" or in the installed CLI`,
     undefined,
     ERROR_CODES.ERR_FILE_NOT_FOUND,
   );

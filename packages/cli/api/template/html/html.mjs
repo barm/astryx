@@ -2,7 +2,7 @@
 
 /**
  * @file Vanilla standalone HTML projection for the template command.
- * @position api/template/html — routed by template.mjs when options.html is set
+ * @position api/template/html — routed by template.mjs for framework=html or the --html alias
  */
 
 import {AstryxError} from '../../error.mjs';

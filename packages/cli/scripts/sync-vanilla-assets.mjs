@@ -4,8 +4,8 @@
 /**
  * Generate the vanilla HTML assets shipped in @astryxdesign/cli.
  *
- * The source of truth remains packages/vanilla/{markup,templates}. The CLI copy
- * lets `component --html` and `template --html` work after npm installation.
+ * The source of truth remains packages/vanilla/{markup,templates,elements-markup,elements-templates}.
+ * The CLI copy lets `component/template --framework html|web-components` work after npm installation.
  */
 
 import * as fs from 'node:fs';
@@ -15,7 +15,12 @@ import {fileURLToPath} from 'node:url';
 const REPO_ROOT = path.resolve(import.meta.dirname, '../../..');
 export const SOURCE_DIR = path.join(REPO_ROOT, 'packages/vanilla');
 export const TARGET_DIR = path.join(REPO_ROOT, 'packages/cli/assets/vanilla');
-const ASSET_DIRS = ['markup', 'templates'];
+export const ASSET_DIRS = [
+  'markup',
+  'templates',
+  'elements-markup',
+  'elements-templates',
+];
 
 /** @param {string} root @returns {string[]} */
 function listFiles(root) {
@@ -67,11 +72,13 @@ export function checkVanillaAssets() {
 export function syncVanillaAssets() {
   fs.rmSync(TARGET_DIR, {recursive: true, force: true});
   for (const assetDir of ASSET_DIRS) {
-    fs.cpSync(
-      path.join(SOURCE_DIR, assetDir),
-      path.join(TARGET_DIR, assetDir),
-      {recursive: true},
-    );
+    const source = path.join(SOURCE_DIR, assetDir);
+    const target = path.join(TARGET_DIR, assetDir);
+    if (!fs.existsSync(source)) {
+      fs.mkdirSync(target, {recursive: true});
+      continue;
+    }
+    fs.cpSync(source, target, {recursive: true});
   }
 }
 

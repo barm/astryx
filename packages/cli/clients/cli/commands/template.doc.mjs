@@ -22,8 +22,9 @@ export const doc = {
     'default for its Core id; use --package @astryxdesign/core for the original. ' +
     'Narrow other ambiguous names with --type and/or --package. --cdn writes the ' +
     'no-build-step CDN starter page, which ships as an asset rather than as a ' +
-    'discovered template. --html reads standalone pages from packages/vanilla/templates ' +
-    'and substitutes a commit-pinned jsDelivr base URL.',
+    'discovered template. --framework html reads packages/vanilla/templates; ' +
+    '--framework web-components reads packages/vanilla/elements-templates. Both ' +
+    'substitute a commit-pinned jsDelivr base URL.',
   fn: 'template',
   args: [
     {
@@ -77,16 +78,22 @@ export const doc = {
         'A value right after --cdn (anything not starting with -) is taken as that path',
     },
     {
+      flag: '--framework <framework>',
+      param: 'options.framework',
+      description:
+        'Output framework: react (default), html, or web-components. HTML and web-components print one standalone page or list their files with --list.',
+    },
+    {
       flag: '--html',
       param: 'options.html',
       description:
-        'Print one standalone packages/vanilla/templates page, or list those files with --list. Refuses --cdn, --skeleton, <path>, --overwrite, --type and --package.',
+        'Deprecated alias for --framework html. Print one standalone packages/vanilla/templates page, or list those files with --list.',
     },
     {
       flag: '--cdn-ref <ref>',
       param: 'options.cdnRef',
       description:
-        'Override the Git ref in vanilla jsDelivr URLs. Requires a named --html template and cannot be used with --list.',
+        'Override the Git ref in vanilla jsDelivr URLs. Requires a named html or web-components template and cannot be used with --list.',
     },
     {
       flag: '-f, --overwrite',
@@ -110,7 +117,14 @@ export const doc = {
       cli: 'astryx template shell-side-nav ./src/app --package @astryxdesign/core',
     },
     {label: 'CDN starter page', cli: 'astryx template --cdn'},
-    {label: 'Vanilla standalone HTML', cli: 'astryx template dashboard --html'},
+    {
+      label: 'Vanilla standalone HTML',
+      cli: 'astryx template dashboard --framework html',
+    },
+    {
+      label: 'Vanilla web-component page',
+      cli: 'astryx template dashboard --framework web-components',
+    },
     {
       label: 'CDN starter page, elsewhere',
       cli: 'astryx template --cdn public/demo.html',
@@ -123,7 +137,7 @@ export const doc = {
     },
     {
       code: 1,
-      when: 'unknown or ambiguous template, invalid --html/--cdn-ref combinations, no source, a path escape, or an existing target without --overwrite',
+      when: 'unknown or ambiguous template, unknown framework, invalid framework/--cdn-ref combinations, no source, a path escape, or an existing target without --overwrite',
     },
   ],
   related: ['component', 'search', 'discover', 'init'],

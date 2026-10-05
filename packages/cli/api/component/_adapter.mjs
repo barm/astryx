@@ -123,12 +123,15 @@ export function requireCoreDir(cwd) {
 }
 
 /**
- * List the HTML component markup files shipped by packages/vanilla.
+ * List the component markup files for a vanilla framework.
  * @param {string} cwd
+ * @param {'html'|'web-components'} framework
  * @returns {{name: string, file: string}[]}
  */
-export function listVanillaComponentHtml(cwd) {
-  const markupDir = path.join(requireVanillaAssetsDir(cwd), 'markup');
+export function listVanillaComponentMarkup(cwd, framework) {
+  const assetDir =
+    framework === 'web-components' ? 'elements-markup' : 'markup';
+  const markupDir = path.join(requireVanillaAssetsDir(cwd), assetDir);
   if (!fs.existsSync(markupDir)) return [];
   return fs
     .readdirSync(markupDir, {withFileTypes: true})
@@ -140,14 +143,20 @@ export function listVanillaComponentHtml(cwd) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** @param {string} cwd @returns {{name: string, file: string}[]} */
+export function listVanillaComponentHtml(cwd) {
+  return listVanillaComponentMarkup(cwd, 'html');
+}
+
 /**
  * Read one exact component markup file without permitting path traversal.
  * @param {string} name
  * @param {string} cwd
+ * @param {'html'|'web-components'} framework
  * @returns {{component: string, file: string, source: string}}
  */
-export function readVanillaComponentHtml(name, cwd) {
-  const entries = listVanillaComponentHtml(cwd);
+export function readVanillaComponentMarkup(name, cwd, framework) {
+  const entries = listVanillaComponentMarkup(cwd, framework);
   if (!/^[A-Za-z][A-Za-z0-9]*$/.test(name)) {
     throw new AstryxError(
       `Invalid vanilla component name "${name}"`,
@@ -156,19 +165,22 @@ export function readVanillaComponentHtml(name, cwd) {
     );
   }
   const match = entries.find(entry => entry.name === name);
+  const label = framework === 'web-components' ? 'web-component' : 'HTML';
   if (!match) {
     throw new AstryxError(
-      `No vanilla HTML markup found for component "${name}"`,
+      `No vanilla ${label} markup found for component "${name}"`,
       entries.map(entry => ({
         name: entry.name,
-        reason: 'vanilla HTML component',
+        reason: `vanilla ${label} component`,
       })),
       ERROR_CODES.ERR_UNKNOWN_COMPONENT,
     );
   }
+  const assetDir =
+    framework === 'web-components' ? 'elements-markup' : 'markup';
   const filePath = path.join(
     requireVanillaAssetsDir(cwd),
-    'markup',
+    assetDir,
     match.file,
   );
   return {
@@ -176,6 +188,15 @@ export function readVanillaComponentHtml(name, cwd) {
     file: match.file,
     source: fs.readFileSync(filePath, 'utf8'),
   };
+}
+
+/**
+ * @param {string} name
+ * @param {string} cwd
+ * @returns {{component: string, file: string, source: string}}
+ */
+export function readVanillaComponentHtml(name, cwd) {
+  return readVanillaComponentMarkup(name, cwd, 'html');
 }
 
 /**

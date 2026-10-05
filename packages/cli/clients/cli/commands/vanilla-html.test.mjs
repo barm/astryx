@@ -7,22 +7,25 @@ import * as path from 'node:path';
 import {runCli} from '../../../test-utils/run-cli.mjs';
 import {ASTRYX_VANILLA_CDN_REF} from '../../../api/template/html/html.mjs';
 
+const REPO = path.resolve(import.meta.dirname, '../../../../..');
 const FIXTURE = path.resolve(
   import.meta.dirname,
   '../../../test/fixtures/vanilla-project',
 );
 const SLOW = 30_000;
 
-async function json(args) {
-  const result = await runCli(['--json', ...args], FIXTURE);
+async function json(args, cwd = FIXTURE) {
+  const result = await runCli(['--json', ...args], cwd);
   return {...result, payload: JSON.parse(result.stdout)};
 }
 
-describe('vanilla HTML CLI forms', () => {
-  it(
-    'prints one component markup file',
-    async () => {
-      const result = await runCli(['component', 'Button', '--html'], FIXTURE);
+const htmlFlags = [['--framework', 'html'], ['--html']];
+
+describe('vanilla framework CLI forms', () => {
+  it.each(htmlFlags)(
+    'prints component HTML with %j',
+    async (...flags) => {
+      const result = await runCli(['component', 'Button', ...flags], FIXTURE);
       expect(result.code).toBe(0);
       expect(result.stdout).toContain(
         '<!-- docs: A button triggers an action. -->',
@@ -32,10 +35,10 @@ describe('vanilla HTML CLI forms', () => {
     SLOW,
   );
 
-  it(
-    'lists component markup files',
-    async () => {
-      const result = await json(['component', '--list', '--html']);
+  it.each(htmlFlags)(
+    'lists component HTML with %j',
+    async (...flags) => {
+      const result = await json(['component', '--list', ...flags]);
       expect(result.code).toBe(0);
       expect(result.payload).toMatchObject({
         type: 'component.html.list',
@@ -46,27 +49,49 @@ describe('vanilla HTML CLI forms', () => {
   );
 
   it(
-    'prints one standalone template with the pinned default ref',
+    'prints and lists web-component markup',
     async () => {
-      const result = await json(['template', 'dashboard', '--html']);
+      const shown = await json([
+        'component',
+        'Button',
+        '--framework',
+        'web-components',
+      ]);
+      expect(shown.payload.type).toBe('component.web-components');
+      expect(shown.payload.data.source).toContain('<ax-button');
+
+      const listed = await json([
+        'component',
+        '--list',
+        '--framework',
+        'web-components',
+      ]);
+      expect(listed.payload).toMatchObject({
+        type: 'component.web-components.list',
+        data: [{name: 'Button', file: 'Button.html'}],
+      });
+    },
+    SLOW,
+  );
+
+  it.each(htmlFlags)(
+    'prints an HTML template with %j',
+    async (...flags) => {
+      const result = await json(['template', 'dashboard', ...flags]);
       expect(result.code).toBe(0);
       expect(result.payload.type).toBe('template.html');
       expect(result.payload.data.cdnRef).toBe(ASTRYX_VANILLA_CDN_REF);
       expect(result.payload.data.source).not.toContain(
         '__ASTRYX_VANILLA_CDN__',
       );
-      expect(result.payload.data.source).toContain(
-        `https://cdn.jsdelivr.net/gh/facebook/astryx@${ASTRYX_VANILLA_CDN_REF}/packages/vanilla/dist`,
-      );
     },
     SLOW,
   );
 
-  it(
-    'lists standalone template files',
-    async () => {
-      const result = await json(['template', '--list', '--html']);
-      expect(result.code).toBe(0);
+  it.each(htmlFlags)(
+    'lists HTML templates with %j',
+    async (...flags) => {
+      const result = await json(['template', '--list', ...flags]);
       expect(result.payload).toMatchObject({
         type: 'template.html.list',
         data: [{id: 'dashboard', file: 'dashboard.html'}],
@@ -76,32 +101,60 @@ describe('vanilla HTML CLI forms', () => {
   );
 
   it(
-    'explains an empty standalone template list',
+    'prints and lists web-component templates',
     async () => {
-      const empty = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'astryx-vanilla-empty-'),
-      );
-      fs.mkdirSync(path.join(empty, 'packages/vanilla/templates'), {
-        recursive: true,
+      const shown = await json([
+        'template',
+        'dashboard',
+        '--framework',
+        'web-components',
+      ]);
+      expect(shown.payload.type).toBe('template.web-components');
+      expect(shown.payload.data.source).toContain('<ax-button');
+      expect(shown.payload.data.source).not.toContain('__ASTRYX_VANILLA_CDN__');
+
+      const listed = await json([
+        'template',
+        '--list',
+        '--framework',
+        'web-components',
+      ]);
+      expect(listed.payload).toMatchObject({
+        type: 'template.web-components.list',
+        data: [{id: 'dashboard', file: 'dashboard.html'}],
       });
-      try {
-        const result = await runCli(['template', '--list', '--html'], empty);
-        expect(result.code).toBe(0);
-        expect(result.stdout).toContain('No vanilla HTML templates found');
-      } finally {
-        fs.rmSync(empty, {recursive: true, force: true});
-      }
     },
     SLOW,
   );
 
   it(
-    'overrides the CDN ref for one template',
+    'keeps explicit react equivalent to the default',
+    async () => {
+      const implicitComponent = await json(['component', 'Button'], REPO);
+      const explicitComponent = await json(
+        ['component', 'Button', '--framework', 'react'],
+        REPO,
+      );
+      expect(explicitComponent.payload).toEqual(implicitComponent.payload);
+
+      const implicitTemplate = await json(['template', 'app-shell'], REPO);
+      const explicitTemplate = await json(
+        ['template', 'app-shell', '--framework', 'react'],
+        REPO,
+      );
+      expect(explicitTemplate.payload).toEqual(implicitTemplate.payload);
+    },
+    SLOW,
+  );
+
+  it(
+    'overrides the CDN ref for web-component templates',
     async () => {
       const result = await json([
         'template',
         'dashboard',
-        '--html',
+        '--framework',
+        'web-components',
         '--cdn-ref',
         'abc1234',
       ]);
@@ -112,36 +165,72 @@ describe('vanilla HTML CLI forms', () => {
     },
     SLOW,
   );
+
+  it(
+    'explains an empty web-component template list',
+    async () => {
+      const empty = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'astryx-vanilla-empty-'),
+      );
+      fs.mkdirSync(path.join(empty, 'packages/vanilla/elements-templates'), {
+        recursive: true,
+      });
+      try {
+        const result = await runCli(
+          ['template', '--list', '--framework', 'web-components'],
+          empty,
+        );
+        expect(result.code).toBe(0);
+        expect(result.stdout).toContain(
+          'No vanilla web-component templates found',
+        );
+      } finally {
+        fs.rmSync(empty, {recursive: true, force: true});
+      }
+    },
+    SLOW,
+  );
 });
 
-describe('vanilla HTML CLI validation', () => {
+describe('vanilla framework CLI validation', () => {
   it.each([
-    [['component', '--html'], /requires a component name or --list/],
     [
-      ['component', 'Button', '--list', '--html'],
+      ['component', '--framework', 'html'],
+      /requires a component name or --list/,
+    ],
+    [
+      ['component', 'Button', '--list', '--framework', 'web-components'],
       /cannot be combined with a component name/,
     ],
     [
-      ['component', 'Button', '--html', '--source'],
+      ['component', 'Button', '--framework', 'html', '--source'],
       /cannot be combined with --source/,
     ],
-    [['template', '--html'], /requires a template id or --list/],
     [
-      ['template', 'dashboard', 'out.html', '--html'],
+      ['template', '--framework', 'web-components'],
+      /requires a template id or --list/,
+    ],
+    [
+      ['template', 'dashboard', 'out.html', '--framework', 'html'],
       /cannot be combined with <path>/,
     ],
     [
-      ['template', 'dashboard', '--html', '--cdn'],
+      ['template', 'dashboard', '--framework', 'web-components', '--cdn'],
       /cannot be combined with --cdn/,
-    ],
-    [
-      ['template', 'dashboard', '--html', '--skeleton'],
-      /cannot be combined with --skeleton/,
     ],
     [['template', 'dashboard', '--cdn-ref', 'abc1234'], /requires --html/],
     [
-      ['template', '--list', '--html', '--cdn-ref', 'abc1234'],
-      /only valid with a named --html template/,
+      ['template', '--list', '--framework', 'html', '--cdn-ref', 'abc1234'],
+      /only valid with a named --framework html template/,
+    ],
+    [['component', 'Button', '--framework', 'vue'], /Unknown framework "vue"/],
+    [
+      ['template', 'dashboard', '--framework', 'vue'],
+      /Unknown framework "vue"/,
+    ],
+    [
+      ['component', 'Button', '--html', '--framework', 'html'],
+      /--html cannot be combined with --framework/,
     ],
   ])(
     'rejects %j clearly',

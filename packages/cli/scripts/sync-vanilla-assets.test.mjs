@@ -1,10 +1,19 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
 import {describe, expect, it} from 'vitest';
-import {checkVanillaAssets} from './sync-vanilla-assets.mjs';
+import {ASSET_DIRS, checkVanillaAssets} from './sync-vanilla-assets.mjs';
 
 describe('bundled vanilla assets', () => {
-  it('matches packages/vanilla markup and templates exactly', () => {
+  it('covers both markup frameworks and their templates', () => {
+    expect(ASSET_DIRS).toEqual([
+      'markup',
+      'templates',
+      'elements-markup',
+      'elements-templates',
+    ]);
+  });
+
+  it('matches every available packages/vanilla source directory exactly', () => {
     expect(checkVanillaAssets()).toEqual([]);
   });
 });

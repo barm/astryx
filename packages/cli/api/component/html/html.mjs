@@ -2,7 +2,7 @@
 
 /**
  * @file Vanilla HTML projection for the component command.
- * @position api/component/html — routed by component.mjs when options.html is set
+ * @position api/component/html — routed by component.mjs for framework=html or the --html alias
  */
 
 import {
