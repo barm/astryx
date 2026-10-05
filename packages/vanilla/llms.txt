@@ -112,7 +112,7 @@ Templates (complete, standalone, already wired to the CDN links above):
 **Option 1 — install the preview CLI (Node 22.13+):**
 
 ```sh
-npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@eb7a056250cf98d7d86342d24f1e0c744852bebb/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
+npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
 
 astryx template --list --framework html                  # the 9 template ids
 astryx template dashboard --framework html > page.html   # full standalone page
@@ -127,7 +127,7 @@ astryx component Selector --framework html               # theme switcher and da
 
 ```sh
 git clone https://github.com/facebook/astryx.git astryx
-git -C astryx checkout eb7a056250cf98d7d86342d24f1e0c744852bebb
+git -C astryx checkout 9f2b5b75b2b638b2759f28749a9036c314d6febd
 cd astryx && npx --yes pnpm@11.10.0 install --frozen-lockfile
 node packages/cli/clients/cli/bin/astryx.mjs template dashboard --framework html > page.html
 ```
@@ -135,13 +135,13 @@ node packages/cli/clients/cli/bin/astryx.mjs template dashboard --framework html
 **Option 2 — direct file URLs (no shell needed; fetch and save as .html):**
 
 ```
-https://raw.githubusercontent.com/facebook/astryx/eb7a056250cf98d7d86342d24f1e0c744852bebb/packages/vanilla/demo/pinned/<template-id>.html
-https://raw.githubusercontent.com/facebook/astryx/eb7a056250cf98d7d86342d24f1e0c744852bebb/packages/vanilla/markup/<ComponentName>.html
+https://raw.githubusercontent.com/facebook/astryx/9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/demo/pinned/<template-id>.html
+https://raw.githubusercontent.com/facebook/astryx/9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/markup/<ComponentName>.html
 ```
 
 These are served as plain text: download the content, don't link to it.
 Live preview of all templates (after a one-time notice page):
-https://raw.githack.com/facebook/astryx/eb7a056250cf98d7d86342d24f1e0c744852bebb/packages/vanilla/demo/pinned/index.html
+https://raw.githack.com/facebook/astryx/9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/demo/pinned/index.html
 
 ### A1.3. Then add components
 
@@ -230,12 +230,12 @@ astryx component TextInput --framework web-components
 The same nine template IDs listed in Path A1 are available. Direct source files:
 
 ```
-https://raw.githubusercontent.com/facebook/astryx/eb7a056250cf98d7d86342d24f1e0c744852bebb/packages/vanilla/demo/elements/pinned/<template-id>.html
-https://raw.githubusercontent.com/facebook/astryx/eb7a056250cf98d7d86342d24f1e0c744852bebb/packages/vanilla/elements-markup/<ComponentName>.html
+https://raw.githubusercontent.com/facebook/astryx/9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/demo/elements/pinned/<template-id>.html
+https://raw.githubusercontent.com/facebook/astryx/9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/elements-markup/<ComponentName>.html
 ```
 
 Live template index (after a one-time notice page):
-https://raw.githack.com/facebook/astryx/eb7a056250cf98d7d86342d24f1e0c744852bebb/packages/vanilla/demo/elements/pinned/index.html
+https://raw.githack.com/facebook/astryx/9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/demo/elements/pinned/index.html
 
 ### A2.3. Rules for Path A2
 
