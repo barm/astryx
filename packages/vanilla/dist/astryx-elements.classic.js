@@ -1471,6 +1471,17 @@ var AstryxElements = (() => {
           syncMenu(host, api, true, { focus: true, emit: true });
           if (event.key === "ArrowUp") items(api).at(-1)?.focus();
         });
+        api.listen(menu, "toggle", (event) => {
+          const nextOpen = typeof event.newState === "string" ? event.newState === "open" : menu.matches(":popover-open");
+          const currentOpen = api.read("is-menu-open");
+          if (currentOpen === nextOpen && menu.dataset.axOpen === String(nextOpen) && menu.hidden === !nextOpen)
+            return;
+          syncMenu(host, api, nextOpen, { emit: currentOpen !== nextOpen });
+        });
+        api.listen(menu.ownerDocument, "focusin", (event) => {
+          if (api.read("is-menu-open") && event.target !== trigger && !menu.contains(event.target))
+            syncMenu(host, api, false, { emit: true });
+        });
         api.listen(menu, "click", (event) => {
           const item = event.target.closest?.(
             '[role^="menuitem"], [data-ax-menu-item]'

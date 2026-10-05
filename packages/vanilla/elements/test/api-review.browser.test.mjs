@@ -47,6 +47,8 @@ const body = `
   <ax-hover-card id="hover" content="Profile details" delay="0" hide-delay="0"><button type="button">Profile</button></ax-hover-card>
   <ax-toast id="toast"><span slot="body">Saved changes</span></ax-toast>
   <ax-lightbox id="lightbox" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Example"></ax-lightbox>
+  <div id="outside-space">Outside space</div>
+  <button id="outside-button" type="button">Outside button</button>
   <ax-breadcrumbs id="breadcrumbs" separator="›">
     <a href="#home">Home</a>
     <a href="#projects">Projects</a>
@@ -203,8 +205,12 @@ test('WC2a review regressions pass in every bundle load order', async t => {
 
       await page.locator('#menu').evaluate(host => {
         window.__menuSelections = [];
+        window.__menuOpenChanges = [];
         host.addEventListener('astryx:select', event => {
           window.__menuSelections.push(event.detail);
+        });
+        host.addEventListener('astryx:open-change', event => {
+          window.__menuOpenChanges.push(event.detail);
         });
       });
       assert.deepEqual(
@@ -238,6 +244,66 @@ test('WC2a review regressions pass in every bundle load order', async t => {
         await page.locator('#menu').getAttribute('is-menu-open'),
         null,
       );
+
+      await page.evaluate(() => {
+        window.__menuOpenChanges = [];
+      });
+      await page.locator('#menu [data-ax-dropdown-trigger]').click();
+      await settle(page);
+      await page.locator('#outside-space').click();
+      await settle(page);
+      assert.deepEqual(
+        await page.locator('#menu').evaluate(host => {
+          const menu = host.querySelector('[data-ax-dropdown-menu]');
+          return {
+            attribute: host.hasAttribute('is-menu-open'),
+            dataOpen: menu.dataset.axOpen,
+            hidden: menu.hidden,
+            popover: menu.matches(':popover-open'),
+          };
+        }),
+        {attribute: false, dataOpen: 'false', hidden: true, popover: false},
+        `${mode}: native light dismiss reflects closed state`,
+      );
+      assert.deepEqual(await page.evaluate(() => window.__menuOpenChanges), [
+        {isOpen: true},
+        {isOpen: false},
+      ]);
+
+      await page.locator('#menu [data-ax-dropdown-trigger]').click();
+      await settle(page);
+      assert.equal(
+        await page
+          .locator('#menu [data-ax-dropdown-menu]')
+          .evaluate(menu => menu.matches(':popover-open')),
+        true,
+        `${mode}: one trigger click reopens after light dismiss`,
+      );
+      await page.locator('#outside-button').focus();
+      await settle(page);
+      assert.equal(
+        await page.locator('#menu').getAttribute('is-menu-open'),
+        null,
+        `${mode}: focus leaving the menu closes it`,
+      );
+
+      await page.locator('#menu [data-ax-dropdown-trigger]').click();
+      await settle(page);
+      await page.keyboard.press('Escape');
+      await settle(page);
+      assert.equal(
+        await page.locator('#menu').getAttribute('is-menu-open'),
+        null,
+        `${mode}: Escape reflects closed state`,
+      );
+      assert.deepEqual(await page.evaluate(() => window.__menuOpenChanges), [
+        {isOpen: true},
+        {isOpen: false},
+        {isOpen: true},
+        {isOpen: false},
+        {isOpen: true},
+        {isOpen: false},
+      ]);
 
       await page.locator('#tooltip button').hover();
       await settle(page);
