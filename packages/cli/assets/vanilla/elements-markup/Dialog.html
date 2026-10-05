@@ -1,34 +1,25 @@
 <!-- docs: Present a focused task in a native modal dialog with managed focus return; call show()/close() or use is-open. -->
 <!-- attributes:
-title*: string | — | Visible dialog heading when the title slot is empty.
-is-open (open): boolean | absent | Open state reflected from the native dialog.
-variant: standard, fullscreen | standard | Standard or fullscreen presentation.
-purpose: info, form, required | info | Dismissal policy for info, form, or required tasks.
-dialog-id: string | — | ID placed on the inner native dialog for trigger wiring.
+title*:string|—|Visible dialog heading when the title slot is empty.
+is-open (open):boolean|absent|Open state reflected from the native dialog.
+variant:standard, fullscreen|standard|Standard or fullscreen presentation.
+purpose:info, form, required|info|Dismissal policy for info, form, or required tasks.
+dialog-id:string|—|ID placed on the inner native dialog for trigger wiring.
 -->
 <!-- slots:
-title*: Required dialog heading.
-default: Dialog body content.
-footer: Optional dialog actions.
+title*:Required dialog heading.
+default:Dialog body content.
+footer:Optional dialog actions.
 -->
 <!-- events:
-close: Native dialog close event after is-open is reflected false.
-cancel: Native cancel event; prevented for purpose="required".
+close:Native dialog close event after is-open is reflected false.
+cancel:Native cancel event; prevented for purpose="required".
 -->
 <!-- methods:
-focus(): Delegate focus to the inner native control.
-click(): Delegate activation to the inner native control.
 show(): Open the native modal dialog and move focus to its title.
 close(): Close the native dialog and restore focus to its opener.
 -->
-<!-- properties:
-title: string read/write | Visible dialog heading when the title slot is empty.
-isOpen / open: boolean read/write | Open state reflected from the native dialog.
-variant: string read/write | Standard or fullscreen presentation.
-purpose: string read/write | Dismissal policy for info, form, or required tasks.
-dialogId: string read/write | ID placed on the inner native dialog for trigger wiring.
-returnValue: native read-only | Delegated from the inner native control.
--->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: returnValue -->
 <!-- variant: open-and-close -->
 <ax-button data-ax-dialog-open="confirm-dialog">Open dialog</ax-button>
 <ax-dialog dialog-id="confirm-dialog">
@@ -36,7 +27,6 @@ returnValue: native read-only | Delegated from the inner native control.
   <p>You can restore this project later.</p>
   <ax-button slot="footer" data-ax-dialog-close>Cancel</ax-button>
 </ax-dialog>
-
 <!-- variant: required -->
 <ax-dialog purpose="required" title="Accept terms" is-open>
   <p>Review and accept to continue.</p>

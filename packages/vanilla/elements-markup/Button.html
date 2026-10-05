@@ -1,45 +1,25 @@
 <!-- docs: Trigger an action with primary, secondary, ghost, or destructive emphasis. -->
 <!-- attributes:
-label*: string | — | Visible button label when no child content is authored.
-variant: primary, secondary, ghost, destructive | secondary | Visual emphasis matching Button variant.
-size: sm, md, lg | md | Control size matching Button size.
-type: button, submit, reset | button | Native button type.
-is-disabled (disabled): boolean | absent | Disables native activation.
-name: string | — | Native form field name.
-value: string | — | Native form submission value.
-form: string | — | ID of the associated form.
-href: string | — | Optional native link destination.
+label*:string|—|Visible button label when no child content is authored.
+variant:primary, secondary, ghost, destructive|secondary|Visual emphasis matching Button variant.
+size:sm, md, lg|md|Control size matching Button size.
+type:button, submit, reset|button|Native button type.
+is-disabled (disabled):boolean|absent|Disables native activation.
+name:string|—|Native form field name.
+value:string|—|Native form submission value.
+form:string|—|ID of the associated form.
+href:string|—|Optional native link destination.
 -->
 <!-- slots:
-default*: Visible button label and inline content.
+default*:Visible button label and inline content.
 -->
 <!-- events:
-click: Native activation event from the inner button or link.
+click:Native activation event from the inner button or link.
 -->
-<!-- methods:
-focus(): Delegate focus to the inner native control.
-click(): Delegate activation to the inner native control.
-checkValidity(): Delegate checkValidity() to the inner native control.
-reportValidity(): Delegate reportValidity() to the inner native control.
--->
-<!-- properties:
-label: string read/write | Visible button label when no child content is authored.
-variant: string read/write | Visual emphasis matching Button variant.
-size: string read/write | Control size matching Button size.
-type: string read/write | Native button type.
-isDisabled / disabled: boolean read/write | Disables native activation.
-name: string read/write | Native form field name.
-value: string read/write | Native form submission value.
-form: string read/write | ID of the associated form.
-href: string read/write | Optional native link destination.
-validity: native read-only | Delegated from the inner native control.
-validationMessage: native read-only | Delegated from the inner native control.
-willValidate: native read-only | Delegated from the inner native control.
--->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: validity, validationMessage, willValidate -->
 <!-- variant: primary -->
 <ax-button variant="primary">
   Continue
 </ax-button>
-
 <!-- variant: disabled-label -->
 <ax-button label="Continue" variant="primary" is-disabled></ax-button>

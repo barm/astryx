@@ -1,29 +1,22 @@
 <!-- docs: Group related content in a bordered or elevated surface. -->
 <!-- attributes:
-variant: default, transparent, muted, blue, cyan, gray, green, orange, pink, purple, red, teal, yellow | default | Card surface variant.
-elevation: none, low, med, high | none | Resting shadow depth.
+variant:default, transparent, muted, blue, cyan, gray, green, orange, pink, purple, red, teal, yellow|default|Card surface variant.
+elevation:none, low, med, high|none|Resting shadow depth.
 -->
 <!-- slots:
-header: Optional heading content.
-default: Card body content.
-footer: Optional actions or supporting content.
+header:Optional heading content.
+default:Card body content.
+footer:Optional actions or supporting content.
 -->
 <!-- events:
 none
 -->
-<!-- methods:
-none
--->
-<!-- properties:
-variant: string read/write | Card surface variant.
-elevation: string read/write | Resting shadow depth.
--->
+<!-- properties: attrs/aliases: camelCase properties -->
 <!-- variant: default -->
 <ax-card>
   <h2 slot="header">Card title</h2>
   <p>Card content</p>
 </ax-card>
-
 <!-- variant: elevated -->
 <ax-card elevation="low">
   <p>Elevated card</p>

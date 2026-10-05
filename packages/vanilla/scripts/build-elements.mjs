@@ -61,10 +61,6 @@ const GLOBAL_ATTRIBUTES = new Set([
   'translate',
 ]);
 
-function kebabToCamel(value) {
-  return value.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
-}
-
 function normalizeSlot(spec) {
   return typeof spec === 'string' ? {description: spec} : spec;
 }
@@ -453,13 +449,6 @@ function attributeDefault(spec) {
     : String(spec.default);
 }
 
-function propertyNames(attribute, spec) {
-  const aliases = spec.aliasProperties?.length
-    ? spec.aliasProperties
-    : (spec.aliases ?? []).map(kebabToCamel);
-  return [spec.property ?? kebabToCamel(attribute), ...aliases];
-}
-
 function renderMarkup(definition) {
   const requiredAttributes = new Set(
     (definition.content ?? [])
@@ -472,52 +461,32 @@ function renderMarkup(definition) {
         ? ` (${spec.aliases.join(', ')})`
         : '';
       const required = requiredAttributes.has(name) ? '*' : '';
-      return `${name}${required}${aliases}: ${attributeValues(spec)} | ${attributeDefault(spec)} | ${spec.description}`;
+      return `${name}${required}${aliases}:${attributeValues(spec)}|${attributeDefault(spec)}|${spec.description}`;
     })
     .join('\n');
   const slots = Object.entries(definition.slots)
     .map(([name, rawSpec]) => {
       const spec = normalizeSlot(rawSpec);
-      return `${name}${spec.required ? '*' : ''}: ${spec.description}`;
+      return `${name}${spec.required ? '*' : ''}:${spec.description}`;
     })
     .join('\n');
   const events =
     Object.entries(definition.events ?? {})
-      .map(([name, description]) => `${name}: ${description}`)
+      .map(([name, description]) => `${name}:${description}`)
       .join('\n') || 'none';
-  const methodEntries = new Map();
-  if (definition.control) {
-    methodEntries.set('focus()', 'Delegate focus to the inner native control.');
-    methodEntries.set(
-      'click()',
-      'Delegate activation to the inner native control.',
-    );
-  }
-  for (const name of definition.delegates?.methods ?? []) {
-    methodEntries.set(
-      `${name}()`,
-      `Delegate ${name}() to the inner native control.`,
-    );
-  }
-  for (const [name, spec] of Object.entries(definition.methods ?? {})) {
-    methodEntries.set(`${name}()`, spec.description);
-  }
-  const methods =
-    [...methodEntries]
-      .map(([name, description]) => `${name}: ${description}`)
-      .join('\n') || 'none';
-  const propertyEntries = Object.entries(definition.attributes).map(
-    ([name, spec]) =>
-      `${propertyNames(name, spec).join(' / ')}: ${spec.type === 'boolean' ? 'boolean' : 'string'} read/write | ${spec.description}`,
-  );
-  for (const name of definition.delegates?.properties ?? []) {
-    propertyEntries.push(
-      `${name}: native read-only | Delegated from the inner native control.`,
-    );
-  }
+  const methods = Object.entries(definition.methods ?? {})
+    .map(([name, spec]) => `${name}(): ${spec.description}`)
+    .join('\n');
+  const delegatedProperties = definition.delegates?.properties ?? [];
+  const properties = `attrs/aliases: camelCase properties${
+    delegatedProperties.length > 0
+      ? `; delegated read-only: ${delegatedProperties.join(', ')}`
+      : ''
+  }`;
   const examples = definition.examples
     .map(example => `<!-- variant: ${example.name} -->\n${example.html}`)
-    .join('\n\n');
+    .join('\n');
+  const methodsBlock = methods ? `<!-- methods:\n${methods}\n-->\n` : '';
   return `<!-- docs: ${definition.docs} -->
 <!-- attributes:
 ${attributes}
@@ -528,12 +497,7 @@ ${slots || 'none'}
 <!-- events:
 ${events}
 -->
-<!-- methods:
-${methods}
--->
-<!-- properties:
-${propertyEntries.join('\n') || 'none'}
--->
+${methodsBlock}<!-- properties: ${properties} -->
 ${examples}
 `;
 }

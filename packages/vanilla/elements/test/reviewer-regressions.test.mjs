@@ -284,6 +284,90 @@ async function runProbe(browser, baseURL, withVanilla) {
   assert.equal(await page.locator('#tl').getAttribute('value'), 'b');
   assert.equal(await page.locator('#pb').getAttribute('hidden'), null);
 
+  await page
+    .locator('#tl ax-tab[value="b"]')
+    .evaluate(host => host.setAttribute('label', 'Bee'));
+  await page
+    .locator('#tl ax-tab[value="a"]')
+    .evaluate(host => host.setAttribute('is-disabled', ''));
+  assert.deepEqual(
+    await page.locator('#tl [role="tab"]').evaluateAll(tabs =>
+      tabs.map(tab => ({
+        selected: tab.getAttribute('aria-selected'),
+        tabIndex: tab.tabIndex,
+        disabled: tab.disabled,
+      })),
+    ),
+    [
+      {selected: 'false', tabIndex: -1, disabled: true},
+      {selected: 'true', tabIndex: 0, disabled: false},
+    ],
+  );
+  assert.equal(await page.locator('#pb').getAttribute('hidden'), null);
+
+  const adoption = await page.evaluate(async () => {
+    const wait = () => new Promise(resolve => setTimeout(resolve, 30));
+    const card = document.querySelector('#card').cloneNode(true);
+    card.id = 'card-clone';
+    document.body.append(card);
+    const button = document.querySelector('#btn').cloneNode(true);
+    button.id = 'button-clone';
+    document.body.append(button);
+    const input = document.querySelector('#ti').cloneNode(true);
+    input.id = 'input-clone';
+    document.body.append(input);
+    await wait();
+
+    const holder = document.createElement('div');
+    holder.innerHTML = '<ax-card id="round-trip"><p>Round trip</p></ax-card>';
+    document.body.append(holder);
+    await wait();
+    holder.innerHTML = holder.innerHTML;
+    await wait();
+
+    const list = document.createElement('div');
+    list.innerHTML = '<ax-badge variant="success">Existing</ax-badge>';
+    document.body.append(list);
+    await wait();
+    list.innerHTML += '<ax-badge variant="success">New</ax-badge>';
+    await wait();
+
+    return {
+      cardRoots: card.querySelectorAll(':scope > [data-ax-root]').length,
+      cardArticles: card.querySelectorAll('article').length,
+      buttonRoots: button.querySelectorAll(':scope > [data-ax-root]').length,
+      buttonControls: button.querySelectorAll('button, a').length,
+      inputRoots: input.querySelectorAll(':scope > [data-ax-root]').length,
+      inputs: input.querySelectorAll('input').length,
+      labels: input.querySelectorAll('label').length,
+      inputIDs: [...input.querySelectorAll('[id]')].map(element => element.id),
+      roundTripArticles: holder.querySelectorAll('article').length,
+      appendedBadges: [...list.querySelectorAll('ax-badge')].map(host => ({
+        roots: host.querySelectorAll(':scope > [data-ax-root]').length,
+        spans: host.querySelectorAll('span').length,
+      })),
+    };
+  });
+  assert.deepEqual(adoption, {
+    cardRoots: 1,
+    cardArticles: 1,
+    buttonRoots: 1,
+    buttonControls: 1,
+    inputRoots: 1,
+    inputs: 1,
+    labels: 1,
+    inputIDs: [
+      'input-clone-description',
+      'input-clone-input',
+      'input-clone-status',
+    ],
+    roundTripArticles: 1,
+    appendedBadges: [
+      {roots: 1, spans: 1},
+      {roots: 1, spans: 1},
+    ],
+  });
+
   await page.locator('#opener button').click();
   await page.waitForFunction(() => document.querySelector('#dlg dialog').open);
   assert.equal(await page.locator('#dlg').getAttribute('is-open'), '');

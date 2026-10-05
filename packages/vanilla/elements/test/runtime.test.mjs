@@ -81,6 +81,8 @@ function canonicalHTML(html) {
     element.removeAttribute('tabindex');
     element.removeAttribute('data-ax-selected');
     element.removeAttribute('data-ax-owned');
+    element.removeAttribute('data-ax-root');
+    element.removeAttribute('data-ax-region');
     element.removeAttribute('hidden');
   }
   for (const titleSlot of template.content.querySelectorAll(
@@ -272,25 +274,35 @@ test('generated docs expose complete API contracts', async () => {
     await readdir(path.join(packageRoot, 'elements-markup'))
   ).filter(file => file.endsWith('.html'));
   assert.equal(files.length, definitions.length);
+  let totalBytes = 0;
   for (const file of files) {
     const content = await readFile(
       path.join(packageRoot, 'elements-markup', file),
       'utf8',
     );
+    totalBytes += Buffer.byteLength(content);
     assert.match(content, /^<!-- docs: /);
     assert.match(content, /<!-- attributes:\n/);
     assert.match(content, /<!-- slots:\n/);
     assert.match(content, /<!-- events:\n/);
-    assert.match(content, /<!-- methods:\n/);
-    assert.match(content, /<!-- properties:\n/);
+    assert.match(
+      content,
+      /<!-- properties: attrs\/aliases: camelCase properties/,
+    );
     assert.ok((content.match(/<!-- variant:/g) ?? []).length >= 2);
   }
+  assert.ok(
+    totalBytes <= 9_900,
+    `generated element docs must stay compact; received ${totalBytes} bytes`,
+  );
   const button = await readFile(
     path.join(packageRoot, 'elements-markup/Button.html'),
     'utf8',
   );
   assert.match(button, /label\*:/);
   assert.match(button, /is-disabled \(disabled\):/);
+  assert.doesNotMatch(button, /<!-- methods:/);
+  assert.doesNotMatch(button, /focus\(\):|click\(\):/);
   const dialog = await readFile(
     path.join(packageRoot, 'elements-markup/Dialog.html'),
     'utf8',

@@ -1,62 +1,35 @@
 <!-- docs: Collect a single line of text with an associated visible label. -->
 <!-- attributes:
-type: text, password, email | text | Native single-line input type.
-label*: string | — | Visible and accessible field label.
-value: string | — | Current value, reflected after native input events.
-size: sm, md, lg | md | Field size matching TextInput size.
-description: string | — | Supporting field description.
-status: none, error, warning, success | none | Validation state; none renders no status treatment.
-status-message: string | — | Validation message associated with the native input.
-is-required (required): boolean | absent | Marks the native input required.
-is-disabled (disabled): boolean | absent | Disables the native input.
-is-read-only (readonly): boolean | absent | Makes the native input read-only.
-placeholder: string | — | Native placeholder text.
-html-name (name): string | — | Native form field name.
-auto-complete (autocomplete): string | — | Native autocomplete hint.
+type:text, password, email|text|Native single-line input type.
+label*:string|—|Visible and accessible field label.
+value:string|—|Current value, reflected after native input events.
+size:sm, md, lg|md|Field size matching TextInput size.
+description:string|—|Supporting field description.
+status:none, error, warning, success|none|Validation state; none renders no status treatment.
+status-message:string|—|Validation message associated with the native input.
+is-required (required):boolean|absent|Marks the native input required.
+is-disabled (disabled):boolean|absent|Disables the native input.
+is-read-only (readonly):boolean|absent|Makes the native input read-only.
+placeholder:string|—|Native placeholder text.
+html-name (name):string|—|Native form field name.
+auto-complete (autocomplete):string|—|Native autocomplete hint.
 -->
 <!-- slots:
-label*: Visible field label.
-description: Supporting field description.
-status-message: Validation message.
+label*:Visible field label.
+description:Supporting field description.
+status-message:Validation message.
 -->
 <!-- events:
-input: Native input event; value is reflected before bubbling completes.
-change: Native change event; value is reflected to the host.
+input:Native input event; value is reflected before bubbling completes.
+change:Native change event; value is reflected to the host.
 -->
-<!-- methods:
-focus(): Delegate focus to the inner native control.
-click(): Delegate activation to the inner native control.
-checkValidity(): Delegate checkValidity() to the inner native control.
-reportValidity(): Delegate reportValidity() to the inner native control.
-select(): Delegate select() to the inner native control.
-setSelectionRange(): Delegate setSelectionRange() to the inner native control.
--->
-<!-- properties:
-type: string read/write | Native single-line input type.
-label: string read/write | Visible and accessible field label.
-value: string read/write | Current value, reflected after native input events.
-size: string read/write | Field size matching TextInput size.
-description: string read/write | Supporting field description.
-status: string read/write | Validation state; none renders no status treatment.
-statusMessage: string read/write | Validation message associated with the native input.
-isRequired / required: boolean read/write | Marks the native input required.
-isDisabled / disabled: boolean read/write | Disables the native input.
-isReadOnly / readOnly: boolean read/write | Makes the native input read-only.
-placeholder: string read/write | Native placeholder text.
-htmlName / name: string read/write | Native form field name.
-autoComplete / autocomplete: string read/write | Native autocomplete hint.
-form: native read-only | Delegated from the inner native control.
-validity: native read-only | Delegated from the inner native control.
-validationMessage: native read-only | Delegated from the inner native control.
-willValidate: native read-only | Delegated from the inner native control.
--->
+<!-- properties: attrs/aliases: camelCase properties; delegated read-only: form, validity, validationMessage, willValidate -->
 <!-- variant: default -->
 <ax-text-input
   label="Project name"
   html-name="project"
   placeholder="Astryx"
 ></ax-text-input>
-
 <!-- variant: error -->
 <ax-text-input
   type="email"

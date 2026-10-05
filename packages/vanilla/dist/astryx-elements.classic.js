@@ -747,13 +747,14 @@ var AstryxElements = (() => {
     render(_host, h) {
       const content = h.content("label");
       const panelID = h.attr("panel-id");
+      const selected = h.hasAttribute("data-selected");
       const attributes = [
         'class="ax-tab"',
         `id="${h.id("tab")}"`,
         'type="button"',
         'role="tab"',
-        'aria-selected="false"',
-        'tabindex="-1"'
+        `aria-selected="${selected}"`,
+        `tabindex="${selected ? "0" : "-1"}"`
       ];
       if (panelID) attributes.push(`aria-controls="${h.escape(panelID)}"`);
       if (h.attr("is-disabled")) attributes.push("disabled");
@@ -1319,8 +1320,9 @@ var AstryxElements = (() => {
         this._api = this._createAPI();
       }
       connectedCallback() {
-        if (this._runtimeRoots.length === 0)
+        if (this._runtimeRoots.length === 0 && !this._adoptRenderedMarkup()) {
           this._resetAuthorNodes([...this.childNodes]);
+        }
         for (const attribute of this.attributes)
           this._validateAttribute(attribute.name);
         this._connectionCleanup = definition.hooks?.connected?.(this, this._api) ?? null;
@@ -1412,6 +1414,49 @@ var AstryxElements = (() => {
         for (const node of nodes)
           this._addAuthorNode(node, this._declaredSlot(node));
       }
+      _adoptRenderedMarkup() {
+        const directNodes = [...this.childNodes];
+        const roots = directNodes.filter(
+          (node) => node instanceof Element && node.hasAttribute("data-ax-root")
+        );
+        if (roots.length === 0) return false;
+        this._authorNodes = [];
+        this._slotByNode = /* @__PURE__ */ new WeakMap();
+        this._regions = /* @__PURE__ */ new Map();
+        for (const root of roots) {
+          const regions = [
+            ...root.matches("[data-ax-region]") ? [root] : [],
+            ...root.querySelectorAll("[data-ax-region]")
+          ].filter((region) => region.closest("[data-ax-root]") === root);
+          for (const region of regions) {
+            const slot = region.getAttribute("data-ax-region") || "default";
+            this._regions.set(slot, region);
+            for (const node of region.childNodes) this._addAuthorNode(node, slot);
+          }
+        }
+        for (const node of directNodes) {
+          if (roots.includes(node)) continue;
+          if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim())
+            continue;
+          this._addAuthorNode(node, this._declaredSlot(node));
+        }
+        const authorSet = new Set(this._authorNodes);
+        this._generatedNodes = /* @__PURE__ */ new WeakSet();
+        const markGenerated = (node) => {
+          if (authorSet.has(node)) return;
+          this._generatedNodes.add(node);
+          for (const child of node.childNodes) markGenerated(child);
+        };
+        for (const node of directNodes) {
+          if (roots.includes(node) || node.nodeType === Node.TEXT_NODE && !node.textContent?.trim()) {
+            markGenerated(node);
+          }
+        }
+        this._runtimeRoots = directNodes.filter(
+          (node) => this._generatedNodes.has(node)
+        );
+        return true;
+      }
       _declaredSlot(node, fallback = "default") {
         if (!(node instanceof Element)) return fallback;
         return node.getAttribute("slot") || fallback;
@@ -1468,7 +1513,9 @@ var AstryxElements = (() => {
           this._runtimeRoots = [];
           this._regions.clear();
           this._generatedNodes = /* @__PURE__ */ new WeakSet();
-          this._resetAuthorNodes([...this.childNodes]);
+          if (!this._adoptRenderedMarkup()) {
+            this._resetAuthorNodes([...this.childNodes]);
+          }
           changed = true;
         }
         if (changed) this._scheduleRender();
@@ -1478,7 +1525,9 @@ var AstryxElements = (() => {
           this._runtimeRoots = [];
           this._regions.clear();
           this._generatedNodes = /* @__PURE__ */ new WeakSet();
-          this._resetAuthorNodes([...this.childNodes]);
+          if (!this._adoptRenderedMarkup()) {
+            this._resetAuthorNodes([...this.childNodes]);
+          }
           return;
         }
         this._authorNodes = this._authorNodes.filter((node) => this.contains(node));
@@ -1557,6 +1606,17 @@ var AstryxElements = (() => {
         const helpers = this._createHelpers(authorSet);
         const template = document.createElement("template");
         template.innerHTML = definition.render(this, helpers).trim();
+        for (const node of template.content.childNodes) {
+          if (node instanceof Element) node.setAttribute("data-ax-root", "");
+        }
+        for (const region of template.content.querySelectorAll(
+          "[data-ax-slot]"
+        )) {
+          region.setAttribute(
+            "data-ax-region",
+            region.getAttribute("data-ax-slot")
+          );
+        }
         const desiredGenerated = /* @__PURE__ */ new WeakSet();
         walkNodes(template.content, (node) => desiredGenerated.add(node));
         const desiredRegions = /* @__PURE__ */ new Map();
@@ -1593,8 +1653,10 @@ var AstryxElements = (() => {
           (node) => this._generatedNodes.has(node)
         );
         this._regions = /* @__PURE__ */ new Map();
-        for (const region of this.querySelectorAll("[data-ax-slot]")) {
-          const name = region.getAttribute("data-ax-slot");
+        for (const region of this.querySelectorAll("[data-ax-region]")) {
+          const root = region.closest("[data-ax-root]");
+          if (root?.parentNode !== this) continue;
+          const name = region.getAttribute("data-ax-region");
           this._regions.set(name, region);
           region.removeAttribute("data-ax-slot");
         }

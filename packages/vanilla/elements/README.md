@@ -25,6 +25,8 @@ Adding an element must require only files owned by that component:
 
 Never add a tag, count, parity case, or gallery section to a shared registry by hand. Definition tags/counts, parity modules, docs examples, and gallery groups are all discovered from per-component files, so parallel additions only meet in generated outputs.
 
+Behavior-owned state must also survive unrelated renders. If behavior writes `open`, `checked`, `aria-expanded`, `aria-selected`, roving `tabindex`, or similar state to generated nodes, `render()` must derive that state from the host or the definition must list the native attribute in `preserveAttributes`. Every interactive element needs a regression test that changes an unrelated host attribute while the element is open, checked, or selected and verifies that the state survives.
+
 ## Light DOM and slots
 
 Shadow DOM would isolate native markup from the existing stylesheet, theme scopes, labels, and document-level integrations, so these elements render no shadow root.

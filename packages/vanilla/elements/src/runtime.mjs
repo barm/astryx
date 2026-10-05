@@ -260,8 +260,9 @@ export function registerElement(definition) {
     }
 
     connectedCallback() {
-      if (this._runtimeRoots.length === 0)
+      if (this._runtimeRoots.length === 0 && !this._adoptRenderedMarkup()) {
         this._resetAuthorNodes([...this.childNodes]);
+      }
       for (const attribute of this.attributes)
         this._validateAttribute(attribute.name);
       this._connectionCleanup =
@@ -361,6 +362,55 @@ export function registerElement(definition) {
         this._addAuthorNode(node, this._declaredSlot(node));
     }
 
+    _adoptRenderedMarkup() {
+      const directNodes = [...this.childNodes];
+      const roots = directNodes.filter(
+        node => node instanceof Element && node.hasAttribute('data-ax-root'),
+      );
+      if (roots.length === 0) return false;
+
+      this._authorNodes = [];
+      this._slotByNode = new WeakMap();
+      this._regions = new Map();
+      for (const root of roots) {
+        const regions = [
+          ...(root.matches('[data-ax-region]') ? [root] : []),
+          ...root.querySelectorAll('[data-ax-region]'),
+        ].filter(region => region.closest('[data-ax-root]') === root);
+        for (const region of regions) {
+          const slot = region.getAttribute('data-ax-region') || 'default';
+          this._regions.set(slot, region);
+          for (const node of region.childNodes) this._addAuthorNode(node, slot);
+        }
+      }
+      for (const node of directNodes) {
+        if (roots.includes(node)) continue;
+        if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim())
+          continue;
+        this._addAuthorNode(node, this._declaredSlot(node));
+      }
+
+      const authorSet = new Set(this._authorNodes);
+      this._generatedNodes = new WeakSet();
+      const markGenerated = node => {
+        if (authorSet.has(node)) return;
+        this._generatedNodes.add(node);
+        for (const child of node.childNodes) markGenerated(child);
+      };
+      for (const node of directNodes) {
+        if (
+          roots.includes(node) ||
+          (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim())
+        ) {
+          markGenerated(node);
+        }
+      }
+      this._runtimeRoots = directNodes.filter(node =>
+        this._generatedNodes.has(node),
+      );
+      return true;
+    }
+
     _declaredSlot(node, fallback = 'default') {
       if (!(node instanceof Element)) return fallback;
       return node.getAttribute('slot') || fallback;
@@ -427,7 +477,9 @@ export function registerElement(definition) {
         this._runtimeRoots = [];
         this._regions.clear();
         this._generatedNodes = new WeakSet();
-        this._resetAuthorNodes([...this.childNodes]);
+        if (!this._adoptRenderedMarkup()) {
+          this._resetAuthorNodes([...this.childNodes]);
+        }
         changed = true;
       }
       if (changed) this._scheduleRender();
@@ -441,7 +493,9 @@ export function registerElement(definition) {
         this._runtimeRoots = [];
         this._regions.clear();
         this._generatedNodes = new WeakSet();
-        this._resetAuthorNodes([...this.childNodes]);
+        if (!this._adoptRenderedMarkup()) {
+          this._resetAuthorNodes([...this.childNodes]);
+        }
         return;
       }
 
@@ -528,6 +582,17 @@ export function registerElement(definition) {
       const helpers = this._createHelpers(authorSet);
       const template = document.createElement('template');
       template.innerHTML = definition.render(this, helpers).trim();
+      for (const node of template.content.childNodes) {
+        if (node instanceof Element) node.setAttribute('data-ax-root', '');
+      }
+      for (const region of template.content.querySelectorAll(
+        '[data-ax-slot]',
+      )) {
+        region.setAttribute(
+          'data-ax-region',
+          region.getAttribute('data-ax-slot'),
+        );
+      }
       const desiredGenerated = new WeakSet();
       walkNodes(template.content, node => desiredGenerated.add(node));
 
@@ -567,8 +632,10 @@ export function registerElement(definition) {
         this._generatedNodes.has(node),
       );
       this._regions = new Map();
-      for (const region of this.querySelectorAll('[data-ax-slot]')) {
-        const name = region.getAttribute('data-ax-slot');
+      for (const region of this.querySelectorAll('[data-ax-region]')) {
+        const root = region.closest('[data-ax-root]');
+        if (root?.parentNode !== this) continue;
+        const name = region.getAttribute('data-ax-region');
         this._regions.set(name, region);
         region.removeAttribute('data-ax-slot');
       }

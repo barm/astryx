@@ -53,13 +53,14 @@ export default {
   render(_host, h) {
     const content = h.content('label');
     const panelID = h.attr('panel-id');
+    const selected = h.hasAttribute('data-selected');
     const attributes = [
       'class="ax-tab"',
       `id="${h.id('tab')}"`,
       'type="button"',
       'role="tab"',
-      'aria-selected="false"',
-      'tabindex="-1"',
+      `aria-selected="${selected}"`,
+      `tabindex="${selected ? '0' : '-1'}"`,
     ];
     if (panelID) attributes.push(`aria-controls="${h.escape(panelID)}"`);
     if (h.attr('is-disabled')) attributes.push('disabled');
