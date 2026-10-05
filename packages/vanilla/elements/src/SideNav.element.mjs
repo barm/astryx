@@ -8,6 +8,16 @@ function setCollapsed(host, api, collapsed, emit = false) {
   if (emit) api.dispatch('astryx:collapsed-change', {isCollapsed: collapsed});
 }
 
+function enhanceNavigationItems(api) {
+  const header = api.query('.ax-side-nav__header');
+  for (const item of header?.querySelectorAll('a, button') ?? [])
+    item.classList.add('ax-side-nav__brand');
+
+  const content = api.query('.ax-side-nav__content');
+  for (const item of content?.querySelectorAll('a, button') ?? [])
+    item.classList.add('ax-side-nav__item');
+}
+
 export default {
   name: 'SideNav',
   tag: 'ax-side-nav',
@@ -55,15 +65,16 @@ export default {
     {
       name: 'default',
       html: `<ax-side-nav label="Application navigation">
-  <a slot="header" class="ax-side-nav__brand" href="#">Astryx</a>
-  <a class="ax-side-nav__item" href="#" aria-current="page">Overview</a>
+  <a slot="header" href="#">Astryx</a>
+  <a href="#overview" aria-current="page">Overview</a>
+  <a href="#projects">Projects</a>
 </ax-side-nav>`,
     },
     {
       name: 'collapsed',
       html: `<ax-side-nav label="Collapsed navigation" is-collapsed>
-  <a slot="header" class="ax-side-nav__brand" href="#" aria-label="Astryx">A</a>
-  <a class="ax-side-nav__item" href="#" aria-label="Overview">●</a>
+  <a slot="header" href="#" aria-label="Astryx">A</a>
+  <a href="#overview" aria-label="Overview" aria-current="page">●</a>
 </ax-side-nav>`,
     },
   ],
@@ -75,6 +86,7 @@ export default {
     },
     afterRender(host, api) {
       setCollapsed(host, api, api.read('is-collapsed'));
+      enhanceNavigationItems(api);
     },
   },
   render(_host, h) {

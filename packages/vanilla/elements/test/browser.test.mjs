@@ -126,6 +126,107 @@ try {
     );
   }
   assert.ok(matrix.every(item => item.buttonVisible));
+
+  await page.evaluate(() => {
+    for (const section of document.querySelectorAll('.gallery__theme')) {
+      const banner = document.createElement('ax-banner');
+      banner.setAttribute('data-ax-contrast-probe', '');
+      banner.setAttribute('status', 'error');
+      banner.setAttribute('title', 'Error');
+      banner.setAttribute('description', 'Fix the highlighted fields.');
+      section.querySelector('.gallery__examples').append(banner);
+    }
+  });
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll(
+        '.gallery__theme [data-ax-contrast-probe] .ax-banner__description',
+      ).length === 6,
+  );
+
+  const bannerContrasts = await page
+    .locator(
+      '.gallery__theme ax-banner[status="error"] .ax-banner__description',
+    )
+    .evaluateAll(descriptions => {
+      const parseColor = value => {
+        const parts = value.match(/[\d.]+/g)?.map(Number) ?? [];
+        return {
+          r: parts[0] ?? 0,
+          g: parts[1] ?? 0,
+          b: parts[2] ?? 0,
+          a: parts[3] ?? 1,
+        };
+      };
+      const composite = (foreground, background) => {
+        const alpha = foreground.a + background.a * (1 - foreground.a);
+        if (alpha === 0) return {r: 0, g: 0, b: 0, a: 0};
+        return {
+          r:
+            (foreground.r * foreground.a +
+              background.r * background.a * (1 - foreground.a)) /
+            alpha,
+          g:
+            (foreground.g * foreground.a +
+              background.g * background.a * (1 - foreground.a)) /
+            alpha,
+          b:
+            (foreground.b * foreground.a +
+              background.b * background.a * (1 - foreground.a)) /
+            alpha,
+          a: alpha,
+        };
+      };
+      const effectiveBackground = element => {
+        const background = parseColor(
+          getComputedStyle(element).backgroundColor,
+        );
+        if (background.a >= 0.999) return background;
+        return composite(
+          background,
+          element.parentElement
+            ? effectiveBackground(element.parentElement)
+            : {r: 255, g: 255, b: 255, a: 1},
+        );
+      };
+      const luminance = color => {
+        const channel = value => {
+          const normalized = value / 255;
+          return normalized <= 0.04045
+            ? normalized / 12.92
+            : ((normalized + 0.055) / 1.055) ** 2.4;
+        };
+        return (
+          0.2126 * channel(color.r) +
+          0.7152 * channel(color.g) +
+          0.0722 * channel(color.b)
+        );
+      };
+      return descriptions.map(description => {
+        const section = description.closest('.gallery__theme');
+        const surface = description.closest('.ax-banner__surface');
+        const foreground = parseColor(getComputedStyle(description).color);
+        const background = effectiveBackground(surface);
+        const light = Math.max(luminance(foreground), luminance(background));
+        const dark = Math.min(luminance(foreground), luminance(background));
+        return {
+          theme: section.dataset.astryxTheme,
+          mode: section.dataset.theme,
+          ratio: (light + 0.05) / (dark + 0.05),
+        };
+      });
+    });
+  assert.equal(bannerContrasts.length, 6);
+  assert.ok(
+    bannerContrasts.every(item => item.ratio >= 4.5),
+    JSON.stringify(bannerContrasts),
+  );
+  await page.locator('[data-ax-contrast-probe]').evaluateAll(nodes => {
+    for (const node of nodes) node.remove();
+  });
+  checks.push(
+    'error Banner description contrast is at least 4.5:1 in every theme and mode',
+  );
   checks.push(
     'gallery renders auto-discovered examples in 3 themes × light/dark',
   );

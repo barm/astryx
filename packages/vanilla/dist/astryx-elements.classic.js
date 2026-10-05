@@ -379,7 +379,7 @@ var AstryxElements = (() => {
     },
     slots: {
       default: {
-        description: 'Native list-item breadcrumb steps, ending with aria-current="page".',
+        description: "Plain link and current-page children; Breadcrumbs generates list items, separators, and BEM classes.",
         required: true
       }
     },
@@ -388,27 +388,68 @@ var AstryxElements = (() => {
       {
         name: "default",
         html: `<ax-breadcrumbs>
-  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><a class="ax-breadcrumbs__link" href="#home" style="color: var(--color-text-primary)">Home</a></li>
-  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><span class="ax-breadcrumbs__current" aria-current="page">Projects</span></li>
+  <a href="#home">Home</a>
+  <span>Projects</span>
 </ax-breadcrumbs>`
       },
       {
         name: "supporting",
         gallery: false,
-        html: `<ax-breadcrumbs variant="supporting" label="Settings breadcrumb">
-  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><a class="ax-breadcrumbs__link" href="#settings">Settings</a></li>
-  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><span class="ax-breadcrumbs__current" aria-current="page">Notifications</span></li>
+        html: `<ax-breadcrumbs variant="supporting" label="Settings breadcrumb" separator="\u203A">
+  <a href="#settings">Settings</a>
+  <strong>Notifications</strong>
 </ax-breadcrumbs>`
       }
     ],
     hooks: {
       afterRender(_host, api) {
-        for (const separator of api.queryAll(".ax-breadcrumbs__separator"))
+        const list = api.query(".ax-breadcrumbs__list");
+        if (!list) return;
+        for (const emptyWrapper of list.querySelectorAll(
+          ":scope > li[data-ax-breadcrumb-wrapper]:empty"
+        )) {
+          emptyWrapper.remove();
+        }
+        for (const child of [...list.children]) {
+          if (child.localName === "li") continue;
+          if (!child.matches("a, span, strong")) continue;
+          const wrapper = document.createElement("li");
+          wrapper.setAttribute("data-ax-breadcrumb-wrapper", "");
+          child.before(wrapper);
+          wrapper.append(child);
+        }
+        const items2 = [...list.children].filter(
+          (child) => child.localName === "li"
+        );
+        for (const item of items2) {
+          item.classList.add("ax-breadcrumbs__item");
+          let separator = item.querySelector(
+            ":scope > .ax-breadcrumbs__separator"
+          );
+          if (!separator) {
+            separator = document.createElement("span");
+            separator.className = "ax-breadcrumbs__separator";
+            separator.setAttribute("aria-hidden", "true");
+            item.prepend(separator);
+          }
           separator.textContent = api.read("separator");
-        const items2 = api.queryAll(".ax-breadcrumbs__item");
-        if (items2.length && !api.query('[aria-current="page"]')) {
-          const candidate = items2.at(-1).querySelector("a, span");
-          candidate?.setAttribute("aria-current", "page");
+        }
+        if (items2.length && !list.querySelector('[aria-current="page"]')) {
+          items2.at(-1).querySelector(
+            ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong"
+          )?.setAttribute("aria-current", "page");
+        }
+        for (const item of items2) {
+          const content = item.querySelector(
+            ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong"
+          );
+          if (!content) continue;
+          const isCurrent = content.getAttribute("aria-current") === "page";
+          content.classList.toggle("ax-breadcrumbs__current", isCurrent);
+          content.classList.toggle(
+            "ax-breadcrumbs__link",
+            content.localName === "a" && !isCurrent
+          );
         }
       }
     },
@@ -1043,6 +1084,13 @@ var AstryxElements = (() => {
   var variants4 = ["standard", "fullscreen"];
   var purposes = ["info", "form", "required"];
   var returnFocus = /* @__PURE__ */ new WeakMap();
+  function consumeTitle2(host, api) {
+    if (!host.hasAttribute("title")) return false;
+    host.setAttribute("data-ax-title", host.getAttribute("title") ?? "");
+    host.removeAttribute("title");
+    api.render();
+    return true;
+  }
   function restoreFocus(host) {
     const target = returnFocus.get(host);
     returnFocus.delete(host);
@@ -1084,7 +1132,8 @@ var AstryxElements = (() => {
     attributes: {
       title: {
         type: "string",
-        description: "Visible dialog heading when the title slot is empty."
+        aliases: ["data-ax-title"],
+        description: "Visible dialog heading; consumed so the host never shows a native title tooltip."
       },
       "is-open": {
         type: "boolean",
@@ -1163,6 +1212,7 @@ var AstryxElements = (() => {
     ],
     hooks: {
       connected(host, api) {
+        consumeTitle2(host, api);
         const onClick = (event) => {
           const opener = event.target.closest?.("[data-ax-dialog-open]");
           if (opener && opener.getAttribute("data-ax-dialog-open") === api.control?.id) {
@@ -1180,6 +1230,7 @@ var AstryxElements = (() => {
         return () => document.removeEventListener("click", onClick);
       },
       attributeChanged(host, name, _oldValue, _newValue, api) {
+        if (name === "title" && consumeTitle2(host, api)) return true;
         if (name !== "is-open" || !api.control) return false;
         if (api.read("is-open")) showDialog(host, api);
         else closeDialog(host, api);
@@ -1476,7 +1527,7 @@ var AstryxElements = (() => {
 
   // elements/src/EmptyState.element.mjs
   var levels = ["1", "2", "3", "4", "5", "6"];
-  function consumeTitle2(host, api) {
+  function consumeTitle3(host, api) {
     if (!host.hasAttribute("title")) return false;
     host.setAttribute("data-ax-title", host.getAttribute("title") ?? "");
     host.removeAttribute("title");
@@ -1538,10 +1589,10 @@ var AstryxElements = (() => {
     ],
     hooks: {
       connected(host, api) {
-        consumeTitle2(host, api);
+        consumeTitle3(host, api);
       },
       attributeChanged(host, name, _oldValue, _newValue, api) {
-        return name === "title" && consumeTitle2(host, api);
+        return name === "title" && consumeTitle3(host, api);
       }
     },
     render(_host, h) {
@@ -2827,6 +2878,14 @@ var AstryxElements = (() => {
     api.query(".ax-side-nav")?.classList.toggle("ax-side-nav--collapsed", collapsed);
     if (emit) api.dispatch("astryx:collapsed-change", { isCollapsed: collapsed });
   }
+  function enhanceNavigationItems(api) {
+    const header = api.query(".ax-side-nav__header");
+    for (const item of header?.querySelectorAll("a, button") ?? [])
+      item.classList.add("ax-side-nav__brand");
+    const content = api.query(".ax-side-nav__content");
+    for (const item of content?.querySelectorAll("a, button") ?? [])
+      item.classList.add("ax-side-nav__item");
+  }
   var SideNav_element_default = {
     name: "SideNav",
     tag: "ax-side-nav",
@@ -2873,15 +2932,16 @@ var AstryxElements = (() => {
       {
         name: "default",
         html: `<ax-side-nav label="Application navigation">
-  <a slot="header" class="ax-side-nav__brand" href="#">Astryx</a>
-  <a class="ax-side-nav__item" href="#" aria-current="page">Overview</a>
+  <a slot="header" href="#">Astryx</a>
+  <a href="#overview" aria-current="page">Overview</a>
+  <a href="#projects">Projects</a>
 </ax-side-nav>`
       },
       {
         name: "collapsed",
         html: `<ax-side-nav label="Collapsed navigation" is-collapsed>
-  <a slot="header" class="ax-side-nav__brand" href="#" aria-label="Astryx">A</a>
-  <a class="ax-side-nav__item" href="#" aria-label="Overview">\u25CF</a>
+  <a slot="header" href="#" aria-label="Astryx">A</a>
+  <a href="#overview" aria-label="Overview" aria-current="page">\u25CF</a>
 </ax-side-nav>`
       }
     ],
@@ -2893,6 +2953,7 @@ var AstryxElements = (() => {
       },
       afterRender(host, api) {
         setCollapsed(host, api, api.read("is-collapsed"));
+        enhanceNavigationItems(api);
       }
     },
     render(_host, h) {

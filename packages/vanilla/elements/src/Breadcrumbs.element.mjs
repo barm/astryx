@@ -24,7 +24,7 @@ export default {
   slots: {
     default: {
       description:
-        'Native list-item breadcrumb steps, ending with aria-current="page".',
+        'Plain link and current-page children; Breadcrumbs generates list items, separators, and BEM classes.',
       required: true,
     },
   },
@@ -33,27 +33,74 @@ export default {
     {
       name: 'default',
       html: `<ax-breadcrumbs>
-  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><a class="ax-breadcrumbs__link" href="#home" style="color: var(--color-text-primary)">Home</a></li>
-  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><span class="ax-breadcrumbs__current" aria-current="page">Projects</span></li>
+  <a href="#home">Home</a>
+  <span>Projects</span>
 </ax-breadcrumbs>`,
     },
     {
       name: 'supporting',
       gallery: false,
-      html: `<ax-breadcrumbs variant="supporting" label="Settings breadcrumb">
-  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><a class="ax-breadcrumbs__link" href="#settings">Settings</a></li>
-  <li class="ax-breadcrumbs__item"><span class="ax-breadcrumbs__separator" aria-hidden="true">/</span><span class="ax-breadcrumbs__current" aria-current="page">Notifications</span></li>
+      html: `<ax-breadcrumbs variant="supporting" label="Settings breadcrumb" separator="›">
+  <a href="#settings">Settings</a>
+  <strong>Notifications</strong>
 </ax-breadcrumbs>`,
     },
   ],
   hooks: {
     afterRender(_host, api) {
-      for (const separator of api.queryAll('.ax-breadcrumbs__separator'))
+      const list = api.query('.ax-breadcrumbs__list');
+      if (!list) return;
+
+      for (const emptyWrapper of list.querySelectorAll(
+        ':scope > li[data-ax-breadcrumb-wrapper]:empty',
+      )) {
+        emptyWrapper.remove();
+      }
+      for (const child of [...list.children]) {
+        if (child.localName === 'li') continue;
+        if (!child.matches('a, span, strong')) continue;
+        const wrapper = document.createElement('li');
+        wrapper.setAttribute('data-ax-breadcrumb-wrapper', '');
+        child.before(wrapper);
+        wrapper.append(child);
+      }
+
+      const items = [...list.children].filter(
+        child => child.localName === 'li',
+      );
+      for (const item of items) {
+        item.classList.add('ax-breadcrumbs__item');
+        let separator = item.querySelector(
+          ':scope > .ax-breadcrumbs__separator',
+        );
+        if (!separator) {
+          separator = document.createElement('span');
+          separator.className = 'ax-breadcrumbs__separator';
+          separator.setAttribute('aria-hidden', 'true');
+          item.prepend(separator);
+        }
         separator.textContent = api.read('separator');
-      const items = api.queryAll('.ax-breadcrumbs__item');
-      if (items.length && !api.query('[aria-current="page"]')) {
-        const candidate = items.at(-1).querySelector('a, span');
-        candidate?.setAttribute('aria-current', 'page');
+      }
+
+      if (items.length && !list.querySelector('[aria-current="page"]')) {
+        items
+          .at(-1)
+          .querySelector(
+            ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
+          )
+          ?.setAttribute('aria-current', 'page');
+      }
+      for (const item of items) {
+        const content = item.querySelector(
+          ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
+        );
+        if (!content) continue;
+        const isCurrent = content.getAttribute('aria-current') === 'page';
+        content.classList.toggle('ax-breadcrumbs__current', isCurrent);
+        content.classList.toggle(
+          'ax-breadcrumbs__link',
+          content.localName === 'a' && !isCurrent,
+        );
       }
     },
   },

@@ -131,23 +131,8 @@
           <h3 class="ax-heading ax-heading--3">Breadcrumbs</h3>
           <div class="gallery__example" data-gallery-example="default">
             <ax-breadcrumbs>
-              <li class="ax-breadcrumbs__item">
-                <span class="ax-breadcrumbs__separator" aria-hidden="true"
-                  >/</span
-                ><a
-                  class="ax-breadcrumbs__link"
-                  href="#home"
-                  style="color: var(--color-text-primary)"
-                  >Home</a
-                >
-              </li>
-              <li class="ax-breadcrumbs__item">
-                <span class="ax-breadcrumbs__separator" aria-hidden="true"
-                  >/</span
-                ><span class="ax-breadcrumbs__current" aria-current="page"
-                  >Projects</span
-                >
-              </li>
+              <a href="#home">Home</a>
+              <span>Projects</span>
             </ax-breadcrumbs>
           </div>
         </section>
@@ -374,22 +359,17 @@
           <h3 class="ax-heading ax-heading--3">SideNav</h3>
           <div class="gallery__example" data-gallery-example="default">
             <ax-side-nav label="Application navigation">
-              <a slot="header" class="ax-side-nav__brand" href="#">Astryx</a>
-              <a class="ax-side-nav__item" href="#" aria-current="page"
-                >Overview</a
-              >
+              <a slot="header" href="#">Astryx</a>
+              <a href="#overview" aria-current="page">Overview</a>
+              <a href="#projects">Projects</a>
             </ax-side-nav>
           </div>
           <div class="gallery__example" data-gallery-example="collapsed">
             <ax-side-nav label="Collapsed navigation" is-collapsed>
-              <a
-                slot="header"
-                class="ax-side-nav__brand"
-                href="#"
-                aria-label="Astryx"
-                >A</a
+              <a slot="header" href="#" aria-label="Astryx">A</a>
+              <a href="#overview" aria-label="Overview" aria-current="page"
+                >●</a
               >
-              <a class="ax-side-nav__item" href="#" aria-label="Overview">●</a>
             </ax-side-nav>
           </div>
         </section>

@@ -21,11 +21,12 @@ toggle(): Toggle the collapsed state.
 <!-- properties: attrs/aliases: camelCase properties -->
 <!-- variant: default -->
 <ax-side-nav label="Application navigation">
-  <a slot="header" class="ax-side-nav__brand" href="#">Astryx</a>
-  <a class="ax-side-nav__item" href="#" aria-current="page">Overview</a>
+  <a slot="header" href="#">Astryx</a>
+  <a href="#overview" aria-current="page">Overview</a>
+  <a href="#projects">Projects</a>
 </ax-side-nav>
 <!-- variant: collapsed -->
 <ax-side-nav label="Collapsed navigation" is-collapsed>
-  <a slot="header" class="ax-side-nav__brand" href="#" aria-label="Astryx">A</a>
-  <a class="ax-side-nav__item" href="#" aria-label="Overview">●</a>
+  <a slot="header" href="#" aria-label="Astryx">A</a>
+  <a href="#overview" aria-label="Overview" aria-current="page">●</a>
 </ax-side-nav>

@@ -4,6 +4,14 @@ const variants = ['standard', 'fullscreen'];
 const purposes = ['info', 'form', 'required'];
 const returnFocus = new WeakMap();
 
+function consumeTitle(host, api) {
+  if (!host.hasAttribute('title')) return false;
+  host.setAttribute('data-ax-title', host.getAttribute('title') ?? '');
+  host.removeAttribute('title');
+  api.render();
+  return true;
+}
+
 function restoreFocus(host) {
   const target = returnFocus.get(host);
   returnFocus.delete(host);
@@ -48,7 +56,9 @@ export default {
   attributes: {
     title: {
       type: 'string',
-      description: 'Visible dialog heading when the title slot is empty.',
+      aliases: ['data-ax-title'],
+      description:
+        'Visible dialog heading; consumed so the host never shows a native title tooltip.',
     },
     'is-open': {
       type: 'boolean',
@@ -127,6 +137,7 @@ export default {
   ],
   hooks: {
     connected(host, api) {
+      consumeTitle(host, api);
       const onClick = event => {
         const opener = event.target.closest?.('[data-ax-dialog-open]');
         if (
@@ -147,6 +158,7 @@ export default {
       return () => document.removeEventListener('click', onClick);
     },
     attributeChanged(host, name, _oldValue, _newValue, api) {
+      if (name === 'title' && consumeTitle(host, api)) return true;
       if (name !== 'is-open' || !api.control) return false;
       if (api.read('is-open')) showDialog(host, api);
       else closeDialog(host, api);

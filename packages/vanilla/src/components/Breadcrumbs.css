@@ -43,7 +43,7 @@
   gap: var(--spacing-1);
   padding-block: var(--spacing-1);
   border-radius: var(--radius-inner);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   text-decoration: none;
 }
 :where(.ax-breadcrumbs__link):hover {

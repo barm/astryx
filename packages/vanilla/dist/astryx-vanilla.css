@@ -563,6 +563,14 @@
     line-height: var(--text-supporting-leading);
     overflow-wrap: anywhere;
   }
+  :where(.ax-banner--error .ax-banner__description) {
+    color: var(--color-text-primary);
+  }
+  @scope ([data-astryx-theme='y2k']) to ([data-astryx-theme]) {
+    :scope .ax-banner--error .ax-banner__description {
+      color: var(--color-on-error);
+    }
+  }
   :where(.ax-banner__actions) {
     display: flex;
     align-items: center;
@@ -626,7 +634,7 @@
     gap: var(--spacing-1);
     padding-block: var(--spacing-1);
     border-radius: var(--radius-inner);
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     text-decoration: none;
   }
   :where(.ax-breadcrumbs__link):hover {

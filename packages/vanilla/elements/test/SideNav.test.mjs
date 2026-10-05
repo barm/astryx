@@ -35,10 +35,13 @@ async function settle() {
 test('SideNav derives collapsed markup from host state after rerenders', async () => {
   const nav = document.createElement('ax-side-nav');
   nav.setAttribute('is-collapsed', '');
-  nav.innerHTML = '<a class="ax-side-nav__item" href="#">Overview</a>';
+  nav.innerHTML = '<a href="#overview" aria-current="page">Overview</a>';
   document.body.append(nav);
   await settle();
   const root = nav.querySelector('.ax-side-nav');
+  const item = nav.querySelector('a[href="#overview"]');
+  assert.equal(item.classList.contains('ax-side-nav__item'), true);
+  assert.equal(item.getAttribute('aria-current'), 'page');
   assert.equal(root.classList.contains('ax-side-nav--collapsed'), true);
 
   nav.setAttribute('label', 'Workspace navigation');
