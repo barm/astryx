@@ -28,6 +28,7 @@ const indexPath = path.join(sourceRoot, 'index.generated.mjs');
 const elementCSSPath = path.join(packageRoot, 'src/elements.generated.css');
 const esmPath = path.join(distRoot, 'astryx-elements.js');
 const classicPath = path.join(distRoot, 'astryx-elements.classic.js');
+const galleryPath = path.join(packageRoot, 'examples/elements-gallery.html');
 const GLOBAL_ATTRIBUTES = new Set([
   'accesskey',
   'autocapitalize',
@@ -140,6 +141,134 @@ ${indented}
 )[hidden] {
   display: none !important;
 }
+`;
+}
+
+function renderGallery(definitions) {
+  const groups = definitions
+    .map(({definition}) => ({
+      definition,
+      examples: definition.examples.filter(
+        example => example.gallery !== false,
+      ),
+    }))
+    .filter(({examples}) => examples.length > 0)
+    .map(
+      ({
+        definition,
+        examples,
+      }) => `<section class="gallery__component" data-gallery-element="${definition.name}">
+  <h3 class="ax-heading ax-heading--3">${definition.name}</h3>
+  ${examples
+    .map(
+      example => `<div class="gallery__example" data-gallery-example="${example.name}">
+  ${example.html}
+</div>`,
+    )
+    .join('\n  ')}
+</section>`,
+    )
+    .join('\n');
+
+  return `<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vanilla Astryx elements gallery</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link rel="stylesheet" href="../dist/astryx-vanilla.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-y2k@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        body { margin: 0; }
+        .gallery { display: grid; gap: var(--spacing-6); padding: var(--spacing-6); }
+        .gallery__matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr)); gap: var(--spacing-4); }
+        .gallery__theme, .gallery__examples, .gallery__component { display: grid; gap: var(--spacing-4); }
+        .gallery__theme { padding: var(--spacing-4); border: var(--border-width) solid var(--color-border); border-radius: var(--radius-container); background: var(--color-background-body); color: var(--color-text-primary); }
+        .gallery__component { padding-block-end: var(--spacing-4); border-block-end: var(--border-width) solid var(--color-border); }
+        .gallery__example { display: grid; gap: var(--spacing-2); align-items: start; }
+        .gallery__theme[data-theme='light'] { color-scheme: light; }
+        .gallery__theme[data-theme='dark'] { color-scheme: dark; }
+        .gallery__theme .ax-tab, .gallery__component small { color: var(--color-text-primary); }
+      }
+    </style>
+    <script defer src="../dist/astryx-vanilla.js"></script>
+    <script defer src="../dist/astryx-elements.classic.js"></script>
+  </head>
+  <body>
+    <main class="gallery">
+      <header class="ax-stack ax-stack--gap-2">
+        <h1 class="ax-heading ax-heading--1">Astryx custom elements</h1>
+        <p class="ax-text ax-text--secondary">
+          ${definitions.length} auto-discovered definitions rendered across neutral, butter, and Y2K in light and dark modes.
+        </p>
+      </header>
+      <div class="gallery__matrix" id="gallery-matrix"></div>
+    </main>
+
+    <template id="gallery-content">
+      <div class="gallery__examples">
+${groups}
+      </div>
+    </template>
+
+    <script>
+      const matrix = document.querySelector('#gallery-matrix');
+      const template = document.querySelector('#gallery-content');
+      const referenceAttributes = ['for', 'aria-controls', 'aria-labelledby', 'aria-describedby'];
+      let instance = 0;
+
+      function uniquifyReferences(section) {
+        const ids = new Map();
+        for (const element of section.querySelectorAll('[id]')) {
+          const previous = element.id;
+          const next = previous + '-' + instance;
+          ids.set(previous, next);
+          element.id = next;
+        }
+        for (const element of section.querySelectorAll('*')) {
+          for (const attribute of referenceAttributes) {
+            if (!element.hasAttribute(attribute)) continue;
+            const values = element.getAttribute(attribute).split(/\\s+/);
+            element.setAttribute(attribute, values.map(value => ids.get(value) || value).join(' '));
+          }
+          if (element.hasAttribute('panel-id')) {
+            const panelID = element.getAttribute('panel-id');
+            element.setAttribute('panel-id', ids.get(panelID) || panelID);
+          }
+        }
+        for (const dialog of section.querySelectorAll('ax-dialog[dialog-id]')) {
+          const previous = dialog.getAttribute('dialog-id');
+          const next = previous + '-' + instance;
+          dialog.setAttribute('dialog-id', next);
+          for (const opener of section.querySelectorAll('[data-ax-dialog-open]')) {
+            if (opener.getAttribute('data-ax-dialog-open') === previous) {
+              opener.setAttribute('data-ax-dialog-open', next);
+            }
+          }
+        }
+      }
+
+      for (const theme of ['neutral', 'butter', 'y2k']) {
+        for (const mode of ['light', 'dark']) {
+          instance += 1;
+          const section = document.createElement('section');
+          section.className = 'gallery__theme';
+          section.dataset.astryxTheme = theme;
+          section.dataset.theme = mode;
+          section.innerHTML = '<h2 class="ax-heading ax-heading--2">' + theme + ' · ' + mode + '</h2>';
+          section.append(template.content.cloneNode(true));
+          uniquifyReferences(section);
+          section.addEventListener('submit', event => event.preventDefault());
+          matrix.append(section);
+        }
+      }
+    </script>
+  </body>
+</html>
 `;
 }
 
@@ -432,6 +561,10 @@ async function main() {
     ...prettierConfig,
     parser: 'babel',
   });
+  const gallery = await formatWithPrettier(renderGallery(definitions), {
+    ...prettierConfig,
+    parser: 'html',
+  });
   const [esm, classic] = await Promise.all([
     bundle(index, 'esm'),
     bundle(index, 'iife'),
@@ -445,13 +578,14 @@ async function main() {
     {path: elementCSSPath, content: elementCSS(definitions)},
     {path: esmPath, content: esm},
     {path: classicPath, content: classic},
+    {path: galleryPath, content: gallery},
     ...markup,
   ];
 
   if (process.argv.includes('--check')) {
     await Promise.all(generated.map(file => compare(file.path, file.content)));
     console.log(
-      `Element registries, dist, and ${markup.length} markup files are current.`,
+      `Element registries, generated gallery, dist, and ${markup.length} markup files are current.`,
     );
     return;
   }
@@ -462,7 +596,7 @@ async function main() {
   ]);
   await Promise.all(generated.map(file => writeFile(file.path, file.content)));
   console.log(
-    `Generated ${definitions.length} element definitions, registries, ESM/classic bundles, and CLI markup.`,
+    `Generated ${definitions.length} element definitions, registries, gallery, ESM/classic bundles, and CLI markup.`,
   );
 }
 

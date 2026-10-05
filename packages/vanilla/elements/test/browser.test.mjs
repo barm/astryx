@@ -80,11 +80,19 @@ try {
     {waitUntil: 'load'},
   );
   await page.waitForFunction(() => customElements.get('ax-selector'));
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('.gallery__theme ax-button > button').length ===
-      42,
-  );
+  await page.waitForFunction(() => {
+    const sections = [...document.querySelectorAll('.gallery__theme')];
+    return (
+      sections.length === 6 &&
+      sections.every(section => {
+        const buttons = [...section.querySelectorAll('ax-button')];
+        return (
+          buttons.length > 0 &&
+          buttons.every(button => button.querySelector('button, a'))
+        );
+      })
+    );
+  });
 
   assert.equal(await page.locator('.gallery__theme').count(), 6);
   const matrix = await page.locator('.gallery__theme').evaluateAll(sections =>
@@ -118,12 +126,14 @@ try {
     );
   }
   assert.ok(matrix.every(item => item.buttonVisible));
-  checks.push('gallery renders all reference groups in 3 themes × light/dark');
+  checks.push(
+    'gallery renders auto-discovered examples in 3 themes × light/dark',
+  );
 
   const first = page.locator('.gallery__theme').first();
-  const input = first.locator('ax-text-input input');
+  const input = first.locator('ax-text-input input').first();
   await input.fill('Elements');
-  const selector = first.locator('ax-selector');
+  const selector = first.locator('ax-selector').first();
   const nativeSelect = selector.locator('select');
   await nativeSelect.click();
   assert.equal(
@@ -133,38 +143,49 @@ try {
   await page.keyboard.press('Escape');
   await nativeSelect.selectOption('design');
   assert.equal(
-    await first.locator('ax-text-input').getAttribute('value'),
+    await first.locator('ax-text-input').first().getAttribute('value'),
     'Elements',
   );
   assert.equal(await selector.getAttribute('value'), 'design');
-  const submitted = await first
-    .locator('form')
-    .evaluate(form => Object.fromEntries(new FormData(form)));
+  const submitted = await page.evaluate(async () => {
+    const form = document.createElement('form');
+    form.innerHTML = `
+      <ax-text-input label="Project" html-name="project" value="Elements"></ax-text-input>
+      <ax-selector label="Workspace" html-name="workspace" value="design">
+        <option value="design">Design systems</option>
+        <option value="tools">Developer tools</option>
+      </ax-selector>`;
+    document.body.append(form);
+    await new Promise(resolve => setTimeout(resolve, 30));
+    const data = Object.fromEntries(new FormData(form));
+    form.remove();
+    return data;
+  });
   assert.deepEqual(submitted, {project: 'Elements', workspace: 'design'});
   await selector.locator('select').focus();
   await page.keyboard.press('ArrowDown');
   assert.equal(await selector.getAttribute('value'), 'tools');
   checks.push('TextInput and Selector reflect values and submit natively');
 
-  const tabList = first.locator('ax-tab-list');
+  const tabList = first.locator('ax-tab-list').first();
   const activity = tabList.locator('ax-tab[value="activity"] button');
   await activity.click();
   assert.equal(await tabList.getAttribute('value'), 'activity');
   assert.equal(await activity.getAttribute('aria-selected'), 'true');
   await activity.focus();
-  await page.keyboard.press('ArrowRight');
-  assert.equal(await tabList.getAttribute('value'), 'settings');
+  await page.keyboard.press('ArrowLeft');
+  assert.equal(await tabList.getAttribute('value'), 'overview');
   assert.equal(
     await tabList
-      .locator('ax-tab[value="settings"] button')
+      .locator('ax-tab[value="overview"] button')
       .getAttribute('aria-selected'),
     'true',
   );
   checks.push('TabList and Tab support pointer and keyboard activation');
 
-  const trigger = first.locator('[data-dialog-trigger] button');
+  const trigger = first.locator('[data-ax-dialog-open] button').first();
   await trigger.click();
-  const dialog = first.locator('ax-dialog dialog');
+  const dialog = first.locator('ax-dialog dialog').first();
   assert.equal(await dialog.getAttribute('open'), '');
   assert.equal(
     await page.evaluate(() =>
@@ -178,7 +199,7 @@ try {
     await trigger.evaluate(node => node === document.activeElement),
     true,
   );
-  const dialogHost = first.locator('ax-dialog');
+  const dialogHost = first.locator('ax-dialog').first();
   await dialogHost.evaluate(host => host.setAttribute('open', ''));
   await dialog.waitFor({state: 'visible'});
   assert.equal(await dialogHost.getAttribute('open'), '');

@@ -47,6 +47,18 @@ const definitionFiles = (await readdir(path.join(packageRoot, 'elements/src')))
 const definitions = await Promise.all(
   definitionFiles.map(async file => (await import(`../src/${file}`)).default),
 );
+const parityRoot = path.join(packageRoot, 'elements/test/parity');
+const parityFiles = (await readdir(parityRoot))
+  .filter(file => file.endsWith('.parity.mjs'))
+  .sort((left, right) => left.localeCompare(right));
+const parityCases = await Promise.all(
+  parityFiles.map(async file => (await import(`./parity/${file}`)).default),
+);
+const referenceNames = new Set(
+  (await readdir(path.join(packageRoot, 'markup')))
+    .filter(file => file.endsWith('.html'))
+    .map(file => path.basename(file, '.html')),
+);
 registerElements(definitions);
 
 async function settle() {
@@ -126,119 +138,68 @@ async function render(tag, attributes = {}, html = '') {
   return element;
 }
 
-test('definitions are complete single sources with two examples each', () => {
-  assert.equal(definitions.length, 9);
+test('definitions and parity cases are auto-discovered from per-component files', () => {
   assert.deepEqual(
-    definitions.map(definition => definition.tag),
-    [
-      'ax-badge',
-      'ax-button',
-      'ax-card',
-      'ax-dialog',
-      'ax-layout',
-      'ax-selector',
-      'ax-tab',
-      'ax-tab-list',
-      'ax-text-input',
-    ],
+    definitions.map(definition => definition.name),
+    definitionFiles.map(file => path.basename(file, '.element.mjs')),
   );
+  assert.equal(
+    new Set(definitions.map(definition => definition.tag)).size,
+    definitions.length,
+  );
+
+  const parityByName = new Map(
+    parityCases.map(parityCase => [parityCase.name, parityCase]),
+  );
+  assert.equal(parityByName.size, parityCases.length);
   for (const definition of definitions) {
+    const expectedTag = `ax-${definition.name
+      .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+      .toLowerCase()}`;
+    assert.equal(definition.tag, expectedTag);
     assert.ok(definition.docs.length > 10);
     assert.ok(definition.examples.length >= 2);
     assert.equal(typeof definition.render, 'function');
+    if (referenceNames.has(definition.name)) {
+      assert.ok(
+        parityByName.has(definition.name),
+        `${definition.name} needs its own auto-discovered parity module`,
+      );
+    }
+  }
+  for (const parityCase of parityCases) {
+    assert.ok(
+      definitions.some(definition => definition.name === parityCase.name),
+      `${parityCase.name} parity case needs a matching definition`,
+    );
   }
 });
 
-test('rendered native roots match the existing BEM reference variants', async () => {
-  const cases = [
-    [
-      'Button',
-      'primary',
-      await render('ax-button', {variant: 'primary'}, 'Continue'),
-    ],
-    [
-      'TextInput',
-      'default',
-      await render('ax-text-input', {
-        label: 'Project name',
-        'html-name': 'project',
-        placeholder: 'Astryx',
-      }),
-    ],
-    [
-      'Card',
-      'default',
-      await render(
-        'ax-card',
-        {},
-        '<h2 class="ax-heading ax-heading--3" slot="header">Card title</h2><p class="ax-text">Card content</p>',
-      ),
-    ],
-    [
-      'Badge',
-      'success',
-      await render('ax-badge', {variant: 'success'}, 'Ready'),
-    ],
-    [
-      'Layout',
-      'page-shell',
-      await render(
-        'ax-layout',
-        {},
-        '<h1 class="ax-heading ax-heading--1" slot="header">Page title</h1><p class="ax-text">Page content</p><span class="ax-text ax-text--supporting" slot="footer">Footer</span>',
-      ),
-    ],
-    [
-      'Dialog',
-      'confirmation',
-      await render(
-        'ax-dialog',
-        {'dialog-id': 'confirm-dialog'},
-        '<span slot="title">Archive project?</span><p class="ax-text">You can restore this project later.</p><button class="ax-button ax-button--ghost" type="button" data-ax-dialog-close slot="footer">Cancel</button><button class="ax-button ax-button--primary" type="button" data-ax-dialog-close slot="footer">Archive</button>',
-      ),
-    ],
-    [
-      'TabList',
-      'panels',
-      await render(
-        'ax-tab-list',
-        {label: 'Project views', value: 'overview'},
-        '<ax-tab value="overview" panel-id="panel-overview">Overview</ax-tab><ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab><ax-tab value="settings" panel-id="panel-settings">Settings</ax-tab><div class="ax-tab-panel" slot="panels" id="panel-overview" role="tabpanel">Overview content</div><div class="ax-tab-panel" slot="panels" id="panel-activity" role="tabpanel">Activity content</div><div class="ax-tab-panel" slot="panels" id="panel-settings" role="tabpanel">Settings content</div>',
-      ),
-    ],
-    [
-      'Selector',
-      'default',
-      await render(
-        'ax-selector',
-        {
-          label: 'Workspace',
-          'html-name': 'workspace',
-          description: 'Choose where this project belongs.',
-        },
-        '<option>Design systems</option><option>Developer tools</option><option>Business platform</option>',
-      ),
-    ],
-  ];
-
-  for (const [name, variant, element] of cases) {
-    const reference = await referenceVariant(name, variant);
-    let actual = element.innerHTML;
-    if (name === 'Dialog') {
-      const dialog = element.querySelector('dialog');
-      actual = dialog?.outerHTML ?? actual;
-      const referenceDocument = document.createElement('template');
-      referenceDocument.innerHTML = reference;
-      actual = canonicalHTML(actual);
-      const expectedDialog = referenceDocument.content.querySelector('dialog');
-      assert.equal(actual, canonicalHTML(expectedDialog.outerHTML), name);
-      continue;
-    }
-    if (name === 'TabList') {
-      assert.equal(canonicalHTML(actual), canonicalHTML(reference), name);
-      continue;
-    }
-    assert.equal(canonicalHTML(actual), canonicalHTML(reference), name);
+test('auto-discovered parity cases match the existing BEM references', async () => {
+  for (const parityCase of parityCases) {
+    const element = await render(
+      parityCase.tag,
+      parityCase.attributes,
+      parityCase.html,
+    );
+    const reference = await referenceVariant(
+      parityCase.name,
+      parityCase.variant,
+    );
+    const referenceDocument = document.createElement('template');
+    referenceDocument.innerHTML = reference;
+    const actual = parityCase.actualSelector
+      ? element.querySelector(parityCase.actualSelector)?.outerHTML
+      : element.innerHTML;
+    const expected = parityCase.expectedSelector
+      ? referenceDocument.content.querySelector(parityCase.expectedSelector)
+          ?.outerHTML
+      : reference;
+    assert.equal(
+      canonicalHTML(actual ?? ''),
+      canonicalHTML(expected ?? ''),
+      parityCase.name,
+    );
   }
 });
 
@@ -337,6 +298,29 @@ test('generated docs expose complete API contracts', async () => {
   assert.match(dialog, /is-open \(open\):/);
   assert.match(dialog, /show\(\):/);
   assert.match(dialog, /data-ax-dialog-open/);
+});
+
+test('generated gallery includes every opted-in definition example', async () => {
+  const gallery = await readFile(
+    path.join(packageRoot, 'examples/elements-gallery.html'),
+    'utf8',
+  );
+  for (const definition of definitions) {
+    const examples = definition.examples.filter(
+      example => example.gallery !== false,
+    );
+    if (examples.length === 0) continue;
+    assert.match(
+      gallery,
+      new RegExp(`data-gallery-element="${definition.name}"`),
+    );
+    for (const example of examples) {
+      assert.match(
+        gallery,
+        new RegExp(`data-gallery-example="${example.name}"`),
+      );
+    }
+  }
 });
 
 test('bundles and generated registries are self-contained and complete', async () => {

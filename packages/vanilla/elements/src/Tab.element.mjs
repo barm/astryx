@@ -39,12 +39,14 @@ export default {
   examples: [
     {
       name: 'with-panel',
+      gallery: false,
       html: `<ax-tab value="overview" panel-id="panel-overview">
   Overview
 </ax-tab>`,
     },
     {
       name: 'label',
+      gallery: false,
       html: `<ax-tab value="activity" label="Activity"></ax-tab>`,
     },
   ],

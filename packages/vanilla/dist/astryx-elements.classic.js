@@ -371,6 +371,7 @@ var AstryxElements = (() => {
       },
       {
         name: "required",
+        gallery: false,
         html: `<ax-dialog purpose="required" title="Accept terms" is-open>
   <p>Review and accept to continue.</p>
 </ax-dialog>`
@@ -473,6 +474,7 @@ var AstryxElements = (() => {
       },
       {
         name: "named-regions",
+        gallery: false,
         html: `<ax-layout>
   <nav slot="start">Navigation</nav>
   <main>Main content</main>
@@ -731,12 +733,14 @@ var AstryxElements = (() => {
     examples: [
       {
         name: "with-panel",
+        gallery: false,
         html: `<ax-tab value="overview" panel-id="panel-overview">
   Overview
 </ax-tab>`
       },
       {
         name: "label",
+        gallery: false,
         html: `<ax-tab value="activity" label="Activity"></ax-tab>`
       }
     ],

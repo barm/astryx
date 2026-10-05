@@ -32,6 +32,7 @@ export default {
     },
     {
       name: 'named-regions',
+      gallery: false,
       html: `<ax-layout>
   <nav slot="start">Navigation</nav>
   <main>Main content</main>

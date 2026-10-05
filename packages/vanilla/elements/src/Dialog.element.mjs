@@ -119,6 +119,7 @@ export default {
     },
     {
       name: 'required',
+      gallery: false,
       html: `<ax-dialog purpose="required" title="Accept terms" is-open>
   <p>Review and accept to continue.</p>
 </ax-dialog>`,

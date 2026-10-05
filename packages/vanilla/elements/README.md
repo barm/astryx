@@ -12,7 +12,18 @@ This build-less experiment wraps existing Vanilla Astryx markup in standard cust
 - Native events bubble from the rendered button, input, select, or dialog. The wrapper does not synthesize competing click, input, change, or close events.
 - Unknown attributes, unknown slots, invalid enum values, and boolean attributes written as `="false"` warn once. Global `role`, `aria-*`, `data-*`, and inline `on*` attributes are accepted.
 
-Each `src/<ComponentName>.element.mjs` file is the source for its tag, attributes, aliases, slots, properties, methods, events, behavior hooks, docs, examples, and light-DOM renderer. `scripts/build-elements.mjs` discovers and validates those definitions, then generates the registration index, host/FOUC CSS, `elements-markup/*.html`, and both bundles.
+Each `src/<ComponentName>.element.mjs` file is the source for its tag, attributes, aliases, slots, properties, methods, events, behavior hooks, docs, examples, and light-DOM renderer. `scripts/build-elements.mjs` discovers and validates those definitions, then generates the registration index, host/FOUC CSS, `elements-markup/*.html`, the example gallery, and both bundles.
+
+## Add an element
+
+Adding an element must require only files owned by that component:
+
+1. Create `src/<ComponentName>.element.mjs` with the definition, at least two docs examples, and any component-owned behavior hooks. Examples are included in the generated gallery automatically; set `gallery: false` only on an example that is unsafe or invalid in isolation, such as a compound child.
+2. If `markup/<ComponentName>.html` exists, create `test/parity/<ComponentName>.parity.mjs` describing the reference variant, host attributes, and authored children. Add any other component-specific tests in their own auto-discovered test file rather than a shared case array.
+3. Run `pnpm -F @astryxdesign/vanilla build`. The script discovers all definitions and regenerates `index.generated.mjs`, `elements.generated.css`, `elements-markup/`, `examples/elements-gallery.html`, and the ESM/classic bundles. Run `pnpm -F @astryxdesign/vanilla check` to verify drift.
+4. During branch integration, regenerate the bundled CLI copies with `pnpm -F @astryxdesign/cli sync:vanilla-assets`; component authors do not hand-edit those copies.
+
+Never add a tag, count, parity case, or gallery section to a shared registry by hand. Definition tags/counts, parity modules, docs examples, and gallery groups are all discovered from per-component files, so parallel additions only meet in generated outputs.
 
 ## Light DOM and slots
 

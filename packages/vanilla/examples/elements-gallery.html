@@ -35,27 +35,27 @@
           );
           gap: var(--spacing-4);
         }
-        .gallery__theme {
+        .gallery__theme,
+        .gallery__examples,
+        .gallery__component {
           display: grid;
           gap: var(--spacing-4);
+        }
+        .gallery__theme {
           padding: var(--spacing-4);
           border: var(--border-width) solid var(--color-border);
           border-radius: var(--radius-container);
           background: var(--color-background-body);
           color: var(--color-text-primary);
         }
-        .gallery__examples {
+        .gallery__component {
+          padding-block-end: var(--spacing-4);
+          border-block-end: var(--border-width) solid var(--color-border);
+        }
+        .gallery__example {
           display: grid;
-          gap: var(--spacing-4);
-        }
-        .gallery__row {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
           gap: var(--spacing-2);
-        }
-        .gallery__layout {
-          min-height: 18rem;
+          align-items: start;
         }
         .gallery__theme[data-theme='light'] {
           color-scheme: light;
@@ -63,7 +63,8 @@
         .gallery__theme[data-theme='dark'] {
           color-scheme: dark;
         }
-        .gallery__theme .ax-tab {
+        .gallery__theme .ax-tab,
+        .gallery__component small {
           color: var(--color-text-primary);
         }
       }
@@ -76,8 +77,8 @@
       <header class="ax-stack ax-stack--gap-2">
         <h1 class="ax-heading ax-heading--1">Astryx custom elements</h1>
         <p class="ax-text ax-text--secondary">
-          The eight reference groups rendered across neutral, butter, and Y2K in
-          light and dark modes.
+          9 auto-discovered definitions rendered across neutral, butter, and Y2K
+          in light and dark modes.
         </p>
       </header>
       <div class="gallery__matrix" id="gallery-matrix"></div>
@@ -85,92 +86,171 @@
 
     <template id="gallery-content">
       <div class="gallery__examples">
-        <div class="gallery__row">
-          <ax-button variant="primary">Continue</ax-button>
-          <ax-button variant="secondary">Cancel</ax-button>
-          <ax-badge variant="success">Ready</ax-badge>
-          <ax-badge variant="warning">Review</ax-badge>
-        </div>
-
-        <form class="ax-stack ax-stack--gap-3" data-gallery-form>
-          <ax-text-input
-            label="Project name"
-            html-name="project"
-            value="Astryx"
-            description="Submitted through a native form."></ax-text-input>
-          <ax-selector label="Workspace" html-name="workspace" value="tools">
-            <option value="design">Design systems</option>
-            <option value="tools">Developer tools</option>
-            <option value="business">Business platform</option>
-          </ax-selector>
-          <ax-button type="submit" variant="primary">Save project</ax-button>
-        </form>
-
-        <ax-card elevation="low">
-          <h3 class="ax-heading ax-heading--3" slot="header">Reference card</h3>
-          <p class="ax-text">Light-DOM content stays in the authored node.</p>
-          <ax-button slot="footer" variant="ghost">Details</ax-button>
-        </ax-card>
-
-        <ax-tab-list label="Project views" value="overview">
-          <ax-tab value="overview" panel-id="panel-overview">Overview</ax-tab>
-          <ax-tab value="activity" panel-id="panel-activity">Activity</ax-tab>
-          <ax-tab value="settings" panel-id="panel-settings">Settings</ax-tab>
-          <div
-            class="ax-tab-panel"
-            id="panel-overview"
-            slot="panels"
-            role="tabpanel">
-            Overview content
+        <section class="gallery__component" data-gallery-element="Badge">
+          <h3 class="ax-heading ax-heading--3">Badge</h3>
+          <div class="gallery__example" data-gallery-example="neutral">
+            <ax-badge>Draft</ax-badge>
           </div>
-          <div
-            class="ax-tab-panel"
-            id="panel-activity"
-            slot="panels"
-            role="tabpanel">
-            Activity content
+          <div class="gallery__example" data-gallery-example="success-label">
+            <ax-badge label="Ready" variant="success"></ax-badge>
           </div>
-          <div
-            class="ax-tab-panel"
-            id="panel-settings"
-            slot="panels"
-            role="tabpanel">
-            Settings content
+        </section>
+        <section class="gallery__component" data-gallery-element="Button">
+          <h3 class="ax-heading ax-heading--3">Button</h3>
+          <div class="gallery__example" data-gallery-example="primary">
+            <ax-button variant="primary"> Continue </ax-button>
           </div>
-        </ax-tab-list>
-
-        <div class="gallery__row">
-          <ax-button variant="primary" data-dialog-trigger
-            >Open dialog</ax-button
-          >
-          <ax-dialog dialog-id="gallery-dialog">
-            <span slot="title">Archive project?</span>
-            <p class="ax-text">You can restore this project later.</p>
-            <ax-button slot="footer" data-dialog-close>Cancel</ax-button>
-            <ax-button slot="footer" variant="primary" data-dialog-close>
-              Archive
-            </ax-button>
-          </ax-dialog>
-        </div>
-
-        <ax-layout class="gallery__layout">
-          <strong slot="header">Layout regions</strong>
-          <nav
-            class="ax-stack ax-stack--gap-1"
-            slot="start"
-            aria-label="Example navigation">
-            <a class="ax-link" href="#overview">Overview</a>
-            <a class="ax-link" href="#activity">Activity</a>
-          </nav>
-          <p class="ax-text">Primary layout content</p>
-        </ax-layout>
+          <div class="gallery__example" data-gallery-example="disabled-label">
+            <ax-button
+              label="Continue"
+              variant="primary"
+              is-disabled></ax-button>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Card">
+          <h3 class="ax-heading ax-heading--3">Card</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-card>
+              <h2 slot="header">Card title</h2>
+              <p>Card content</p>
+            </ax-card>
+          </div>
+          <div class="gallery__example" data-gallery-example="elevated">
+            <ax-card elevation="low">
+              <p>Elevated card</p>
+              <ax-button slot="footer" variant="primary">Action</ax-button>
+            </ax-card>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Dialog">
+          <h3 class="ax-heading ax-heading--3">Dialog</h3>
+          <div class="gallery__example" data-gallery-example="open-and-close">
+            <ax-button data-ax-dialog-open="confirm-dialog"
+              >Open dialog</ax-button
+            >
+            <ax-dialog dialog-id="confirm-dialog">
+              <span slot="title">Archive project?</span>
+              <p>You can restore this project later.</p>
+              <ax-button slot="footer" data-ax-dialog-close>Cancel</ax-button>
+            </ax-dialog>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Layout">
+          <h3 class="ax-heading ax-heading--3">Layout</h3>
+          <div class="gallery__example" data-gallery-example="page-shell">
+            <ax-layout>
+              <h1 slot="header">Page title</h1>
+              <p>Page content</p>
+              <small slot="footer">Footer</small>
+            </ax-layout>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="Selector">
+          <h3 class="ax-heading ax-heading--3">Selector</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-selector label="Workspace" html-name="workspace">
+              <option value="design">Design systems</option>
+              <option value="tools">Developer tools</option>
+            </ax-selector>
+          </div>
+          <div class="gallery__example" data-gallery-example="compact">
+            <ax-selector label="Status" size="sm">
+              <option>Active</option>
+              <option>Paused</option>
+            </ax-selector>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="TabList">
+          <h3 class="ax-heading ax-heading--3">TabList</h3>
+          <div class="gallery__example" data-gallery-example="panels">
+            <ax-tab-list value="overview" label="Project views">
+              <ax-tab value="overview" panel-id="panel-overview"
+                >Overview</ax-tab
+              >
+              <ax-tab value="activity" panel-id="panel-activity"
+                >Activity</ax-tab
+              >
+              <section slot="panels" id="panel-overview">
+                Overview content
+              </section>
+              <section slot="panels" id="panel-activity">
+                Activity content
+              </section>
+            </ax-tab-list>
+          </div>
+          <div class="gallery__example" data-gallery-example="fill">
+            <ax-tab-list layout="fill">
+              <ax-tab value="one">One</ax-tab>
+              <ax-tab value="two">Two</ax-tab>
+            </ax-tab-list>
+          </div>
+        </section>
+        <section class="gallery__component" data-gallery-element="TextInput">
+          <h3 class="ax-heading ax-heading--3">TextInput</h3>
+          <div class="gallery__example" data-gallery-example="default">
+            <ax-text-input
+              label="Project name"
+              html-name="project"
+              placeholder="Astryx"></ax-text-input>
+          </div>
+          <div class="gallery__example" data-gallery-example="error">
+            <ax-text-input
+              type="email"
+              label="Email"
+              status="error"
+              status-message="Enter a valid email address."></ax-text-input>
+          </div>
+        </section>
       </div>
     </template>
 
     <script>
       const matrix = document.querySelector('#gallery-matrix');
       const template = document.querySelector('#gallery-content');
+      const referenceAttributes = [
+        'for',
+        'aria-controls',
+        'aria-labelledby',
+        'aria-describedby',
+      ];
       let instance = 0;
+
+      function uniquifyReferences(section) {
+        const ids = new Map();
+        for (const element of section.querySelectorAll('[id]')) {
+          const previous = element.id;
+          const next = previous + '-' + instance;
+          ids.set(previous, next);
+          element.id = next;
+        }
+        for (const element of section.querySelectorAll('*')) {
+          for (const attribute of referenceAttributes) {
+            if (!element.hasAttribute(attribute)) continue;
+            const values = element.getAttribute(attribute).split(/\s+/);
+            element.setAttribute(
+              attribute,
+              values.map(value => ids.get(value) || value).join(' '),
+            );
+          }
+          if (element.hasAttribute('panel-id')) {
+            const panelID = element.getAttribute('panel-id');
+            element.setAttribute('panel-id', ids.get(panelID) || panelID);
+          }
+        }
+        for (const dialog of section.querySelectorAll('ax-dialog[dialog-id]')) {
+          const previous = dialog.getAttribute('dialog-id');
+          const next = previous + '-' + instance;
+          dialog.setAttribute('dialog-id', next);
+          for (const opener of section.querySelectorAll(
+            '[data-ax-dialog-open]',
+          )) {
+            if (opener.getAttribute('data-ax-dialog-open') === previous) {
+              opener.setAttribute('data-ax-dialog-open', next);
+            }
+          }
+        }
+      }
+
       for (const theme of ['neutral', 'butter', 'y2k']) {
         for (const mode of ['light', 'dark']) {
           instance += 1;
@@ -178,33 +258,15 @@
           section.className = 'gallery__theme';
           section.dataset.astryxTheme = theme;
           section.dataset.theme = mode;
-          section.innerHTML = `<h2 class="ax-heading ax-heading--2">${theme} · ${mode}</h2>`;
+          section.innerHTML =
+            '<h2 class="ax-heading ax-heading--2">' +
+            theme +
+            ' · ' +
+            mode +
+            '</h2>';
           section.append(template.content.cloneNode(true));
-
-          const dialog = section.querySelector('ax-dialog');
-          dialog.setAttribute('dialog-id', `gallery-dialog-${instance}`);
-          const ids = new Map();
-          for (const panel of section.querySelectorAll('[role="tabpanel"]')) {
-            const next = `${panel.id}-${instance}`;
-            ids.set(panel.id, next);
-            panel.id = next;
-          }
-          for (const tab of section.querySelectorAll('ax-tab[panel-id]')) {
-            tab.setAttribute('panel-id', ids.get(tab.getAttribute('panel-id')));
-          }
-          section
-            .querySelector('[data-dialog-trigger]')
-            .addEventListener('click', () => {
-              dialog.show();
-            });
-          for (const close of section.querySelectorAll('[data-dialog-close]')) {
-            close.addEventListener('click', () => dialog.close());
-          }
-          section
-            .querySelector('[data-gallery-form]')
-            .addEventListener('submit', event => {
-              event.preventDefault();
-            });
+          uniquifyReferences(section);
+          section.addEventListener('submit', event => event.preventDefault());
           matrix.append(section);
         }
       }
