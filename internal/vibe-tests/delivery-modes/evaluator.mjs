@@ -8,6 +8,7 @@ import * as path from 'node:path';
 import {AxeBuilder} from '@axe-core/playwright';
 import {chromium} from 'playwright';
 import {
+  CLAUDE_SAFE_SETTINGS,
   auditAgentContext,
   createPrivateRunRoot,
   runCommand,
@@ -652,12 +653,6 @@ async function waitForUrl(url, child, logPath) {
 }
 
 async function runBlindJudge({prompt, screenshotPath}) {
-  const privateRun = await createPrivateRunRoot('judge-');
-  const anonymousScreenshot = path.join(
-    privateRun.projectDir,
-    'screenshot.png',
-  );
-  await fsp.copyFile(screenshotPath, anonymousScreenshot);
   const schema = {
     type: 'object',
     properties: {
@@ -687,6 +682,57 @@ Score only visible evidence:
 - success: true only when the requested interface is recognizably complete and has no critical visible failure.
 
 Do not infer implementation details, identify the system, inspect other files, or reward a particular visual style. Return the requested JSON only.`;
+  const attempts = [];
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    attempts.push(
+      await runBlindJudgeAttempt({judgePrompt, schema, screenshotPath}),
+    );
+    const resolved = resolveJudgeAttempts(attempts, attempt === 2);
+    if (resolved) {
+      return resolved;
+    }
+  }
+  throw new Error('Judge retry resolution did not terminate');
+}
+
+export function resolveJudgeAttempts(attempts, exhausted = false) {
+  const last = attempts.at(-1);
+  if (!last) {
+    throw new Error('Judge resolution requires at least one attempt');
+  }
+  if (!last.contextAudit || last.contextAudit.passed) {
+    return {
+      ...last,
+      rejudged: attempts.length > 1,
+      attempts: attempts.map(judgeAttemptReceipt),
+    };
+  }
+  if (!exhausted) {
+    return null;
+  }
+  return {
+    configBlind: true,
+    fileAccessRoot: '/mnt/run/project',
+    promptFulfillment: null,
+    visualQuality: null,
+    success: null,
+    notes: null,
+    failureReasons: [],
+    error: 'Judge context audit failed on both attempts',
+    judgeUnavailable: true,
+    contextAudit: last.contextAudit,
+    rejudged: true,
+    attempts: attempts.map(judgeAttemptReceipt),
+  };
+}
+
+async function runBlindJudgeAttempt({judgePrompt, schema, screenshotPath}) {
+  const privateRun = await createPrivateRunRoot('judge-');
+  const anonymousScreenshot = path.join(
+    privateRun.projectDir,
+    'screenshot.png',
+  );
+  await fsp.copyFile(screenshotPath, anonymousScreenshot);
 
   try {
     const result = await runIsolatedCommand(
@@ -694,6 +740,8 @@ Do not infer implementation details, identify the system, inspect other files, o
       '/usr/local/bin/claude_code/os/claude',
       [
         '--safe-mode',
+        '--settings',
+        CLAUDE_SAFE_SETTINGS,
         '--strict-mcp-config',
         '--mcp-config',
         `${privateRun.sandboxProjectDir}/../empty-mcp.json`,
@@ -744,6 +792,18 @@ Do not infer implementation details, identify the system, inspect other files, o
   } finally {
     await fsp.rm(privateRun.root, {recursive: true, force: true});
   }
+}
+
+function judgeAttemptReceipt(judgment, index) {
+  return {
+    attempt: index + 1,
+    contextAudit: judgment.contextAudit ?? null,
+    promptFulfillment: judgment.promptFulfillment ?? null,
+    visualQuality: judgment.visualQuality ?? null,
+    success: judgment.success ?? null,
+    durationMs: judgment.durationMs ?? null,
+    error: judgment.error ?? null,
+  };
 }
 
 function parseClaudeStructuredOutput(text) {

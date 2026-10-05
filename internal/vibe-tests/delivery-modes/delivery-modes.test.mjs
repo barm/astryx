@@ -16,6 +16,7 @@ import {
   captureAuthoredSources,
   evaluateRun,
   measureAdoptionInDocument,
+  resolveJudgeAttempts,
   scanAuthoredSource,
 } from './evaluator.mjs';
 import {
@@ -27,9 +28,11 @@ import {
 } from './process.mjs';
 import {
   buildVanillaAgentDocs,
+  buildWebComponentsAgentDocs,
   prepareProject,
   reactNoBuildStarter,
   vanillaStarter,
+  webComponentsStarter,
 } from './projects.mjs';
 import {summarize} from './report.mjs';
 
@@ -124,35 +127,130 @@ test('React no-build starter externalizes React for core and theme and exercises
   assert.doesNotMatch(starter, /event\.target\.value/);
 });
 
-test('vanilla has a working starter and HTML-only agent documentation', () => {
-  const spec = getDeliverySpecs().vanilla;
-  const starter = vanillaStarter(spec);
-  assert.match(starter, /<!doctype html>/i);
-  assert.match(starter, /astryx-vanilla\.css/);
-  assert.match(starter, /class="ax-card"/);
+test('build-less configs use current pins and isolated framework onboarding', () => {
+  const specs = getDeliverySpecs();
+  assert.equal(
+    specs.vanilla.vanillaCdnRef,
+    'eb7a056250cf98d7d86342d24f1e0c744852bebb',
+  );
+  assert.equal(
+    specs.vanilla.vanillaTarballUrl,
+    'https://cdn.jsdelivr.net/gh/facebook/astryx@9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz',
+  );
+  assert.equal(specs['web-components'].outputFile, 'index.html');
+  assert.equal(
+    specs['web-components'].vanillaTarballUrl,
+    specs.vanilla.vanillaTarballUrl,
+  );
 
   const publicDocs = `# Astryx
-## Path A — Build-less HTML
-### A1. Page setup
-Pinned ${spec.vanillaCdnRef}.
+## Step 1 — Choose a path
+Common path selection.
+## Path A1 — Build-less HTML
+### A1.1. Page setup
+Pinned ${specs.vanilla.vanillaCdnRef}.
 **Option 1 — install the preview CLI (Node 22.13+):**
 \`\`\`sh
-npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@894a494af1323add3d837c7a7c9e308943231d5a/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
+npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
 
-astryx component --list --html
+astryx component --list --framework html
 \`\`\`
 **Fallback — clone the pinned source commit:**
 \`\`\`sh
 git clone https://github.com/facebook/astryx.git astryx
 \`\`\`
 **Option 2 — direct file URLs:**
-### A4. Rules for Path A
-- HTML only.
+### A1.4. Rules for Path A1
+- No React.
+## Path A2 — Build-less web components
+### A2.1. Page setup
+<script src="https://cdn.jsdelivr.net/gh/facebook/astryx@${specs.vanilla.vanillaCdnRef}/packages/vanilla/dist/astryx-elements.classic.js"></script>
+### A2.2. Start from a web-component template, then inspect components
+astryx component --list --framework web-components
+The same nine template IDs listed in Path A1 are available.
+### A2.3. Rules for Path A2
+- Attributes mirror React prop names in kebab-case.
 ## Path B — React with a dev server
 React instructions.`;
-  const docs = buildVanillaAgentDocs(publicDocs, spec);
-  assert.match(docs, /npx astryx component --list --html/);
-  assert.doesNotMatch(docs, /Path A|Path B|git clone|npm install -g|React/);
+
+  const vanillaStarterSource = vanillaStarter(specs.vanilla);
+  assert.match(vanillaStarterSource, /<!doctype html>/i);
+  assert.match(vanillaStarterSource, /astryx-vanilla\.css/);
+  assert.match(vanillaStarterSource, /class="ax-card"/);
+  const vanillaDocs = buildVanillaAgentDocs(publicDocs, specs.vanilla);
+  assert.match(vanillaDocs, /npx astryx component --list --framework html/);
+  assert.doesNotMatch(
+    vanillaDocs,
+    /Path A1|Path A2|Path B|git clone|npm install -g|web components/,
+  );
+
+  const elementStarter = webComponentsStarter(specs['web-components']);
+  assert.match(elementStarter, /astryx-elements\.classic\.js/);
+  assert.match(elementStarter, /<ax-stack gap="4">/);
+  assert.match(elementStarter, /<ax-card>/);
+  assert.match(elementStarter, /<ax-heading slot="header" level="1">/);
+  assert.match(elementStarter, /<ax-text as="p" type="supporting"/);
+  const elementDocs = buildWebComponentsAgentDocs(
+    publicDocs,
+    specs['web-components'],
+  );
+  assert.match(
+    elementDocs,
+    /npx astryx component --list --framework web-components/,
+  );
+  assert.doesNotMatch(
+    elementDocs,
+    /Path A1|Path A2|Path B|git clone|npm install -g|--framework html/,
+  );
+});
+
+test('build-less starters render the same BEM class set without warnings', async () => {
+  const specs = getDeliverySpecs();
+  const browser = await chromium.launch({headless: true});
+  try {
+    const receipts = [];
+    for (const [name, source] of [
+      ['vanilla', vanillaStarter(specs.vanilla)],
+      ['web-components', webComponentsStarter(specs['web-components'])],
+    ]) {
+      const page = await browser.newPage({viewport: {width: 800, height: 600}});
+      const messages = [];
+      page.on('console', message => {
+        if (message.type() === 'warning' || message.type() === 'error') {
+          messages.push(`${message.type()}: ${message.text()}`);
+        }
+      });
+      page.on('pageerror', error =>
+        messages.push(`pageerror: ${error.message}`),
+      );
+      await page.setContent(source, {waitUntil: 'networkidle'});
+      if (name === 'web-components') {
+        await page.evaluate(() => customElements.whenDefined('ax-card'));
+      }
+      await page.waitForTimeout(100);
+      receipts.push({
+        name,
+        messages,
+        classes: await page.evaluate(() =>
+          [
+            ...new Set(
+              [...document.querySelectorAll('[class]')].flatMap(element =>
+                [...element.classList].filter(className =>
+                  className.startsWith('ax-'),
+                ),
+              ),
+            ),
+          ].sort(),
+        ),
+      });
+      await page.close();
+    }
+    assert.deepEqual(receipts[0].messages, []);
+    assert.deepEqual(receipts[1].messages, []);
+    assert.deepEqual(receipts[1].classes, receipts[0].classes);
+  } finally {
+    await browser.close();
+  }
 });
 
 test('adoption metric gives equivalent React and vanilla fixtures and raw HTML near zero', async () => {
@@ -191,6 +289,143 @@ test('adoption metric gives equivalent React and vanilla fixtures and raw HTML n
       scores[1].eligibleElementCount,
     );
     assert.equal(scores[0].eligibleElementCount, 6);
+  } finally {
+    await browser.close();
+  }
+});
+
+test('web-component adoption uses rendered light DOM without host credit', async () => {
+  const root = await fs.promises.mkdtemp(
+    path.join(os.tmpdir(), 'delivery-elements-fixtures-'),
+  );
+  temporaryDirectories.push(root);
+  const specs = getDeliverySpecs();
+  const spec = specs['web-components'];
+  const sourceRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../../packages/vanilla',
+  );
+  const componentPairs = [
+    ['Button.html', 'primary', 'primary'],
+    ['Card.html', 'default', 'default'],
+    ['CheckboxInput.html', 'default', 'default'],
+    ['Collapsible.html', 'default', 'default'],
+    ['Dialog.html', 'confirmation', 'open-and-close'],
+    ['DropdownMenu.html', 'actions', 'actions'],
+    ['Selector.html', 'default', 'default'],
+    ['SideNav.html', 'default', 'default'],
+    ['Switch.html', 'default', 'default'],
+    ['TabList.html', 'panels', 'panels'],
+    ['TextInput.html', 'default', 'default'],
+    ['TopNav.html', 'default', 'default'],
+  ];
+  const vanillaFragments = [];
+  const elementFragments = [];
+  for (const [file, vanillaVariant, elementVariant] of componentPairs) {
+    vanillaFragments.push(
+      await readMarkupVariant(
+        path.join(sourceRoot, 'markup'),
+        file,
+        vanillaVariant,
+      ),
+    );
+    elementFragments.push(
+      await readMarkupVariant(
+        path.join(sourceRoot, 'elements-markup'),
+        file,
+        elementVariant,
+      ),
+    );
+  }
+  const parityRawControls =
+    '<button>Raw action</button><input aria-label="Raw input" />';
+  const rawControls =
+    '<button>Raw one</button><button>Raw two</button><input aria-label="Raw input" /><a href="#raw">Raw link</a><h2>Raw heading</h2>';
+  const vanillaDir = path.join(root, 'vanilla');
+  const elementsDir = path.join(root, 'elements');
+  await Promise.all(
+    [vanillaDir, elementsDir].map(directory =>
+      fs.promises.mkdir(directory, {recursive: true}),
+    ),
+  );
+  await Promise.all([
+    fs.promises.writeFile(
+      path.join(vanillaDir, 'index.html'),
+      buildPinnedBuildlessPage(
+        specs.vanilla,
+        `${vanillaFragments.join('\n')}\n${parityRawControls}`,
+        false,
+      ),
+    ),
+    fs.promises.writeFile(
+      path.join(elementsDir, 'index.html'),
+      buildPinnedBuildlessPage(
+        spec,
+        `${elementFragments.join('\n')}\n${parityRawControls}`,
+        true,
+      ),
+    ),
+  ]);
+  const [vanilla, elements] = await Promise.all([
+    evaluateRun({
+      config: 'vanilla',
+      projectDir: vanillaDir,
+      prompt: {prompt: 'Render equivalent components.'},
+      screenshotPath: path.join(root, 'vanilla.png'),
+      baselineSources: {},
+      skipJudge: true,
+    }),
+    evaluateRun({
+      config: 'web-components',
+      projectDir: elementsDir,
+      prompt: {prompt: 'Render equivalent components.'},
+      screenshotPath: path.join(root, 'elements.png'),
+      baselineSources: {},
+      skipJudge: true,
+    }),
+  ]);
+  assert.equal(vanilla.render.passed, true, JSON.stringify(vanilla.render));
+  assert.equal(elements.render.passed, true, JSON.stringify(elements.render));
+  assert.ok(
+    Math.abs(vanilla.render.adoptionShare - elements.render.adoptionShare) <=
+      0.05,
+    `vanilla=${vanilla.render.adoptionShare}, elements=${elements.render.adoptionShare}`,
+  );
+
+  const browser = await chromium.launch({headless: true});
+  try {
+    const measure = async body => {
+      const page = await browser.newPage({viewport: {width: 800, height: 600}});
+      await page.setContent(buildPinnedBuildlessPage(spec, body, true), {
+        waitUntil: 'networkidle',
+      });
+      await page.evaluate(() => customElements.whenDefined('ax-text'));
+      await page.waitForTimeout(100);
+      const score = await page.evaluate(measureAdoptionInDocument, true);
+      await page.close();
+      return score;
+    };
+
+    const invented = await measure(
+      `<ax-trial-banner>${rawControls}</ax-trial-banner>`,
+    );
+    assert.equal(invented.eligibleElementCount, 5);
+    assert.equal(invented.adoptedElementCount, 0);
+
+    const themed = await measure(`<ax-theme>${rawControls}</ax-theme>`);
+    assert.equal(themed.eligibleElementCount, 5);
+    assert.equal(themed.adoptedElementCount, 0);
+    const cardWrapped = await measure(
+      `<ax-theme><ax-card>${rawControls}</ax-card></ax-theme>`,
+    );
+    assert.ok(cardWrapped.eligibleElementCount >= 5);
+
+    const raw = await measure(rawControls);
+    const padded = await measure(
+      `<ax-text>Padding text</ax-text><ax-badge>Padding badge</ax-badge><ax-divider></ax-divider>${rawControls}`,
+    );
+    assert.equal(padded.eligibleElementCount, raw.eligibleElementCount);
+    assert.equal(padded.adoptedElementCount, raw.adoptedElementCount);
   } finally {
     await browser.close();
   }
@@ -287,6 +522,24 @@ export function App() {
   }
   assert.equal(react.typecheck.errorCount, 0, react.typecheck.stderr);
 });
+
+function buildPinnedBuildlessPage(spec, body, elements) {
+  const assetRoot = `https://cdn.jsdelivr.net/gh/facebook/astryx@${spec.vanillaCdnRef}/packages/vanilla/dist`;
+  return `<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+  <link rel="stylesheet" href="${assetRoot}/astryx-vanilla.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+  <script defer src="${assetRoot}/astryx-vanilla.js"></script>
+  ${elements ? `<script defer src="${assetRoot}/astryx-elements.classic.js"></script>` : ''}
+</head>
+<body>${body}</body>
+</html>
+`;
+}
 
 async function readMarkupVariant(root, file, variant) {
   const source = await fs.promises.readFile(path.join(root, file), 'utf8');
@@ -392,28 +645,65 @@ test('transcript audit flags every sensitive host-path command', () => {
   ]);
 });
 
-test('context audit rejects external Claude context and accepts bare init', () => {
-  const clean = JSON.stringify({
+test('context audit enforces the exact Claude 2.1.289 init policy', () => {
+  const cleanInit = {
     type: 'system',
     subtype: 'init',
     cwd: '/mnt/run/project',
+    claude_code_version: '2.1.289',
     tools: ['Bash', 'Read', 'Write', 'Edit'],
+    agents: ['claude', 'Explore', 'general-purpose', 'Plan'],
+    skills: [],
+    slash_commands: [],
     mcp_servers: [],
     plugins: [
       {
+        name: 'cc-plugin-sec-default',
+        path: 'builtin',
+        source: 'cc-plugin-sec-default@builtin',
+      },
+      {
         name: 'cc-plugin-agents-md',
+        path: 'builtin',
         source: 'cc-plugin-agents-md@builtin',
       },
     ],
+  };
+  const clean = auditAgentContext('claude', JSON.stringify(cleanInit), '');
+  assert.equal(clean.passed, true, JSON.stringify(clean.violations));
+  assert.equal(clean.runnerVersion, '2.1.289');
+  assert.equal(clean.plugins.length, 2);
+
+  const pluginAuthoring = structuredClone(cleanInit);
+  pluginAuthoring.plugins.push({
+    name: 'cc-plugin-plugin-authoring',
+    path: 'builtin',
+    source: 'cc-plugin-plugin-authoring@builtin',
   });
-  assert.equal(auditAgentContext('claude', clean, '').passed, true);
-  const contaminated = JSON.stringify({
-    type: 'system',
-    subtype: 'init',
+  assert.equal(
+    auditAgentContext('claude', JSON.stringify(pluginAuthoring), '').passed,
+    false,
+  );
+  const unknownVersion = {...cleanInit, claude_code_version: '2.1.290'};
+  assert.equal(
+    auditAgentContext('claude', JSON.stringify(unknownVersion), '').passed,
+    false,
+  );
+  const contaminated = {
+    ...cleanInit,
+    skills: ['plugin-authoring'],
+    slash_commands: ['plugin-authoring'],
     mcp_servers: [{name: 'meta'}],
-    plugins: [{name: 'forbidden-external', source: 'remote-registry'}],
-  });
-  assert.equal(auditAgentContext('claude', contaminated, '').passed, false);
+    agents: [...cleanInit.agents, 'unexpected'],
+  };
+  const contaminatedTranscript = [
+    JSON.stringify(contaminated),
+    JSON.stringify({type: 'system', subtype: 'hook_started'}),
+  ].join('\n');
+  assert.equal(
+    auditAgentContext('claude', contaminatedTranscript, '').passed,
+    false,
+  );
 
   const muse = auditAgentContext(
     'muse',
@@ -425,6 +715,34 @@ test('context audit rejects external Claude context and accepts bare init', () =
   );
   assert.equal(muse.passed, true);
   assert.equal(muse.builtInReminderEvents, 1);
+});
+
+test('failed judge audits trigger one retry and never retain unsafe scores', () => {
+  const failed = {
+    promptFulfillment: 99,
+    visualQuality: 99,
+    success: true,
+    contextAudit: {passed: false, violations: ['unsafe context']},
+  };
+  assert.equal(resolveJudgeAttempts([failed]), null);
+
+  const passed = {
+    promptFulfillment: 72,
+    visualQuality: 81,
+    success: true,
+    contextAudit: {passed: true, violations: []},
+  };
+  const recovered = resolveJudgeAttempts([failed, passed], true);
+  assert.equal(recovered.rejudged, true);
+  assert.equal(recovered.promptFulfillment, 72);
+  assert.equal(recovered.attempts.length, 2);
+
+  const unavailable = resolveJudgeAttempts([failed, failed], true);
+  assert.equal(unavailable.judgeUnavailable, true);
+  assert.equal(unavailable.promptFulfillment, null);
+  assert.equal(unavailable.visualQuality, null);
+  assert.equal(unavailable.success, null);
+  assert.equal(unavailable.attempts.length, 2);
 });
 
 test('private run roots use mode 0700', async () => {

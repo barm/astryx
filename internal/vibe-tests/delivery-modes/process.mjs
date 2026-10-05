@@ -9,6 +9,27 @@ import * as path from 'node:path';
 const DEFAULT_CAPTURE_LIMIT = 20 * 1024 * 1024;
 export const SANDBOX_ROOT = '/mnt/run';
 export const SANDBOX_PROJECT = `${SANDBOX_ROOT}/project`;
+export const CLAUDE_SAFE_SETTINGS = JSON.stringify({
+  enabledPlugins: {'cc-plugin-plugin-authoring@builtin': false},
+});
+
+const CLAUDE_CONTEXT_POLICY = {
+  '2.1.289': {
+    agents: ['claude', 'Explore', 'general-purpose', 'Plan'],
+    plugins: [
+      {
+        name: 'cc-plugin-agents-md',
+        path: 'builtin',
+        source: 'cc-plugin-agents-md@builtin',
+      },
+      {
+        name: 'cc-plugin-sec-default',
+        path: 'builtin',
+        source: 'cc-plugin-sec-default@builtin',
+      },
+    ],
+  },
+};
 
 const MOUNT_NAMESPACE_SCRIPT = `set -eu
 uid="$1"
@@ -377,6 +398,20 @@ export function countAstryxInvocations(command) {
   return (command.match(pattern) ?? []).length;
 }
 
+function sameStringSet(actual, expected) {
+  const sortedActual = [...actual].sort();
+  const sortedExpected = [...expected].sort();
+  return (
+    sortedActual.length === sortedExpected.length &&
+    sortedActual.every((value, index) => value === sortedExpected[index])
+  );
+}
+
+function samePluginSet(actual, expected) {
+  const key = plugin => `${plugin.name}\0${plugin.path}\0${plugin.source}`;
+  return sameStringSet(actual.map(key), expected.map(key));
+}
+
 export function auditAgentContext(agent, stdout, stderr) {
   const records = [];
   for (const line of stdout.split('\n')) {
@@ -394,18 +429,42 @@ export function auditAgentContext(agent, stdout, stderr) {
     const hooks = records.filter(
       value => value.type === 'system' && value.subtype?.startsWith('hook_'),
     );
-    const externalPlugins = (init?.plugins ?? []).filter(
-      plugin => plugin.source !== 'cc-plugin-agents-md@builtin',
-    );
+    const version = init?.claude_code_version ?? null;
+    const policy = version ? CLAUDE_CONTEXT_POLICY[version] : null;
+    const plugins = init?.plugins ?? [];
+    const pluginPolicyPassed =
+      policy != null && samePluginSet(plugins, policy.plugins);
+    const agents = init?.agents ?? [];
+    const skills = init?.skills ?? [];
+    const slashCommands = init?.slash_commands ?? [];
+    const mcpServers = init?.mcp_servers ?? [];
     const violations = [];
     if (!init) {
       violations.push('missing Claude init event');
     }
-    if ((init?.mcp_servers ?? []).length > 0) {
-      violations.push('Claude loaded MCP servers');
+    if (!policy) {
+      violations.push(`unsupported Claude context policy version: ${version}`);
     }
-    if (externalPlugins.length > 0) {
-      violations.push('Claude loaded external plugins');
+    if (!pluginPolicyPassed) {
+      violations.push(
+        'Claude plugin set did not match the exact built-in allowlist',
+      );
+    }
+    if (
+      !Array.isArray(init?.agents) ||
+      !policy ||
+      !sameStringSet(agents, policy.agents)
+    ) {
+      violations.push('Claude agent set did not match the standard allowlist');
+    }
+    if (!Array.isArray(init?.skills) || skills.length > 0) {
+      violations.push('Claude skills were missing or non-empty');
+    }
+    if (!Array.isArray(init?.slash_commands) || slashCommands.length > 0) {
+      violations.push('Claude slash commands were missing or non-empty');
+    }
+    if (!Array.isArray(init?.mcp_servers) || mcpServers.length > 0) {
+      violations.push('Claude MCP servers were missing or non-empty');
     }
     if (hooks.length > 0) {
       violations.push('Claude ran hooks');
@@ -413,17 +472,23 @@ export function auditAgentContext(agent, stdout, stderr) {
     return {
       passed: violations.length === 0,
       violations,
-      plugins: init?.plugins ?? [],
-      mcpServers: init?.mcp_servers ?? [],
+      plugins,
+      agents,
+      skills,
+      slashCommands,
+      mcpServers,
       hookEvents: hooks.length,
       tools: init?.tools ?? [],
       cwd: init?.cwd ?? null,
-      runnerVersion: init?.claude_code_version ?? null,
+      runnerVersion: version,
       launcherPluginInstallAttempts: (stderr.match(/^Installing /gm) ?? [])
         .length,
       launcherPluginInstallBlocked:
-        (stderr.match(/^Installing /gm) ?? []).length > 0 &&
-        externalPlugins.length === 0,
+        (stderr.match(/^Installing /gm) ?? []).length > 0 && pluginPolicyPassed,
+      knownAsymmetry:
+        'Claude Code 2.1.289 seats cc-plugin-sec-default from host managed settings. It has no components, adds no context, cannot be disabled per run, and is identical across configs and runs.',
+      safeModeProjectInstructions:
+        'Safe mode suppresses automatic project-instruction loading; Claude reads AGENTS.md with a tool call, while Muse auto-loads it. This is identical across configs.',
       pathPolicy:
         'private bin + /usr/bin + /bin; internal executable roots and sensitive host paths are sandbox-blocked',
     };

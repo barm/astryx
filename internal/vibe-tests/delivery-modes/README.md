@@ -1,10 +1,11 @@
 # Delivery-mode vibe tests
 
-This harness compares Astryx across three public consumer delivery modes while holding the prompt battery, agents, and evaluator constant:
+This harness compares Astryx across four public consumer delivery modes while holding the prompt battery, agents, and evaluator constant:
 
 - `react-build`: Vite, React 19, npm packages, and generated agent docs.
 - `react-nobuild`: one `index.html` using React 19, htm, and Astryx 0.6.5 from public CDNs.
 - `vanilla`: build-less HTML with the commit-pinned Vanilla Astryx assets, a minimal working starter, and a locally installed preview CLI.
+- `web-components`: build-less HTML using commit-pinned light-DOM `ax-*` custom elements, an equivalent starter, and the same locally installed preview CLI.
 
 Each matrix cell starts a context-free agent in a unique private root. Generated source, transcripts, screenshots, and reports are never written to tracked paths.
 
@@ -14,7 +15,7 @@ The Linux host must support passwordless `sudo` for constructing mount namespace
 
 ```sh
 pnpm -F @astryxdesign/vibe-tests delivery:run \
-  --configs react-build,react-nobuild,vanilla \
+  --configs react-build,react-nobuild,vanilla,web-components \
   --agents claude,muse \
   --sample 15 \
   --seed 20261003 \
@@ -33,7 +34,7 @@ The shared evaluator then:
 1. runs `vite build` for `react-build` and separately records `tsc --noEmit` diagnostics as a non-gating quality metric;
 2. serves the output and checks for a non-blank render, browser console errors, and page errors;
 3. captures a full-page screenshot;
-4. measures visible semantic targets using explicit React and Vanilla class taxonomies: component classes and their parts confer adoption, while layout-only families and parts never do;
+4. measures visible semantic targets using explicit React and Vanilla class taxonomies; web components are scored from their upgraded light-DOM `ax-*` BEM markup, and custom-element hosts are never targets; component classes and their parts confer adoption, while layout-only families and parts never do;
 5. scans only agent-authored changes after removing HTML/CSS/JS comments; inline styles, raw hex, and raw pixel values are hard-coded metrics, while custom-property and theme definitions are reported separately;
 6. runs axe-core;
 7. asks a headless Claude judge to score prompt fulfillment and visual quality from an anonymized screenshot and the task prompt only.
@@ -50,7 +51,7 @@ Every agent and judge runs in its own mode-`0700` root with a unique project, `H
 
 The isolated `PATH` is `/mnt/run/bin:/usr/bin:/bin`, with Node, Git, and the identical screenshot helper added to the private bin. The startup probe must prove that privilege escalation, the required absolute-path internal CLI probes, `/data/users/*`, an exact sibling path, `/var/tmp`, and `/dev/shm` are inaccessible before any matrix cell runs. A post-run transcript audit context-fails and reports every cell whose tool commands touch `/proc`, `/usr/local/bin`, `/var/facebook`, or `/data`.
 
-- Claude runs in safe mode with strict empty MCP configuration, no session persistence, no slash commands, and an explicit tool allowlist. Its init event must report no MCP servers, external plugins, or hooks. A host wrapper may print plugin-install attempts before Claude starts; the private `PATH` blocks the installer, and the init-event audit—not wrapper intent—proves that nothing loaded.
+- Claude runs in safe mode with strict empty MCP configuration, no session persistence, no slash commands, an explicit tool allowlist, and `cc-plugin-plugin-authoring@builtin` disabled through per-run settings. Safe mode intentionally suppresses automatic project-instruction loading, so Claude reads `AGENTS.md` with a tool call while Muse auto-loads it; this cross-agent cost is identical across configs. Claude Code 2.1.289 still seats `cc-plugin-sec-default@builtin` from host managed settings; it has no components, adds no context, cannot be disabled per run, and is identical across configs and runs. The exact audited plugin allowlist is `cc-plugin-agents-md@builtin` plus `cc-plugin-sec-default@builtin`; the init event must also report empty skills, slash commands and MCP servers, zero hook events, and exactly the standard `claude`, `Explore`, `general-purpose`, and `Plan` agents. Unknown runner-version/plugin combinations fail closed. A failed judge context audit discards its scores, triggers one fresh re-judge, and records both attempts; two failed audits leave judge scores null.
 - Muse runs the same `native-basic` preset for every config with plugins gated off, foreign personal context disabled, web tools disabled, no session log, and `--disable-muse-llm-rules`. Muse still emits built-in skill and final-verification reminder lifecycle records; this is reported as a runner-wide asymmetry, with no external skill content loaded. Any external plugin install or MCP event fails the run.
 
 ## Fairness review
@@ -63,11 +64,11 @@ pnpm -F @astryxdesign/vibe-tests delivery:run --sample 3 --dry-run
 
 The task text and output contract are shared. Only the factual delivery-environment description and required output filename differ. `expectedComponents` and path-selection coaching are never included.
 
-Vanilla's generated `AGENTS.md` is intentionally HTML-only: pinned page setup, templates, components, rules, and use of the locally installed CLI through `npx astryx`. It contains no React path, source-clone fallback, or global-install instructions.
+Vanilla's generated `AGENTS.md` is intentionally HTML-only: pinned page setup, templates, components, rules, and use of the locally installed CLI through `npx astryx`. It contains no web-components or React path, source-clone fallback, or global-install instructions. The `web-components` config receives only the pinned Path A2 setup, templates, component rules, and `--framework web-components` commands; it never receives Path A1 or Path B selection coaching.
 
 `react-nobuild` retains a genuine product limitation rather than a harness workaround: the published CLI cannot show component docs when `@astryxdesign/core` is loaded only from a CDN and is not installed locally. Reports label this finding explicitly.
 
-The adoption regression test builds a real Vite React consumer and pairs it with real variants read from `packages/vanilla/markup`. Its TopNav, Banner, Card, TextInput, and Layout/Stack raw-button targets must score within five percentage points, and the raw button inside a layout wrapper must remain unadopted in both systems.
+The adoption regression tests cover real React/Vanilla output plus pinned web-component upgrades. Real React and Vanilla TopNav, Banner, Card, TextInput and Layout/Stack fixtures must score within five percentage points, and the raw button inside a layout wrapper must remain unadopted. The web-component cases require equivalent generated `ax-*` light DOM to stay within five points of Vanilla, invented `ax-*` tags to earn no credit, Theme/Card hosts not to hide hand-rolled controls, and non-semantic Text/Badge/Divider hosts not to pad either the denominator or score.
 
 ## Pins
 

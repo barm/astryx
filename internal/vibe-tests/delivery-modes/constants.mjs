@@ -5,11 +5,16 @@ import {createHash} from 'node:crypto';
 export const DEFAULT_REACT_VERSION = '0.6.5';
 export const DEFAULT_REACT_RUNTIME_VERSION = '19.2.7';
 export const DEFAULT_VANILLA_CDN_REF =
-  '3a3219da36ad6662fc59fda159f9fe2aa422db0e';
+  'eb7a056250cf98d7d86342d24f1e0c744852bebb';
 export const DEFAULT_VANILLA_TARBALL_URL =
-  'https://cdn.jsdelivr.net/gh/facebook/astryx@58d9d777b33e79bcc3d0fff12be18f0718bc4e4f/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz';
+  'https://cdn.jsdelivr.net/gh/facebook/astryx@9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz';
 
-export const CONFIG_NAMES = ['react-build', 'react-nobuild', 'vanilla'];
+export const CONFIG_NAMES = [
+  'react-build',
+  'react-nobuild',
+  'vanilla',
+  'web-components',
+];
 export const AGENT_NAMES = ['claude', 'muse'];
 
 export function getDeliverySpecs(options = {}) {
@@ -36,6 +41,14 @@ export function getDeliverySpecs(options = {}) {
       outputFile: 'index.html',
       description:
         'a build-less static HTML project with the Vanilla Astryx preview CLI and its agent documentation installed from a pinned public tarball',
+      vanillaCdnRef,
+      vanillaTarballUrl,
+    },
+    'web-components': {
+      name: 'web-components',
+      outputFile: 'index.html',
+      description:
+        'a build-less static HTML project using light-DOM Astryx web components with the Vanilla Astryx preview CLI and its agent documentation installed from a pinned public tarball',
       vanillaCdnRef,
       vanillaTarballUrl,
     },

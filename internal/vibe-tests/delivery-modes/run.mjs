@@ -19,6 +19,7 @@ import {
 } from './constants.mjs';
 import {captureAuthoredSources, evaluateRun} from './evaluator.mjs';
 import {
+  CLAUDE_SAFE_SETTINGS,
   SANDBOX_PROJECT,
   auditAgentContext,
   auditTranscriptCommands,
@@ -91,6 +92,26 @@ async function main() {
     runnerLimits: {
       claude: 'no model-step cap; wall-clock timeout only',
       muse: `${MUSE_MAX_MODEL_STEPS} model steps plus the same wall-clock timeout`,
+    },
+    runnerContext: {
+      claude: {
+        safeMode:
+          'kept to block managed Meta context; AGENTS.md is read by a tool call instead of auto-loaded',
+        managedPlugin:
+          'Claude Code 2.1.289 seats cc-plugin-sec-default from host managed settings; it has no components, adds no context, cannot be disabled per run, and is identical across configs and runs',
+        disabledPlugin: 'cc-plugin-plugin-authoring@builtin',
+        allowedPlugins: [
+          'cc-plugin-agents-md@builtin',
+          'cc-plugin-sec-default@builtin',
+        ],
+        requiredEmptyContext: ['skills', 'slash_commands', 'mcp_servers'],
+        requiredAgents: ['claude', 'Explore', 'general-purpose', 'Plan'],
+      },
+      muse: {
+        projectInstructions: 'AGENTS.md auto-loads',
+        externalContext:
+          'plugins, foreign context, MCP, external skill content, and llm-rules disabled',
+      },
     },
     isolation: {
       privateRootMode: '0700',
@@ -205,6 +226,7 @@ function assertCompatibleManifest(prior, current) {
     'vanillaTarballUrl',
     'concurrency',
     'agentTimeoutMinutes',
+    'runnerContext',
   ];
   for (const key of keys) {
     if (JSON.stringify(prior[key]) !== JSON.stringify(current[key])) {
@@ -386,6 +408,8 @@ async function runAgent({agent, privateRun, taskPrompt, timeoutMs}) {
     command = '/usr/local/bin/claude_code/os/claude';
     args = [
       '--safe-mode',
+      '--settings',
+      CLAUDE_SAFE_SETTINGS,
       '--strict-mcp-config',
       '--mcp-config',
       '/mnt/run/empty-mcp.json',
@@ -776,7 +800,7 @@ function printHelp() {
   console.log(`Usage: pnpm -F @astryxdesign/vibe-tests delivery:run [options]
 
 Options:
-  --configs <names>              react-build,react-nobuild,vanilla
+  --configs <names>              react-build,react-nobuild,vanilla,web-components
   --agents <names>               claude,muse
   --sample <n>                   category-stratified sample
   --seed <value>                 stable sample order; recorded in the manifest
