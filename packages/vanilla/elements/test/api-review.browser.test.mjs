@@ -30,6 +30,10 @@ const scripts = {
 };
 const body = `
   <form id="form">
+    <ax-checkbox-input id="checkbox-on" label="Checked" value></ax-checkbox-input>
+    <ax-checkbox-input id="checkbox-off" label="Unchecked"></ax-checkbox-input>
+    <ax-switch id="switch-on" label="Checked" value></ax-switch>
+    <ax-switch id="switch-off" label="Unchecked"></ax-switch>
     <ax-radio-list id="radio" label="Plan" value="a">
       <label><input type="radio" value="a" />Alpha</label>
       <label><input type="radio" value="b" />Beta</label>
@@ -44,6 +48,7 @@ const body = `
     <button type="button" value="second">Second</button>
   </ax-dropdown-menu>
   <ax-tooltip id="tooltip" content="Helpful context" delay="0"><button type="button">Help</button></ax-tooltip>
+  <ax-tooltip id="disabled-tooltip" content="Disabled context" delay="0" is-enabled="false"><button type="button">Disabled help</button></ax-tooltip>
   <ax-hover-card id="hover" content="Profile details" delay="0" hide-delay="0"><button type="button">Profile</button></ax-hover-card>
   <ax-toast id="toast"><span slot="body">Saved changes</span></ax-toast>
   <ax-lightbox id="lightbox" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Example"></ax-lightbox>
@@ -305,6 +310,48 @@ test('WC2a review regressions pass in every bundle load order', async t => {
         {isOpen: false},
       ]);
 
+      const binarySelectors = [
+        '#checkbox-on',
+        '#checkbox-off',
+        '#switch-on',
+        '#switch-off',
+      ];
+      await page.evaluate(selectors => {
+        for (const selector of selectors) {
+          const host = document.querySelector(selector);
+          host.querySelector('input').click();
+          host.setAttribute('status', 'success');
+        }
+      }, binarySelectors);
+      await settle(page);
+      assert.deepEqual(
+        await Promise.all(
+          binarySelectors.map(selector =>
+            page.locator(`${selector} input`).isChecked(),
+          ),
+        ),
+        [false, true, false, true],
+        `${mode}: binary controls preserve the changed live state through a rerender`,
+      );
+      await page.locator('#form').evaluate(form => form.reset());
+      await settle(page);
+      assert.deepEqual(
+        await Promise.all(
+          binarySelectors.map(selector =>
+            page.locator(`${selector} input`).isChecked(),
+          ),
+        ),
+        [true, false, true, false],
+        `${mode}: form reset restores each binary control's initial state`,
+      );
+      assert.deepEqual(
+        await page
+          .locator(binarySelectors.join(','))
+          .evaluateAll(hosts => hosts.map(host => host.hasAttribute('value'))),
+        [true, false, true, false],
+        `${mode}: reset state reflects back to each host`,
+      );
+
       await page.locator('#tooltip button').hover();
       await settle(page);
       assert.equal(
@@ -315,6 +362,36 @@ test('WC2a review regressions pass in every bundle load order', async t => {
       );
       await page.mouse.move(0, 0);
       await settle(page);
+
+      await page.locator('#disabled-tooltip').evaluate(host => {
+        window.__disabledTooltipOpenChanges = [];
+        host.addEventListener('astryx:open-change', event => {
+          window.__disabledTooltipOpenChanges.push(event.detail);
+        });
+        host.show();
+        host.close();
+        const trigger = host.querySelector('button');
+        trigger.dispatchEvent(
+          new PointerEvent('pointerenter', {bubbles: true}),
+        );
+        trigger.dispatchEvent(
+          new PointerEvent('pointerleave', {bubbles: true}),
+        );
+        trigger.focus();
+        trigger.blur();
+      });
+      await settle(page);
+      assert.deepEqual(
+        await page.evaluate(() => window.__disabledTooltipOpenChanges),
+        [],
+        `${mode}: disabled Tooltip emits no open-change events`,
+      );
+      assert.equal(
+        await page
+          .locator('#disabled-tooltip [role="tooltip"]')
+          .evaluate(node => node.hidden),
+        true,
+      );
 
       await page.locator('#hover button').focus();
       await settle(page);

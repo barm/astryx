@@ -9,13 +9,21 @@ const timers = new WeakMap();
 
 function setOpen(host, api, open, emit = false) {
   clearTimeout(timers.get(host));
-  open = Boolean(open && api.read('is-enabled'));
   const surface = api.query('[data-ax-tooltip-content]');
   if (!surface) return;
+  const wasOpen = !surface.hidden;
+  if (!api.read('is-enabled')) {
+    surface.hidden = true;
+    surface.dataset.axOpen = 'false';
+    api.reflect('is-open', false);
+    return;
+  }
+  open = Boolean(open);
   surface.hidden = !open;
   surface.dataset.axOpen = String(open);
   api.reflect('is-open', open);
-  if (emit) api.dispatch('astryx:open-change', {isOpen: open});
+  if (emit && wasOpen !== open)
+    api.dispatch('astryx:open-change', {isOpen: open});
 }
 
 function scheduleOpen(host, api, immediate = false) {

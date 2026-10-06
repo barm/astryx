@@ -2,7 +2,7 @@
 
 const sizes = ['sm', 'md'];
 const statuses = ['none', 'error', 'warning', 'success'];
-const initialized = new WeakSet();
+const initialChecked = new WeakMap();
 
 export default {
   name: 'CheckboxInput',
@@ -116,10 +116,8 @@ export default {
     afterRender(host, api) {
       const control = api.control;
       const checked = api.read('value');
-      if (!initialized.has(host)) {
-        control.defaultChecked = checked;
-        initialized.add(host);
-      }
+      if (!initialChecked.has(host)) initialChecked.set(host, checked);
+      control.defaultChecked = initialChecked.get(host);
       control.checked = checked;
       control.indeterminate = api.read('is-indeterminate');
       if (control.indeterminate) control.setAttribute('aria-checked', 'mixed');

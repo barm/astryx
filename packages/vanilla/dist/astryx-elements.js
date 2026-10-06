@@ -329,6 +329,16 @@ var Banner_element_default = {
 };
 
 // elements/src/Breadcrumbs.element.mjs
+function preserveWrappedItems(host, list) {
+  const authorNodes = [...list.childNodes];
+  host._authorNodes = authorNodes;
+  host._slotByNode = new WeakMap(authorNodes.map((node) => [node, "default"]));
+  const unmarkGenerated = (node) => {
+    host._generatedNodes.delete(node);
+    for (const child of node.childNodes) unmarkGenerated(child);
+  };
+  for (const node of authorNodes) unmarkGenerated(node);
+}
 var Breadcrumbs_element_default = {
   name: "Breadcrumbs",
   tag: "ax-breadcrumbs",
@@ -375,7 +385,7 @@ var Breadcrumbs_element_default = {
     }
   ],
   hooks: {
-    afterRender(_host, api) {
+    afterRender(host, api) {
       const list = api.query(".ax-breadcrumbs__list");
       if (!list) return;
       api.mutate(() => {
@@ -407,7 +417,9 @@ var Breadcrumbs_element_default = {
             separator.setAttribute("aria-hidden", "true");
             item.prepend(separator);
           }
-          separator.textContent = api.read("separator");
+          const separatorText = api.read("separator");
+          if (separator.textContent !== separatorText)
+            separator.textContent = separatorText;
         }
         if (items2.length && !list.querySelector('[aria-current="page"]')) {
           items2.at(-1).querySelector(
@@ -427,6 +439,7 @@ var Breadcrumbs_element_default = {
           );
         }
       });
+      preserveWrappedItems(host, list);
     }
   },
   render(_host, h) {
@@ -618,7 +631,7 @@ var Card_element_default = {
 // elements/src/CheckboxInput.element.mjs
 var sizes3 = ["sm", "md"];
 var statuses2 = ["none", "error", "warning", "success"];
-var initialized = /* @__PURE__ */ new WeakSet();
+var initialChecked = /* @__PURE__ */ new WeakMap();
 var CheckboxInput_element_default = {
   name: "CheckboxInput",
   tag: "ax-checkbox-input",
@@ -731,10 +744,8 @@ var CheckboxInput_element_default = {
     afterRender(host, api) {
       const control = api.control;
       const checked = api.read("value");
-      if (!initialized.has(host)) {
-        control.defaultChecked = checked;
-        initialized.add(host);
-      }
+      if (!initialChecked.has(host)) initialChecked.set(host, checked);
+      control.defaultChecked = initialChecked.get(host);
       control.checked = checked;
       control.indeterminate = api.read("is-indeterminate");
       if (control.indeterminate) control.setAttribute("aria-checked", "mixed");
@@ -795,7 +806,7 @@ var CheckboxInput_element_default = {
 
 // elements/src/Collapsible.element.mjs
 var positions = ["start", "end"];
-var initialized2 = /* @__PURE__ */ new WeakSet();
+var initialized = /* @__PURE__ */ new WeakSet();
 var Collapsible_element_default = {
   name: "Collapsible",
   tag: "ax-collapsible",
@@ -873,11 +884,11 @@ var Collapsible_element_default = {
     },
     afterRender(host, api) {
       const details = api.query("details");
-      if (!initialized2.has(host)) {
+      if (!initialized.has(host)) {
         const initial = host.hasAttribute("is-open") || host.hasAttribute("open") || host.hasAttribute("default-is-open");
         details.open = initial;
         api.reflect("is-open", initial);
-        initialized2.add(host);
+        initialized.add(host);
       } else {
         details.open = api.read("is-open");
       }
@@ -924,7 +935,7 @@ var Collapsible_element_default = {
 // elements/src/DateInput.element.mjs
 var sizes4 = ["sm", "md", "lg"];
 var statuses3 = ["none", "error", "warning", "success"];
-var initialized3 = /* @__PURE__ */ new WeakSet();
+var initialized2 = /* @__PURE__ */ new WeakSet();
 var DateInput_element_default = {
   name: "DateInput",
   tag: "ax-date-input",
@@ -1015,9 +1026,9 @@ var DateInput_element_default = {
     },
     afterRender(host, api) {
       const value = api.read("value");
-      if (!initialized3.has(host)) {
+      if (!initialized2.has(host)) {
         api.control.defaultValue = value;
-        initialized3.add(host);
+        initialized2.add(host);
       }
       if (api.control.value !== value) api.control.value = value;
     }
@@ -2272,7 +2283,7 @@ var Link_element_default = {
 // elements/src/NumberInput.element.mjs
 var sizes5 = ["sm", "md", "lg"];
 var statuses4 = ["none", "error", "warning", "success"];
-var initialized4 = /* @__PURE__ */ new WeakSet();
+var initialized3 = /* @__PURE__ */ new WeakSet();
 var NumberInput_element_default = {
   name: "NumberInput",
   tag: "ax-number-input",
@@ -2389,9 +2400,9 @@ var NumberInput_element_default = {
     },
     afterRender(host, api) {
       const value = api.read("value");
-      if (!initialized4.has(host)) {
+      if (!initialized3.has(host)) {
         api.control.defaultValue = value;
-        initialized4.add(host);
+        initialized3.add(host);
       }
       if (api.control.value !== value) api.control.value = value;
     }
@@ -3073,7 +3084,7 @@ var Skeleton_element_default = {
 // elements/src/Slider.element.mjs
 var orientations2 = ["horizontal", "vertical"];
 var statuses7 = ["none", "error", "warning", "success"];
-var initialized5 = /* @__PURE__ */ new WeakSet();
+var initialized4 = /* @__PURE__ */ new WeakSet();
 function formatValue(value, suffix) {
   return `${value}${suffix}`;
 }
@@ -3183,9 +3194,9 @@ var Slider_element_default = {
     },
     afterRender(host, api) {
       const value = api.read("value");
-      if (!initialized5.has(host)) {
+      if (!initialized4.has(host)) {
         api.control.defaultValue = value;
-        initialized5.add(host);
+        initialized4.add(host);
       }
       api.control.value = value;
       const output = api.query("output");
@@ -3441,7 +3452,7 @@ var sizes8 = ["sm", "md"];
 var positions2 = ["start", "end"];
 var spacings = ["hug", "spread"];
 var statuses8 = ["none", "error", "warning", "success"];
-var initialized6 = /* @__PURE__ */ new WeakSet();
+var initialChecked2 = /* @__PURE__ */ new WeakMap();
 var Switch_element_default = {
   name: "Switch",
   tag: "ax-switch",
@@ -3548,10 +3559,8 @@ var Switch_element_default = {
     },
     afterRender(host, api) {
       const checked = api.read("value");
-      if (!initialized6.has(host)) {
-        api.control.defaultChecked = checked;
-        initialized6.add(host);
-      }
+      if (!initialChecked2.has(host)) initialChecked2.set(host, checked);
+      api.control.defaultChecked = initialChecked2.get(host);
       api.control.checked = checked;
     }
   },
@@ -4052,7 +4061,7 @@ var Text_element_default = {
 // elements/src/TextArea.element.mjs
 var sizes10 = ["sm", "md", "lg"];
 var statuses9 = ["none", "error", "warning", "success"];
-var initialized7 = /* @__PURE__ */ new WeakSet();
+var initialized5 = /* @__PURE__ */ new WeakSet();
 var TextArea_element_default = {
   name: "TextArea",
   tag: "ax-text-area",
@@ -4162,9 +4171,9 @@ var TextArea_element_default = {
     },
     afterRender(host, api) {
       const value = api.read("value");
-      if (!initialized7.has(host)) {
+      if (!initialized5.has(host)) {
         api.control.defaultValue = value;
-        initialized7.add(host);
+        initialized5.add(host);
       }
       if (api.control.value !== value) api.control.value = value;
     }
@@ -4443,7 +4452,7 @@ var Theme_element_default = {
 // elements/src/TimeInput.element.mjs
 var sizes12 = ["sm", "md", "lg"];
 var statuses11 = ["none", "error", "warning", "success"];
-var initialized8 = /* @__PURE__ */ new WeakSet();
+var initialized6 = /* @__PURE__ */ new WeakSet();
 var TimeInput_element_default = {
   name: "TimeInput",
   tag: "ax-time-input",
@@ -4536,9 +4545,9 @@ var TimeInput_element_default = {
     },
     afterRender(host, api) {
       const value = api.read("value");
-      if (!initialized8.has(host)) {
+      if (!initialized6.has(host)) {
         api.control.defaultValue = value;
-        initialized8.add(host);
+        initialized6.add(host);
       }
       if (api.control.value !== value) api.control.value = value;
     }
@@ -4700,13 +4709,21 @@ var touchTriggers2 = ["auto", "tap", "none"];
 var timers3 = /* @__PURE__ */ new WeakMap();
 function setOpen4(host, api, open, emit = false) {
   clearTimeout(timers3.get(host));
-  open = Boolean(open && api.read("is-enabled"));
   const surface = api.query("[data-ax-tooltip-content]");
   if (!surface) return;
+  const wasOpen = !surface.hidden;
+  if (!api.read("is-enabled")) {
+    surface.hidden = true;
+    surface.dataset.axOpen = "false";
+    api.reflect("is-open", false);
+    return;
+  }
+  open = Boolean(open);
   surface.hidden = !open;
   surface.dataset.axOpen = String(open);
   api.reflect("is-open", open);
-  if (emit) api.dispatch("astryx:open-change", { isOpen: open });
+  if (emit && wasOpen !== open)
+    api.dispatch("astryx:open-change", { isOpen: open });
 }
 function scheduleOpen(host, api, immediate = false) {
   if (!api.read("is-enabled")) return;
@@ -4943,7 +4960,7 @@ var TopNav_element_default = {
 // elements/src/Typeahead.element.mjs
 var sizes13 = ["sm", "md", "lg"];
 var statuses12 = ["none", "error", "warning", "success"];
-var initialized9 = /* @__PURE__ */ new WeakSet();
+var initialized7 = /* @__PURE__ */ new WeakSet();
 var Typeahead_element_default = {
   name: "Typeahead",
   tag: "ax-typeahead",
@@ -5044,9 +5061,9 @@ var Typeahead_element_default = {
     },
     afterRender(host, api) {
       const value = api.read("value");
-      if (!initialized9.has(host)) {
+      if (!initialized7.has(host)) {
         if (host.hasAttribute("value")) api.control.defaultValue = value;
-        initialized9.add(host);
+        initialized7.add(host);
       }
       if (api.control.value !== value) api.control.value = value;
       api.listen(

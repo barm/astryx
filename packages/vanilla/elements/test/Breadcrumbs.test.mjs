@@ -20,17 +20,48 @@ for (const name of [
   globalThis[name] = dom.window[name];
 }
 
-const [{registerElement}, {default: definition}] = await Promise.all([
-  import('../src/runtime.mjs'),
-  import('../src/Breadcrumbs.element.mjs'),
-]);
+const preupgradeStack = document.createElement('ax-stack');
+preupgradeStack.innerHTML = `<ax-breadcrumbs id="nested-breadcrumbs">
+  <a href="#home">Home</a><span>Projects</span>
+</ax-breadcrumbs><span>Body</span>`;
+document.body.append(preupgradeStack);
+
+const [{registerElement}, {default: definition}, {default: stackDefinition}] =
+  await Promise.all([
+    import('../src/runtime.mjs'),
+    import('../src/Breadcrumbs.element.mjs'),
+    import('../src/Stack.element.mjs'),
+  ]);
 registerElement(definition);
+registerElement(stackDefinition);
 
 async function settle() {
   await Promise.resolve();
   await Promise.resolve();
   await new Promise(resolve => setTimeout(resolve, 0));
 }
+
+test('Breadcrumbs settles when upgraded inside another element host', async () => {
+  await settle();
+  const trail = preupgradeStack.querySelector('#nested-breadcrumbs');
+  const link = trail.querySelector('a');
+  const list = trail.querySelector('.ax-breadcrumbs__list');
+
+  assert.equal(list.children.length, 2);
+  assert.equal(link.parentElement.localName, 'li');
+  assert.equal(trail.querySelectorAll(':scope > [data-ax-root]').length, 1);
+
+  const added = document.createElement('a');
+  added.href = '#added';
+  added.textContent = 'Added';
+  trail.append(added);
+  await settle();
+
+  assert.equal(trail.querySelector('.ax-breadcrumbs__list'), list);
+  assert.equal(list.children.length, 3);
+  assert.equal(added.parentElement.localName, 'li');
+  preupgradeStack.remove();
+});
 
 test('Breadcrumbs wraps plain children in valid BEM list markup', async () => {
   const trail = document.createElement('ax-breadcrumbs');

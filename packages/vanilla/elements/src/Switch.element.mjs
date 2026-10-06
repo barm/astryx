@@ -4,7 +4,7 @@ const sizes = ['sm', 'md'];
 const positions = ['start', 'end'];
 const spacings = ['hug', 'spread'];
 const statuses = ['none', 'error', 'warning', 'success'];
-const initialized = new WeakSet();
+const initialChecked = new WeakMap();
 
 export default {
   name: 'Switch',
@@ -112,10 +112,8 @@ export default {
     },
     afterRender(host, api) {
       const checked = api.read('value');
-      if (!initialized.has(host)) {
-        api.control.defaultChecked = checked;
-        initialized.add(host);
-      }
+      if (!initialChecked.has(host)) initialChecked.set(host, checked);
+      api.control.defaultChecked = initialChecked.get(host);
       api.control.checked = checked;
     },
   },

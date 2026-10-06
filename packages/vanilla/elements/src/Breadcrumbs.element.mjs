@@ -1,5 +1,19 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 
+function preserveWrappedItems(host, list) {
+  const authorNodes = [...list.childNodes];
+  host._authorNodes = authorNodes;
+  host._slotByNode = new WeakMap(authorNodes.map(node => [node, 'default']));
+
+  // The runtime must preserve the wrappers on reconnect. Recreating them leaves
+  // detached mutation targets that can make an observing ancestor rerender.
+  const unmarkGenerated = node => {
+    host._generatedNodes.delete(node);
+    for (const child of node.childNodes) unmarkGenerated(child);
+  };
+  for (const node of authorNodes) unmarkGenerated(node);
+}
+
 export default {
   name: 'Breadcrumbs',
   tag: 'ax-breadcrumbs',
@@ -47,7 +61,7 @@ export default {
     },
   ],
   hooks: {
-    afterRender(_host, api) {
+    afterRender(host, api) {
       const list = api.query('.ax-breadcrumbs__list');
       if (!list) return;
 
@@ -81,7 +95,9 @@ export default {
             separator.setAttribute('aria-hidden', 'true');
             item.prepend(separator);
           }
-          separator.textContent = api.read('separator');
+          const separatorText = api.read('separator');
+          if (separator.textContent !== separatorText)
+            separator.textContent = separatorText;
         }
 
         if (items.length && !list.querySelector('[aria-current="page"]')) {
@@ -105,6 +121,7 @@ export default {
           );
         }
       });
+      preserveWrappedItems(host, list);
     },
   },
   render(_host, h) {
