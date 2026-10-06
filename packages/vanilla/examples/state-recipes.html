@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vanilla Astryx HTML state recipes</title>
+    <link rel="stylesheet" href="../dist/astryx-vanilla.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+          font-family: var(--font-family-body);
+        }
+        [hidden] {
+          display: none !important;
+        }
+        .state-recipes {
+          display: grid;
+          width: min(72rem, calc(100% - 2 * var(--spacing-4)));
+          margin-inline: auto;
+          gap: var(--spacing-5);
+          padding-block: var(--spacing-6);
+        }
+        .state-recipes__intro,
+        .state-recipe,
+        .state-recipe__body,
+        .state-recipe__form,
+        .state-recipe__password {
+          display: grid;
+          gap: var(--spacing-3);
+        }
+        .state-recipe {
+          padding: var(--spacing-4);
+          border: var(--border-width) solid var(--color-border);
+          border-radius: var(--radius-container);
+          background: var(--color-background-surface);
+          box-shadow: var(--shadow-low);
+        }
+        .state-recipe__body {
+          max-width: 40rem;
+        }
+        .state-recipe__status[data-status='success'] {
+          color: var(--color-text-success);
+        }
+        .state-recipe__status[data-status='error'] {
+          color: var(--color-text-error);
+        }
+        .state-recipe__status[data-status='warning'] {
+          color: var(--color-text-warning);
+        }
+        .state-recipe__password-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: end;
+          gap: var(--spacing-2);
+        }
+        .state-recipe__nav-shell[data-compact='true'] .ax-top-nav {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+        .state-recipe__nav-shell[data-compact='true'] .ax-top-nav__items {
+          grid-column: 1 / -1;
+          grid-row: 2;
+          flex-direction: column;
+          align-items: stretch;
+          overflow: visible;
+        }
+        .state-recipe__nav-shell[data-compact='true'] .ax-top-nav__item {
+          width: 100%;
+        }
+      }
+    </style>
+    <script defer src="../dist/astryx-vanilla.js"></script>
+    <script defer src="./state-recipes.js"></script>
+  </head>
+  <body>
+    <main class="state-recipes">
+      <header class="state-recipes__intro">
+        <h1 class="ax-heading ax-heading--1">HTML interaction-state recipes</h1>
+        <p class="ax-text ax-text--secondary">
+          Append a documented <code>#state=&lt;name&gt;</code> hash to render a
+          state directly in this document.
+        </p>
+      </header>
+
+      <section class="state-recipe" data-state-recipe="hover">
+        <h2 class="ax-heading ax-heading--2">HoverCard open</h2>
+        <p class="ax-text ax-text--secondary">
+          The open state remains reachable by pointer and keyboard, and can also
+          be rendered directly with <code>#state=hover-open</code>.
+        </p>
+        <div class="state-recipe__body">
+          <span
+            class="ax-hover-card"
+            data-ax-hover-card
+            data-ax-hover-card-delay="0"
+            data-ax-hover-card-hide-delay="0"
+            data-state-role="hover-host">
+            <button
+              class="ax-hover-card__trigger ax-hover-card__trigger--text"
+              type="button"
+              data-ax-hover-card-trigger>
+              Jordan Lee
+            </button>
+            <span
+              class="ax-hover-card__surface"
+              data-ax-hover-card-content
+              data-ax-placement="below"
+              data-ax-alignment="start"
+              role="dialog"
+              aria-label="Jordan Lee profile preview">
+              <span class="ax-hover-card__body">
+                <strong>Jordan Lee</strong>
+                <span class="ax-text ax-text--supporting"
+                  >Product designer · New York</span
+                >
+              </span>
+            </span>
+          </span>
+        </div>
+      </section>
+
+      <section class="state-recipe" data-state-recipe="submit">
+        <h2 class="ax-heading ax-heading--2">Loading to success</h2>
+        <form
+          class="state-recipe__form state-recipe__body"
+          data-state-role="submit-form">
+          <div class="ax-stack ax-stack--gap-1">
+            <label class="ax-text ax-text--label" for="html-project-name"
+              >Project name</label
+            >
+            <span class="ax-text-input">
+              <input id="html-project-name" name="project" value="Astryx" />
+            </span>
+          </div>
+          <button
+            class="ax-button ax-button--primary"
+            type="submit"
+            data-state-role="submit-button">
+            <span data-state-role="button-label">Save changes</span>
+          </button>
+          <p
+            class="ax-text ax-text--supporting state-recipe__status"
+            role="status"
+            aria-live="polite"
+            data-state-role="submit-status">
+            Ready to save.
+          </p>
+        </form>
+      </section>
+
+      <section class="state-recipe" data-state-recipe="upload">
+        <h2 class="ax-heading ax-heading--2">Upload progress</h2>
+        <div class="state-recipe__body">
+          <div
+            class="ax-progress-bar ax-progress-bar--neutral"
+            style="--ax-progress-value: 0%"
+            data-state-role="upload-progress">
+            <div class="ax-progress-bar__header">
+              <span class="ax-progress-bar__label" id="html-upload-label"
+                >Upload ready</span
+              >
+              <span class="ax-progress-bar__value">Not started</span>
+            </div>
+            <div
+              class="ax-progress-bar__track"
+              role="progressbar"
+              aria-labelledby="html-upload-label"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-valuetext="Not started">
+              <div class="ax-progress-bar__fill"></div>
+            </div>
+          </div>
+          <p
+            class="ax-text ax-text--supporting state-recipe__status"
+            role="status"
+            data-state-role="upload-status">
+            Choose files to begin.
+          </p>
+        </div>
+      </section>
+
+      <section class="state-recipe" data-state-recipe="password">
+        <h2 class="ax-heading ax-heading--2">
+          Password strength and visibility
+        </h2>
+        <div class="state-recipe__password state-recipe__body">
+          <div class="state-recipe__password-row">
+            <div class="ax-stack ax-stack--gap-1">
+              <label class="ax-text ax-text--label" for="html-password"
+                >Password</label
+              >
+              <span class="ax-text-input">
+                <input
+                  id="html-password"
+                  name="password"
+                  type="password"
+                  autocomplete="new-password"
+                  aria-describedby="html-password-status"
+                  data-state-role="password-field" />
+              </span>
+            </div>
+            <button
+              class="ax-button ax-button--secondary"
+              type="button"
+              aria-controls="html-password"
+              aria-pressed="false"
+              data-state-role="password-toggle">
+              <span data-state-role="button-label">Show password</span>
+            </button>
+          </div>
+          <div
+            class="ax-progress-bar ax-progress-bar--neutral"
+            style="--ax-progress-value: 0%"
+            data-state-role="password-progress">
+            <div class="ax-progress-bar__header">
+              <span class="ax-progress-bar__label" id="html-strength-label"
+                >Password strength</span
+              >
+              <span class="ax-progress-bar__value">Not entered</span>
+            </div>
+            <div
+              class="ax-progress-bar__track"
+              role="progressbar"
+              aria-labelledby="html-strength-label"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-valuetext="Not entered">
+              <div class="ax-progress-bar__fill"></div>
+            </div>
+          </div>
+          <p
+            class="ax-text ax-text--supporting state-recipe__status"
+            id="html-password-status"
+            role="status"
+            data-state-role="password-status">
+            Enter a password to see its strength.
+          </p>
+        </div>
+      </section>
+
+      <section class="state-recipe" data-state-recipe="navigation">
+        <h2 class="ax-heading ax-heading--2">Responsive navigation</h2>
+        <p class="ax-text ax-text--secondary">
+          The default follows the viewport; hash states force the compact
+          collapsed or expanded presentation for deterministic capture.
+        </p>
+        <div class="state-recipe__nav-shell" data-state-role="nav-shell">
+          <nav class="ax-top-nav" aria-label="Recipe navigation">
+            <div class="ax-top-nav__start">
+              <a class="ax-top-nav__brand" href="#">
+                <span class="ax-top-nav__brand-mark" aria-hidden="true">A</span>
+                <span>Astryx</span>
+              </a>
+              <div class="ax-top-nav__items" id="state-navigation-items">
+                <a
+                  class="ax-top-nav__item"
+                  href="#overview"
+                  aria-current="page"
+                  data-state-nav-item
+                  >Overview</a
+                >
+                <a class="ax-top-nav__item" href="#projects" data-state-nav-item
+                  >Projects</a
+                >
+                <a class="ax-top-nav__item" href="#reports" data-state-nav-item
+                  >Reports</a
+                >
+              </div>
+            </div>
+            <div class="ax-top-nav__end">
+              <button
+                class="ax-button ax-button--secondary ax-button--sm"
+                type="button"
+                data-state-role="nav-toggle">
+                <span data-state-role="button-label">Open menu</span>
+              </button>
+            </div>
+          </nav>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

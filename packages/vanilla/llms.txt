@@ -26,6 +26,20 @@ use the same CSS, themes, and native controls, and need no install or bundler.
 Choose A1 or A2 from the requested authoring style rather than treating either
 as the default. If the workspace already uses React, choose Path B.
 
+## Deterministic interaction states
+
+For HoverCard open, loading and success, upload progress, password strength and
+visibility, and responsive navigation, start from the state-recipe galleries:
+
+- HTML: `packages/vanilla/examples/state-recipes.html`
+- Web components: `packages/vanilla/examples/elements-state-recipes.html`
+- Guide and state manifest examples: `packages/vanilla/docs/states.md`
+
+Both galleries accept `#state=<name>` and render the state in the same document.
+A `vibe-states.json` manifest may declare the default plus at most four named
+states, so select only the states relevant to the page. Each capture must work
+from a fresh load; never redirect or depend on an earlier interaction.
+
 ---
 
 ## Path A1 — Build-less HTML

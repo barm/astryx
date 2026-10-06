@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vanilla Astryx web-component state recipes</title>
+    <link rel="stylesheet" href="../dist/astryx-vanilla.css" />
+    <style>
+      @layer astryx-base {
+        body {
+          margin: 0;
+          background: var(--color-background-body);
+          color: var(--color-text-primary);
+          font-family: var(--font-family-body);
+        }
+        [hidden] {
+          display: none !important;
+        }
+        .state-recipes {
+          display: grid;
+          width: min(72rem, calc(100% - 2 * var(--spacing-4)));
+          margin-inline: auto;
+          gap: var(--spacing-5);
+          padding-block: var(--spacing-6);
+        }
+        .state-recipes__intro,
+        .state-recipe,
+        .state-recipe__body,
+        .state-recipe__form,
+        .state-recipe__password {
+          display: grid;
+          gap: var(--spacing-3);
+        }
+        .state-recipe {
+          padding: var(--spacing-4);
+          border: var(--border-width) solid var(--color-border);
+          border-radius: var(--radius-container);
+          background: var(--color-background-surface);
+          box-shadow: var(--shadow-low);
+        }
+        .state-recipe__body {
+          max-width: 40rem;
+        }
+        .state-recipe__status[data-status='success'] {
+          color: var(--color-text-success);
+        }
+        .state-recipe__status[data-status='error'] {
+          color: var(--color-text-error);
+        }
+        .state-recipe__status[data-status='warning'] {
+          color: var(--color-text-warning);
+        }
+        .state-recipe__password-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: end;
+          gap: var(--spacing-2);
+        }
+        .state-recipe__nav-shell[data-compact='true'] .ax-top-nav {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+        .state-recipe__nav-shell[data-compact='true'] .ax-top-nav__items {
+          grid-column: 1 / -1;
+          grid-row: 2;
+          flex-direction: column;
+          align-items: stretch;
+          overflow: visible;
+        }
+        .state-recipe__nav-shell[data-compact='true'] .ax-top-nav__item {
+          width: 100%;
+        }
+      }
+    </style>
+    <script defer src="../dist/astryx-vanilla.js"></script>
+    <script defer src="../dist/astryx-elements.classic.js"></script>
+    <script defer src="./state-recipes.js"></script>
+  </head>
+  <body>
+    <main class="state-recipes">
+      <header class="state-recipes__intro">
+        <h1 class="ax-heading ax-heading--1">
+          Web-component interaction-state recipes
+        </h1>
+        <p class="ax-text ax-text--secondary">
+          Append a documented <code>#state=&lt;name&gt;</code> hash to render a
+          state directly in this document.
+        </p>
+      </header>
+
+      <section class="state-recipe" data-state-recipe="hover">
+        <h2 class="ax-heading ax-heading--2">HoverCard open</h2>
+        <p class="ax-text ax-text--secondary">
+          The open state remains reachable by pointer and keyboard, and can also
+          be rendered directly with <code>#state=hover-open</code>.
+        </p>
+        <div class="state-recipe__body">
+          <ax-hover-card
+            content="Product designer · New York"
+            label="Jordan Lee profile preview"
+            placement="below"
+            alignment="start"
+            delay="0"
+            hide-delay="0"
+            data-state-role="hover-host">
+            <button type="button">Jordan Lee</button>
+          </ax-hover-card>
+        </div>
+      </section>
+
+      <section class="state-recipe" data-state-recipe="submit">
+        <h2 class="ax-heading ax-heading--2">Loading to success</h2>
+        <form
+          class="state-recipe__form state-recipe__body"
+          data-state-role="submit-form">
+          <ax-text-input
+            label="Project name"
+            html-name="project"
+            value="Astryx"></ax-text-input>
+          <ax-button
+            variant="primary"
+            type="submit"
+            data-state-role="submit-button">
+            <span data-state-role="button-label">Save changes</span>
+          </ax-button>
+          <p
+            class="ax-text ax-text--supporting state-recipe__status"
+            role="status"
+            aria-live="polite"
+            data-state-role="submit-status">
+            Ready to save.
+          </p>
+        </form>
+      </section>
+
+      <section class="state-recipe" data-state-recipe="upload">
+        <h2 class="ax-heading ax-heading--2">Upload progress</h2>
+        <div class="state-recipe__body">
+          <ax-progress-bar
+            label="Upload ready"
+            value="0"
+            variant="neutral"
+            has-value-label
+            data-state-role="upload-progress"></ax-progress-bar>
+          <p
+            class="ax-text ax-text--supporting state-recipe__status"
+            role="status"
+            data-state-role="upload-status">
+            Choose files to begin.
+          </p>
+        </div>
+      </section>
+
+      <section class="state-recipe" data-state-recipe="password">
+        <h2 class="ax-heading ax-heading--2">
+          Password strength and visibility
+        </h2>
+        <div class="state-recipe__password state-recipe__body">
+          <div class="state-recipe__password-row">
+            <ax-text-input
+              label="Password"
+              html-name="password"
+              type="password"
+              auto-complete="new-password"
+              description="Enter a password, then review the strength below."
+              data-state-role="password-field"></ax-text-input>
+            <ax-button
+              variant="secondary"
+              type="button"
+              data-state-role="password-toggle">
+              <span data-state-role="button-label">Show password</span>
+            </ax-button>
+          </div>
+          <ax-progress-bar
+            label="Password strength"
+            value="0"
+            variant="neutral"
+            has-value-label
+            data-state-role="password-progress"></ax-progress-bar>
+          <p
+            class="ax-text ax-text--supporting state-recipe__status"
+            role="status"
+            data-state-role="password-status">
+            Enter a password to see its strength.
+          </p>
+        </div>
+      </section>
+
+      <section class="state-recipe" data-state-recipe="navigation">
+        <h2 class="ax-heading ax-heading--2">Responsive navigation</h2>
+        <p class="ax-text ax-text--secondary">
+          The default follows the viewport; hash states force the compact
+          collapsed or expanded presentation for deterministic capture.
+        </p>
+        <div class="state-recipe__nav-shell" data-state-role="nav-shell">
+          <ax-top-nav label="Recipe navigation">
+            <span slot="heading">Astryx</span>
+            <a
+              slot="start-content"
+              href="#overview"
+              aria-current="page"
+              data-state-nav-item
+              >Overview</a
+            >
+            <a slot="start-content" href="#projects" data-state-nav-item
+              >Projects</a
+            >
+            <a slot="start-content" href="#reports" data-state-nav-item
+              >Reports</a
+            >
+            <ax-button
+              slot="end-content"
+              variant="secondary"
+              size="sm"
+              data-state-role="nav-toggle">
+              <span data-state-role="button-label">Open menu</span>
+            </ax-button>
+          </ax-top-nav>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
