@@ -3,7 +3,7 @@
 ## Priming snippet
 
 ```text
-Build with Astryx. The canary site is https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/demo/pinned/index.html and its guide is https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/llms.txt. For a one-off single-page artifact, use the recommended build-less vanilla HTML path with `npx --yes @astryxdesign/cli@vanilla-poc`; keep its pinned assets and finish with a browser-ready `index.html`.
+Build with Astryx. The canary site is https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/demo/canary/index.html and its guide is https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/llms.txt. For a one-off single-page artifact, use the recommended build-less vanilla HTML path with `npx --yes @astryxdesign/cli@vanilla-poc`; keep its pinned assets and finish with a browser-ready `index.html`.
 ```
 
 ## Suggested prompts

@@ -19,6 +19,7 @@ Experimental no-build Astryx assets for plain HTML pages. Vanilla Astryx combine
   - [`kanban-board.html`](templates/kanban-board.html)
 - Generated custom-element docs in `elements-markup/` and nine standalone web-component templates in `elements-templates/`.
 - Self-contained custom-element bundles in `dist/astryx-elements.js` (ESM) and `dist/astryx-elements.classic.js`.
+- A public [canary landing page](https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/demo/canary/index.html) linking the agent guide, CLI, galleries, and themes.
 - A browsable [`demo/index.html`](demo/index.html) for HTML templates and [`demo/elements/index.html`](demo/elements/index.html) for web-component templates.
 - Committed, ready-to-open pinned copies under [`demo/pinned/`](demo/pinned/) and [`demo/elements/pinned/`](demo/elements/pinned/).
 

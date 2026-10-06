@@ -9,6 +9,9 @@ Everything on this site — component docs, markup, page templates, tokens and
 design rules — is also available through the Astryx CLI, in a form built for
 agents. Prefer the CLI (or the direct file URLs below) over crawling pages.
 
+Canary landing page:
+https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/demo/canary/index.html
+
 ## Step 1 — Choose by lifespan
 
 Pick ONE path before writing any code:
@@ -24,10 +27,16 @@ Pick ONE path before writing any code:
 
 Two build-less alternatives are available when the user asks for them:
 
-- **React from a CDN.** Start from the single-React import-map recipe at
-  https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/cli/assets/cdn.template.html.
+- **React from a CDN.** Generate the version-pinned single-React import-map
+  recipe with:
+
+  ```sh
+  npx --yes @astryxdesign/cli@vanilla-poc template --cdn > index.html
+  ```
+
   It is useful for a single-file React experiment, but Path A is the simpler
   default for one-off artifacts.
+
 - **Web components (experimental).** Use light-DOM `<ax-*>` elements for compact
   component tags with documented attributes and slots. They share the same CSS,
   themes, and native controls as Path A, but are not the recommended default yet.

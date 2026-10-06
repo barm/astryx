@@ -194,14 +194,11 @@
             <span class="ax-badge ax-badge--neutral">Alternative</span>
             <h3 class="ax-heading ax-heading--3">Build-less React</h3>
             <p class="ax-text ax-text--secondary">
-              For a single-file React experiment, use the import-map recipe that
-              guarantees one React implementation.
+              For a single-file React experiment, generate an import-map recipe
+              that keeps one React instance.
             </p>
-            <a
-              class="ax-link"
-              href="https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/cli/assets/cdn.template.html"
-              >Open the single-React CDN recipe</a
-            >
+            <pre
+              class="canary-code"><code>npx --yes @astryxdesign/cli@vanilla-poc template --cdn &gt; index.html</code></pre>
           </article>
           <article
             class="canary-card ax-card ax-card--muted ax-stack ax-stack--gap-3">
