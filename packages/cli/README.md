@@ -23,7 +23,7 @@ Install the self-contained vanilla HTML preview from its immutable commit:
 npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
 ```
 
-The preview package is `@astryxdesign/cli@0.6.5-vanilla.b32f55c9b`; it is not published to npm.
+The preview package is `@astryxdesign/cli@0.6.5-vanilla.3eb9597f5`; it is not published to npm.
 
 ## Choosing a framework
 

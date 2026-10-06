@@ -92,7 +92,7 @@ multi-state manifests and the rule that every state must work from a fresh load.
       href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.css" />
+      href="https://cdn.jsdelivr.net/gh/facebook/astryx@3eb9597f53f557d20b34b3072d450d2bbdbfa1ac/packages/vanilla/dist/astryx-vanilla.css" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
@@ -115,7 +115,7 @@ multi-state manifests and the rule that every state must work from a fresh load.
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-gothic@0.6.5/dist/theme.css" />
     <script
-      src="https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.js"
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3eb9597f53f557d20b34b3072d450d2bbdbfa1ac/packages/vanilla/dist/astryx-vanilla.js"
       defer></script>
   </head>
   <body>
@@ -149,7 +149,7 @@ multi-state manifests and the rule that every state must work from a fresh load.
   `astryx component Theme --framework html` and
   `astryx component Theme --framework web-components`.
 - ES-module alternative to the classic script:
-  `https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.mjs`
+  `https://cdn.jsdelivr.net/gh/facebook/astryx@3eb9597f53f557d20b34b3072d450d2bbdbfa1ac/packages/vanilla/dist/astryx-vanilla.mjs`
   (exports `setTheme`, `setMode`, `initThemeModeSwitchers`).
 
 ### A.2. Start every page from a template — never lay out a page from scratch
@@ -266,7 +266,7 @@ Each markup file starts with `<!-- docs: ... -->` and lists examples under
       href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.css" />
+      href="https://cdn.jsdelivr.net/gh/facebook/astryx@3eb9597f53f557d20b34b3072d450d2bbdbfa1ac/packages/vanilla/dist/astryx-vanilla.css" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
@@ -275,10 +275,10 @@ Each markup file starts with `<!-- docs: ... -->` and lists examples under
       href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
     <script
       defer
-      src="https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.js"></script>
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3eb9597f53f557d20b34b3072d450d2bbdbfa1ac/packages/vanilla/dist/astryx-vanilla.js"></script>
     <script
       defer
-      src="https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-elements.classic.js"></script>
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@3eb9597f53f557d20b34b3072d450d2bbdbfa1ac/packages/vanilla/dist/astryx-elements.classic.js"></script>
   </head>
   <body>
     <ax-button variant="primary">Continue</ax-button>
@@ -288,7 +288,7 @@ Each markup file starts with `<!-- docs: ... -->` and lists examples under
 
 The classic elements bundle is self-contained and registers every `ax-*` tag.
 The ESM alternative is
-`https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-elements.js`.
+`https://cdn.jsdelivr.net/gh/facebook/astryx@3eb9597f53f557d20b34b3072d450d2bbdbfa1ac/packages/vanilla/dist/astryx-elements.js`.
 Load `astryx-vanilla.js` as shown for theme controls and progressive behaviors;
 element-owned interactions work in either script order.
 

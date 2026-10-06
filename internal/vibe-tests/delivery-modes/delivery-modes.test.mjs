@@ -262,7 +262,7 @@ test('build-less configs use current pins and isolated framework onboarding', ()
   const specs = getDeliverySpecs();
   assert.equal(
     specs.vanilla.vanillaCdnRef,
-    'b32f55c9b2148a510e777e9fca8a295cdd9a5979',
+    '3eb9597f53f557d20b34b3072d450d2bbdbfa1ac',
   );
   assert.equal(
     specs.vanilla.vanillaTarballUrl,
