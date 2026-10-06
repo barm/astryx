@@ -59,6 +59,13 @@ const body = `
     <a href="#projects">Projects</a>
     <span>Current</span>
   </ax-breadcrumbs>
+  <ax-stack id="breadcrumb-stack" gap="2">
+    <ax-breadcrumbs id="nested-breadcrumbs" separator="›">
+      <a href="#nested-home">Home</a>
+      <a href="#nested-projects">Projects</a>
+      <span>Current</span>
+    </ax-breadcrumbs>
+  </ax-stack>
   <ax-top-nav id="topnav" label="Primary navigation">
     <span slot="heading">Astryx</span>
     <a slot="start-content" href="#overview" aria-current="page">Overview</a>
@@ -136,42 +143,103 @@ test('WC2a review regressions pass in every bundle load order', async t => {
         await settle(page);
       }
 
-      assert.deepEqual(
-        await page.locator('#breadcrumbs').evaluate(host => {
-          const list = host.querySelector('ol');
-          return {
-            items: list.querySelectorAll(':scope > li').length,
-            nonItems: list.querySelectorAll(':scope > :not(li)').length,
-            separators: list.querySelectorAll('.ax-breadcrumbs__separator')
-              .length,
-          };
-        }),
-        {items: 3, nonItems: 0, separators: 3},
-        `${mode}: Breadcrumbs renders one item and separator per author child`,
-      );
-      await page.locator('#breadcrumbs').evaluate(host => {
-        const link = document.createElement('a');
-        link.href = '#added';
-        link.textContent = 'Added';
-        host.append(link);
-      });
+      const breadcrumbSelectors = ['#breadcrumbs', '#nested-breadcrumbs'];
+      for (const selector of breadcrumbSelectors) {
+        assert.deepEqual(
+          await page.locator(selector).evaluate(host => {
+            const list = host.querySelector('ol');
+            return {
+              items: list.querySelectorAll(':scope > li').length,
+              nonItems: list.querySelectorAll(':scope > :not(li)').length,
+              separators: list.querySelectorAll('.ax-breadcrumbs__separator')
+                .length,
+            };
+          }),
+          {items: 3, nonItems: 0, separators: 3},
+          `${mode}: ${selector} renders one item and separator per author child`,
+        );
+        await page.locator(selector).evaluate(host => {
+          const link = document.createElement('a');
+          link.href = '#added';
+          link.textContent = 'Added';
+          host.append(link);
+        });
+      }
       await settle(page);
-      assert.deepEqual(
-        await page.locator('#breadcrumbs').evaluate(host => {
-          const list = host.querySelector('ol');
-          return {
-            items: list.querySelectorAll(':scope > li').length,
-            nonItems: list.querySelectorAll(':scope > :not(li)').length,
-            separators: list.querySelectorAll('.ax-breadcrumbs__separator')
-              .length,
-            last: list.lastElementChild?.textContent
-              .replace(/\s+/g, ' ')
-              .trim(),
-          };
-        }),
-        {items: 4, nonItems: 0, separators: 4, last: '›Added'},
-        `${mode}: dynamically appended Breadcrumbs links are wrapped exactly once`,
-      );
+      for (const selector of breadcrumbSelectors) {
+        assert.deepEqual(
+          await page.locator(selector).evaluate(host => {
+            const list = host.querySelector('ol');
+            return {
+              items: list.querySelectorAll(':scope > li').length,
+              nonItems: list.querySelectorAll(':scope > :not(li)').length,
+              separators: list.querySelectorAll('.ax-breadcrumbs__separator')
+                .length,
+              last: list.lastElementChild?.textContent
+                .replace(/\s+/g, ' ')
+                .trim(),
+            };
+          }),
+          {items: 4, nonItems: 0, separators: 4, last: '›Added'},
+          `${mode}: ${selector} wraps appended links exactly once`,
+        );
+        await page.locator(selector).evaluate(host => {
+          const projects = [...host.querySelectorAll('a')].find(
+            link => link.textContent.trim() === 'Projects',
+          );
+          projects.remove();
+        });
+      }
+      await settle(page);
+      for (const selector of breadcrumbSelectors) {
+        assert.deepEqual(
+          await page.locator(selector).evaluate(host => {
+            const list = host.querySelector('ol');
+            return [...list.children].map(item => ({
+              label: item
+                .querySelector(
+                  ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
+                )
+                ?.textContent.trim(),
+              separators: item.querySelectorAll(
+                ':scope > .ax-breadcrumbs__separator',
+              ).length,
+            }));
+          }),
+          [
+            {label: 'Home', separators: 1},
+            {label: 'Current', separators: 1},
+            {label: 'Added', separators: 1},
+          ],
+          `${mode}: ${selector} removes a crumb without an empty wrapper`,
+        );
+        await page.locator(selector).evaluate(host => {
+          const added = [...host.querySelectorAll('a')].find(
+            link => link.textContent.trim() === 'Added',
+          );
+          host.prepend(added);
+        });
+      }
+      await settle(page);
+      for (const selector of breadcrumbSelectors) {
+        assert.deepEqual(
+          await page.locator(selector).evaluate(host => {
+            const list = host.querySelector('ol');
+            return {
+              labels: [...list.children].map(item =>
+                item
+                  .querySelector(
+                    ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
+                  )
+                  ?.textContent.trim(),
+              ),
+              current: list.querySelector('[aria-current="page"]')?.textContent,
+            };
+          }),
+          {labels: ['Added', 'Home', 'Current'], current: 'Current'},
+          `${mode}: ${selector} preserves reordered crumb order and current state`,
+        );
+      }
 
       assert.deepEqual(
         await page

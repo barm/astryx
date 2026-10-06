@@ -77,6 +77,9 @@ export default {
       'Emitted with {reason} when the notification is dismissed manually, automatically, or programmatically.',
   },
   hooks: {
+    connected(host, api) {
+      scheduleAutoHide(host, api);
+    },
     attributeChanged(host, name, _oldValue, _newValue, api) {
       if (!['is-auto-hide', 'auto-hide-duration'].includes(name)) return false;
       scheduleAutoHide(host, api);
@@ -84,7 +87,6 @@ export default {
     },
     afterRender(host, api) {
       api.listen(api.control, 'click', () => dismiss(host, api, 'manual'));
-      scheduleAutoHide(host, api);
     },
     disconnected(host) {
       clearTimer(host);

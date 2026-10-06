@@ -60,6 +60,34 @@ test('Breadcrumbs settles when upgraded inside another element host', async () =
   assert.equal(trail.querySelector('.ax-breadcrumbs__list'), list);
   assert.equal(list.children.length, 3);
   assert.equal(added.parentElement.localName, 'li');
+
+  trail.querySelector('span:not(.ax-breadcrumbs__separator)').remove();
+  await settle();
+  assert.deepEqual(
+    [...list.children].map(item =>
+      item
+        .querySelector(
+          ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
+        )
+        ?.textContent.trim(),
+    ),
+    ['Home', 'Added'],
+  );
+
+  trail.prepend(added);
+  await settle();
+  assert.deepEqual(
+    [...list.children].map(item =>
+      item
+        .querySelector(
+          ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
+        )
+        ?.textContent.trim(),
+    ),
+    ['Added', 'Home'],
+  );
+  assert.equal(list.querySelectorAll('.ax-breadcrumbs__separator').length, 2);
+  assert.equal(list.querySelector('[aria-current="page"]').textContent, 'Home');
   preupgradeStack.remove();
 });
 
@@ -92,6 +120,39 @@ test('Breadcrumbs wraps plain children in valid BEM list markup', async () => {
         item.querySelector('.ax-breadcrumbs__separator').textContent === '›',
     ),
   );
+});
+
+test('Breadcrumbs keeps standalone removals, additions, and reordering clean', async () => {
+  const trail = document.createElement('ax-breadcrumbs');
+  trail.innerHTML = '<a>A</a><a>B</a><span>C</span>';
+  const [a, b, c] = trail.children;
+  document.body.append(trail);
+  await settle();
+
+  b.remove();
+  await settle();
+  const added = document.createElement('a');
+  added.textContent = 'D';
+  trail.prepend(added);
+  await settle();
+  trail.append(a);
+  await settle();
+
+  const list = trail.querySelector('.ax-breadcrumbs__list');
+  const contents = [...list.children].map(item =>
+    item.querySelector(
+      ':scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong',
+    ),
+  );
+  assert.deepEqual(
+    contents.map(content => content?.textContent.trim()),
+    ['D', 'C', 'A'],
+  );
+  assert.ok(contents.every(Boolean));
+  assert.equal(list.querySelectorAll('.ax-breadcrumbs__separator').length, 3);
+  assert.equal(list.querySelector('[aria-current="page"]'), a);
+  assert.equal(c.parentElement, list.children[1]);
+  trail.remove();
 });
 
 test('Breadcrumbs preserves plain child identity across attribute rerenders', async () => {

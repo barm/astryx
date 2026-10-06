@@ -329,6 +329,11 @@ var Banner_element_default = {
 };
 
 // elements/src/Breadcrumbs.element.mjs
+var contentSelector = ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong";
+var observers = /* @__PURE__ */ new WeakMap();
+function isBreadcrumbContent(node) {
+  return node.matches?.("a, span:not(.ax-breadcrumbs__separator), strong");
+}
 function preserveWrappedItems(host, list) {
   const authorNodes = [...list.childNodes];
   host._authorNodes = authorNodes;
@@ -338,6 +343,87 @@ function preserveWrappedItems(host, list) {
     for (const child of node.childNodes) unmarkGenerated(child);
   };
   for (const node of authorNodes) unmarkGenerated(node);
+}
+function normalizeItems(host, api) {
+  const list = api.query(".ax-breadcrumbs__list");
+  if (!list) return;
+  const existingObserver = observers.get(host);
+  existingObserver?.disconnect();
+  api.mutate(() => {
+    const root = list.closest("[data-ax-root]");
+    const hostChildren = [...host.children];
+    const rootIndex = hostChildren.indexOf(root);
+    const beforeRoot = hostChildren.slice(0, rootIndex).filter(isBreadcrumbContent);
+    const afterRoot = hostChildren.slice(rootIndex + 1).filter(isBreadcrumbContent);
+    for (const child of beforeRoot.reverse()) list.prepend(child);
+    for (const child of afterRoot) list.append(child);
+    for (const child of [...list.children]) {
+      if (child.localName === "li" || !isBreadcrumbContent(child)) continue;
+      const wrapper = document.createElement("li");
+      wrapper.setAttribute("data-ax-breadcrumb-wrapper", "");
+      child.before(wrapper);
+      wrapper.append(child);
+    }
+    for (const item of [...list.children].filter(
+      (child) => child.localName === "li"
+    )) {
+      const content = [...item.children].filter(isBreadcrumbContent);
+      if (content.length === 0) {
+        item.remove();
+        continue;
+      }
+      let previous = item;
+      for (const extra of content.slice(1)) {
+        const wrapper = document.createElement("li");
+        wrapper.setAttribute("data-ax-breadcrumb-wrapper", "");
+        previous.after(wrapper);
+        wrapper.append(extra);
+        previous = wrapper;
+      }
+    }
+    const items2 = [...list.children].filter((child) => child.localName === "li");
+    for (const item of items2) {
+      item.classList.add("ax-breadcrumbs__item");
+      let separator = item.querySelector(":scope > .ax-breadcrumbs__separator");
+      if (!separator) {
+        separator = document.createElement("span");
+        separator.className = "ax-breadcrumbs__separator";
+        separator.setAttribute("aria-hidden", "true");
+        item.prepend(separator);
+      }
+      const separatorText = api.read("separator");
+      if (separator.textContent !== separatorText)
+        separator.textContent = separatorText;
+    }
+    for (const generatedCurrent of list.querySelectorAll(
+      "[data-ax-breadcrumb-generated-current]"
+    )) {
+      generatedCurrent.removeAttribute("aria-current");
+      generatedCurrent.removeAttribute("data-ax-breadcrumb-generated-current");
+    }
+    let current = items2.map((item) => item.querySelector(contentSelector)).find((content) => content?.getAttribute("aria-current") === "page");
+    if (!current && items2.length) {
+      current = items2.at(-1).querySelector(contentSelector);
+      current?.setAttribute("aria-current", "page");
+      current?.setAttribute("data-ax-breadcrumb-generated-current", "");
+    }
+    for (const item of items2) {
+      const content = item.querySelector(contentSelector);
+      if (!content) continue;
+      const isCurrent = content === current;
+      content.classList.toggle("ax-breadcrumbs__current", isCurrent);
+      content.classList.toggle(
+        "ax-breadcrumbs__link",
+        content.localName === "a" && !isCurrent
+      );
+    }
+  });
+  preserveWrappedItems(host, list);
+  const observer = existingObserver ?? new MutationObserver(() => {
+    if (host.isConnected) normalizeItems(host, api);
+  });
+  observers.set(host, observer);
+  observer.observe(host, { childList: true, subtree: true });
 }
 var Breadcrumbs_element_default = {
   name: "Breadcrumbs",
@@ -386,60 +472,11 @@ var Breadcrumbs_element_default = {
   ],
   hooks: {
     afterRender(host, api) {
-      const list = api.query(".ax-breadcrumbs__list");
-      if (!list) return;
-      api.mutate(() => {
-        for (const emptyWrapper of list.querySelectorAll(
-          ":scope > li[data-ax-breadcrumb-wrapper]:empty"
-        )) {
-          emptyWrapper.remove();
-        }
-        for (const child of [...list.children]) {
-          if (child.localName === "li") continue;
-          if (!child.matches("a, span:not(.ax-breadcrumbs__separator), strong"))
-            continue;
-          const wrapper = document.createElement("li");
-          wrapper.setAttribute("data-ax-breadcrumb-wrapper", "");
-          child.before(wrapper);
-          wrapper.append(child);
-        }
-        const items2 = [...list.children].filter(
-          (child) => child.localName === "li"
-        );
-        for (const item of items2) {
-          item.classList.add("ax-breadcrumbs__item");
-          let separator = item.querySelector(
-            ":scope > .ax-breadcrumbs__separator"
-          );
-          if (!separator) {
-            separator = document.createElement("span");
-            separator.className = "ax-breadcrumbs__separator";
-            separator.setAttribute("aria-hidden", "true");
-            item.prepend(separator);
-          }
-          const separatorText = api.read("separator");
-          if (separator.textContent !== separatorText)
-            separator.textContent = separatorText;
-        }
-        if (items2.length && !list.querySelector('[aria-current="page"]')) {
-          items2.at(-1).querySelector(
-            ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong"
-          )?.setAttribute("aria-current", "page");
-        }
-        for (const item of items2) {
-          const content = item.querySelector(
-            ":scope > a, :scope > span:not(.ax-breadcrumbs__separator), :scope > strong"
-          );
-          if (!content) continue;
-          const isCurrent = content.getAttribute("aria-current") === "page";
-          content.classList.toggle("ax-breadcrumbs__current", isCurrent);
-          content.classList.toggle(
-            "ax-breadcrumbs__link",
-            content.localName === "a" && !isCurrent
-          );
-        }
-      });
-      preserveWrappedItems(host, list);
+      normalizeItems(host, api);
+    },
+    disconnected(host) {
+      observers.get(host)?.disconnect();
+      observers.delete(host);
     }
   },
   render(_host, h) {
@@ -4708,6 +4745,9 @@ var Toast_element_default = {
     "astryx:dismiss": "Emitted with {reason} when the notification is dismissed manually, automatically, or programmatically."
   },
   hooks: {
+    connected(host, api) {
+      scheduleAutoHide(host, api);
+    },
     attributeChanged(host, name, _oldValue, _newValue, api) {
       if (!["is-auto-hide", "auto-hide-duration"].includes(name)) return false;
       scheduleAutoHide(host, api);
@@ -4715,7 +4755,6 @@ var Toast_element_default = {
     },
     afterRender(host, api) {
       api.listen(api.control, "click", () => dismiss(host, api, "manual"));
-      scheduleAutoHide(host, api);
     },
     disconnected(host) {
       clearTimer(host);
