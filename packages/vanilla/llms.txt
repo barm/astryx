@@ -29,16 +29,30 @@ as the default. If the workspace already uses React, choose Path B.
 ## Deterministic interaction states
 
 For HoverCard open, loading and success, upload progress, password strength and
-visibility, and responsive navigation, start from the state-recipe galleries:
+visibility, and responsive navigation, inspect the copyable state variants:
 
-- HTML: `packages/vanilla/examples/state-recipes.html`
-- Web components: `packages/vanilla/examples/elements-state-recipes.html`
-- Guide and state manifest examples: `packages/vanilla/docs/states.md`
+```sh
+astryx component HoverCard --framework html
+astryx component Button --framework html
+astryx component ProgressBar --framework html
+astryx component TextInput --framework html
+astryx component TopNav --framework html
+# Replace html with web-components for the light-DOM element variants.
+```
 
-Both galleries accept `#state=<name>` and render the state in the same document.
-A `vibe-states.json` manifest may declare the default plus at most four named
-states, so select only the states relevant to the page. Each capture must work
-from a fresh load; never redirect or depend on an earlier interaction.
+Pinned complete galleries and guidance:
+
+- HTML gallery:
+  https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/examples/state-recipes.html
+- Web-component gallery:
+  https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/examples/elements-state-recipes.html
+- Source and state-manifest guide:
+  https://raw.githubusercontent.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/docs/states.md
+
+Both galleries accept `#state=<name>` and render the requested state on the
+initial load without navigating to another document. Download the pinned source
+or use the CLI variants when copying a recipe. The guide documents optional
+multi-state manifests and the rule that every state must work from a fresh load.
 
 ---
 

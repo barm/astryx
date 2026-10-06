@@ -140,6 +140,11 @@ export default {
   status-message="Enter a valid email address."
 ></ax-text-input>`,
     },
+    {
+      name: 'password-strength-and-visibility',
+      gallery: false,
+      html: `<ax-text-input type="password" label="Pass"></ax-text-input><ax-button>Show</ax-button><ax-progress-bar label="S" value="60"></ax-progress-bar>`,
+    },
   ],
   render(_host, h) {
     const inputID = h.id('input');

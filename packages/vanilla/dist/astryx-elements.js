@@ -520,6 +520,11 @@ var Button_element_default = {
     {
       name: "disabled-label",
       html: `<ax-button label="Continue" variant="primary" is-disabled></ax-button>`
+    },
+    {
+      name: "state-loading-success",
+      gallery: false,
+      html: `<ax-button label="Wait \u2192 Done" is-disabled></ax-button>`
     }
   ],
   hooks: {
@@ -1846,6 +1851,11 @@ var HoverCard_element_default = {
     {
       name: "link",
       html: `<ax-hover-card content="Roadmap" placement="below"><a href="#roadmap">View</a></ax-hover-card>`
+    },
+    {
+      name: "state-open",
+      gallery: false,
+      html: `<ax-hover-card content="I" is-open><button>Open</button></ax-hover-card>`
     }
   ],
   render(_host, h) {
@@ -2525,6 +2535,11 @@ var ProgressBar_element_default = {
     {
       name: "indeterminate",
       html: '<ax-progress-bar label="Processing report" is-indeterminate></ax-progress-bar>'
+    },
+    {
+      name: "upload-states",
+      gallery: false,
+      html: '<ax-progress-bar label="64%"></ax-progress-bar><ax-progress-bar label="OK" variant="success"></ax-progress-bar><ax-progress-bar label="Err" variant="error"></ax-progress-bar>'
     }
   ],
   render(_host, h) {
@@ -4366,6 +4381,11 @@ var TextInput_element_default = {
   status="error"
   status-message="Enter a valid email address."
 ></ax-text-input>`
+    },
+    {
+      name: "password-strength-and-visibility",
+      gallery: false,
+      html: `<ax-text-input type="password" label="Pass"></ax-text-input><ax-button>Show</ax-button><ax-progress-bar label="S" value="60"></ax-progress-bar>`
     }
   ],
   render(_host, h) {
@@ -4936,6 +4956,11 @@ var TopNav_element_default = {
   <a slot="center-content" href="#activity">Activity</a>
   <ax-button slot="end-content" size="sm">Invite</ax-button>
 </ax-top-nav>`
+    },
+    {
+      name: "responsive-states",
+      gallery: false,
+      html: `<ax-top-nav><b slot="heading">A</b><a hidden>H</a><button>Menu</button></ax-top-nav>`
     }
   ],
   hooks: {

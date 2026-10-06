@@ -19,6 +19,7 @@ const packageRoot = path.resolve(
 const cssPath = path.join(packageRoot, 'dist/astryx-vanilla.css');
 const componentsDir = path.join(packageRoot, 'src/components');
 const markupDir = path.join(packageRoot, 'markup');
+const elementMarkupDir = path.join(packageRoot, 'elements-markup');
 const templatesDir = path.join(packageRoot, 'templates');
 const elementTemplatesDir = path.join(packageRoot, 'elements-templates');
 const pinnedDemoDir = path.join(packageRoot, 'demo/pinned');
@@ -130,6 +131,42 @@ test('markup follows the shared docs and variant contract', async () => {
     const markup = await readFile(path.join(markupDir, `${name}.html`), 'utf8');
     assert.match(markup, /^<!-- docs: [^\n]+ -->/);
     assert.match(markup, /\n<!-- variant: [^\n]+ -->\n/);
+  }
+});
+
+test('state recipes are discoverable in both component markup paths', async () => {
+  const htmlVariants = new Map([
+    ['HoverCard', ['state-open']],
+    ['Button', ['state-loading', 'state-success']],
+    ['ProgressBar', ['upload-in-progress', 'upload-done', 'upload-error']],
+    ['TextInput', ['password-strength-and-visibility']],
+    ['TopNav', ['responsive-collapsed', 'responsive-expanded']],
+  ]);
+  const elementVariants = new Map([
+    ['HoverCard', ['state-open']],
+    ['Button', ['state-loading-success']],
+    ['ProgressBar', ['upload-states']],
+    ['TextInput', ['password-strength-and-visibility']],
+    ['TopNav', ['responsive-states']],
+  ]);
+
+  for (const [directory, variants] of [
+    [markupDir, htmlVariants],
+    [elementMarkupDir, elementVariants],
+  ]) {
+    for (const [name, names] of variants) {
+      const markup = await readFile(
+        path.join(directory, `${name}.html`),
+        'utf8',
+      );
+      for (const variant of names) {
+        assert.match(
+          markup,
+          new RegExp(`<!-- variant: ${variant} -->`),
+          `${path.basename(directory)}/${name}.html exposes ${variant}`,
+        );
+      }
+    }
   }
 });
 

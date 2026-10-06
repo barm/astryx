@@ -5,7 +5,7 @@ Use these recipes when a page must expose interaction states to people, tests, o
 - [Build-less HTML state recipes](../examples/state-recipes.html)
 - [Web-component state recipes](../examples/elements-state-recipes.html)
 
-Both pages use the same `#state=<name>` contract and render every state in the original document. The shared controller is [`state-recipes.js`](../examples/state-recipes.js).
+Both pages use the same `#state=<name>` contract and render every state in the original document. The shared controller is [`state-recipes.js`](../examples/state-recipes.js). The hash is read once on the initial load; normal interactions update only their local recipe and never write the hash or browser history.
 
 ## State names
 
@@ -85,10 +85,10 @@ Responsive navigation:
 
 ## Authoring rules
 
-1. Treat every hash state as a fresh page load. Derive the complete state from the hash; never depend on a previous capture or timer.
+1. Treat every hash state as a fresh page load. Read the hash during initial setup and derive the complete state without depending on a previous capture or timer.
 2. Keep the origin and path unchanged. Do not redirect, load a second HTML document, use an iframe, or fetch an HTML fragment for a state.
 3. Synchronize visible and programmatic state. For example, update both the progress fill and `aria-valuenow`, and both the menu visibility and `aria-expanded`.
-4. Keep controls interactive after deterministic activation. Hash activation supplements pointer and keyboard paths; it does not replace them.
+4. Keep controls interactive after deterministic activation. User actions update local state only: they never change `location.hash`, push browser history, or hide unrelated recipes. Password typing and Show/Hide always preserve the value the person entered.
 5. Prefer native semantics and Astryx state attributes. Use live regions only when a real user-triggered transition needs an announcement; a screenshot label is not a reason to add one.
 
 ## Validation

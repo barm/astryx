@@ -15,3 +15,23 @@
 <button class="ax-button ax-button--primary" type="button" disabled>
   Continue
 </button>
+
+<!-- variant: state-loading -->
+<div class="ax-stack ax-stack--gap-2">
+  <button
+    class="ax-button ax-button--primary"
+    type="button"
+    disabled
+    aria-busy="true">
+    Saving…
+  </button>
+  <span class="ax-text ax-text--supporting" role="status">Saving changes…</span>
+</div>
+
+<!-- variant: state-success -->
+<div class="ax-stack ax-stack--gap-2">
+  <button class="ax-button ax-button--primary" type="button">Saved</button>
+  <span class="ax-text ax-text--supporting" role="status"
+    >Changes saved successfully.</span
+  >
+</div>

@@ -179,6 +179,11 @@ export default {
       name: 'link',
       html: `<ax-hover-card content="Roadmap" placement="below"><a href="#roadmap">View</a></ax-hover-card>`,
     },
+    {
+      name: 'state-open',
+      gallery: false,
+      html: `<ax-hover-card content="I" is-open><button>Open</button></ax-hover-card>`,
+    },
   ],
   render(_host, h) {
     const content = h.content('content', 'content', 'More information');

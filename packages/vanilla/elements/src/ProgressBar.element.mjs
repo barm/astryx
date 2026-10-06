@@ -63,6 +63,11 @@ export default {
       name: 'indeterminate',
       html: '<ax-progress-bar label="Processing report" is-indeterminate></ax-progress-bar>',
     },
+    {
+      name: 'upload-states',
+      gallery: false,
+      html: '<ax-progress-bar label="64%"></ax-progress-bar><ax-progress-bar label="OK" variant="success"></ax-progress-bar><ax-progress-bar label="Err" variant="error"></ax-progress-bar>',
+    },
   ],
   render(_host, h) {
     const indeterminate = h.attr('is-indeterminate');

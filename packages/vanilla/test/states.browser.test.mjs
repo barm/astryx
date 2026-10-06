@@ -246,3 +246,102 @@ test('HTML and web-component recipes expose every documented state', async t => 
     }
   }
 });
+
+test('in-page interactions preserve authored state without changing the URL', async t => {
+  const {server, baseURL} = await startServer();
+  const browser = await chromium.launch({headless: true});
+  t.after(async () => {
+    await browser.close();
+    await new Promise(resolve => server.close(resolve));
+  });
+
+  for (const [delivery, file] of [
+    ['html', 'state-recipes.html'],
+    ['web-components', 'elements-state-recipes.html'],
+  ]) {
+    const context = await browser.newContext({
+      viewport: {width: 1440, height: 900},
+    });
+    const page = await context.newPage();
+    await page.goto(`${baseURL}/packages/vanilla/examples/${file}`, {
+      waitUntil: 'load',
+    });
+    await page.waitForFunction(
+      () => document.documentElement.dataset.activeState === 'default',
+    );
+    const initialURL = page.url();
+    const initialHistoryLength = await page.evaluate(() => history.length);
+    const visibleRecipeCount = () =>
+      page.locator('[data-state-recipe]:visible').count();
+
+    const passwordInput = page
+      .locator('[data-state-role="password-field"] input')
+      .or(page.locator('input[data-state-role="password-field"]'));
+    await passwordInput.fill('hunter2');
+    assert.equal(await passwordInput.inputValue(), 'hunter2');
+    assert.equal(
+      await page
+        .locator('[data-state-role="password-progress"] [role="progressbar"]')
+        .getAttribute('aria-valuenow'),
+      '25',
+    );
+
+    const passwordToggle = page
+      .locator('[data-state-role="password-toggle"] button')
+      .or(page.locator('button[data-state-role="password-toggle"]'));
+    await passwordToggle.click();
+    assert.equal(await passwordInput.getAttribute('type'), 'text');
+    assert.equal(await passwordInput.inputValue(), 'hunter2');
+    await passwordToggle.click();
+    assert.equal(await passwordInput.getAttribute('type'), 'password');
+    assert.equal(await passwordInput.inputValue(), 'hunter2');
+    assert.equal(await visibleRecipeCount(), 5);
+    assert.equal(page.url(), initialURL);
+
+    await page.setViewportSize({width: 600, height: 900});
+    const navigationToggle = page
+      .locator('[data-state-role="nav-toggle"] button')
+      .or(page.locator('button[data-state-role="nav-toggle"]'));
+    await navigationToggle.waitFor({state: 'visible'});
+    await navigationToggle.click();
+    assert.equal(
+      await page.locator('[data-state-nav-item]').first().isVisible(),
+      true,
+    );
+    assert.equal(await visibleRecipeCount(), 5);
+    assert.equal(page.url(), initialURL);
+    await navigationToggle.click();
+    assert.equal(
+      await page.locator('[data-state-nav-item]').first().isVisible(),
+      false,
+    );
+
+    const submit = page
+      .locator('[data-state-role="submit-button"] button')
+      .or(page.locator('button[data-state-role="submit-button"]'));
+    await submit.click();
+    assert.match(
+      await page.locator('[data-state-role="submit-status"]').textContent(),
+      /Saving/,
+    );
+    assert.equal(await visibleRecipeCount(), 5);
+    assert.equal(page.url(), initialURL);
+    assert.equal(
+      await page.evaluate(() => history.length),
+      initialHistoryLength,
+      `${delivery} interactions do not push history`,
+    );
+
+    await page.evaluate(() => {
+      location.hash = 'state=upload-error';
+    });
+    await page.waitForTimeout(50);
+    assert.equal(
+      await page.locator('html').getAttribute('data-active-state'),
+      'default',
+      `${delivery} reads state hashes only on load`,
+    );
+    assert.equal(await visibleRecipeCount(), 5);
+    await context.close();
+  }
+});

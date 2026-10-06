@@ -35,3 +35,47 @@
     <button class="ax-button ax-button--secondary ax-button--sm">Invite</button>
   </div>
 </nav>
+
+<!-- variant: responsive-collapsed -->
+<nav class="ax-top-nav" aria-label="Primary navigation">
+  <div class="ax-top-nav__start">
+    <a class="ax-top-nav__brand" href="#">Astryx</a>
+    <div class="ax-top-nav__items" id="responsive-nav-items" hidden>
+      <a class="ax-top-nav__item" href="#overview" aria-current="page"
+        >Overview</a
+      >
+      <a class="ax-top-nav__item" href="#projects">Projects</a>
+    </div>
+  </div>
+  <div class="ax-top-nav__end">
+    <button
+      class="ax-button ax-button--secondary ax-button--sm"
+      type="button"
+      aria-controls="responsive-nav-items"
+      aria-expanded="false">
+      Open menu
+    </button>
+  </div>
+</nav>
+
+<!-- variant: responsive-expanded -->
+<nav class="ax-top-nav" aria-label="Primary navigation">
+  <div class="ax-top-nav__start">
+    <a class="ax-top-nav__brand" href="#">Astryx</a>
+    <div class="ax-top-nav__items" id="responsive-nav-items-open">
+      <a class="ax-top-nav__item" href="#overview" aria-current="page"
+        >Overview</a
+      >
+      <a class="ax-top-nav__item" href="#projects">Projects</a>
+    </div>
+  </div>
+  <div class="ax-top-nav__end">
+    <button
+      class="ax-button ax-button--secondary ax-button--sm"
+      type="button"
+      aria-controls="responsive-nav-items-open"
+      aria-expanded="true">
+      Close menu
+    </button>
+  </div>
+</nav>

@@ -151,79 +151,94 @@ function setUpload(state) {
   status.dataset.status = configuration.variant;
 }
 
-function setPassword(state) {
-  const field = $('[data-state-role="password-field"]');
-  const toggle = $('[data-state-role="password-toggle"]');
-  const meter = $('[data-state-role="password-progress"]');
-  const status = $('[data-state-role="password-status"]');
-  const configurations = {
-    default: {
-      value: '',
-      valueLabel: 'Not entered',
-      label: 'Enter a password to see its strength.',
-      progress: 0,
-      variant: 'neutral',
-      visible: false,
-    },
-    'password-weak': {
-      value: 'astryx',
-      valueLabel: 'Weak',
-      label: 'Weak — add length, numbers, and symbols.',
-      progress: 25,
-      variant: 'error',
-      visible: false,
-    },
-    'password-medium': {
-      value: 'Astryx2026',
-      valueLabel: 'Medium',
-      label: 'Medium — add a symbol or more words.',
-      progress: 60,
-      variant: 'warning',
-      visible: false,
-    },
-    'password-strong': {
-      value: 'Astryx!2026Secure',
+function passwordInput(field) {
+  return isElementHost(field) ? field.querySelector('input') : field;
+}
+
+function passwordStrength(value) {
+  if (value.length >= 14) {
+    return {
       valueLabel: 'Strong',
       label: 'Strong password.',
       progress: 100,
       variant: 'success',
-      visible: false,
-    },
-    'password-visible': {
-      value: 'Astryx!2026Secure',
-      valueLabel: 'Strong',
-      label: 'Strong password. Password is visible.',
-      progress: 100,
-      variant: 'success',
-      visible: true,
-    },
-  };
-  const configuration = configurations[state] ?? configurations.default;
-
-  if (isElementHost(field)) {
-    field.setAttribute('value', configuration.value);
-    field.setAttribute('type', configuration.visible ? 'text' : 'password');
-  } else {
-    field.value = configuration.value;
-    field.type = configuration.visible ? 'text' : 'password';
+    };
   }
+  if (value.length >= 9) {
+    return {
+      valueLabel: 'Medium',
+      label: 'Medium — add a symbol or more words.',
+      progress: 60,
+      variant: 'warning',
+    };
+  }
+  if (value.length > 0) {
+    return {
+      valueLabel: 'Weak',
+      label: 'Weak — add length, numbers, and symbols.',
+      progress: 25,
+      variant: 'error',
+    };
+  }
+  return {
+    valueLabel: 'Not entered',
+    label: 'Enter a password to see its strength.',
+    progress: 0,
+    variant: 'neutral',
+  };
+}
+
+function setPasswordPresentation(value, visible) {
+  const toggle = $('[data-state-role="password-toggle"]');
+  const meter = $('[data-state-role="password-progress"]');
+  const status = $('[data-state-role="password-status"]');
+  const configuration = passwordStrength(value);
   setProgress(meter, {
     label: 'Password strength',
     value: configuration.progress,
     variant: configuration.variant,
     valueLabel: configuration.valueLabel,
   });
-  setButton(toggle, {
-    label: configuration.visible ? 'Hide password' : 'Show password',
-  });
+  setButton(toggle, {label: visible ? 'Hide password' : 'Show password'});
   queueMicrotask(() => {
-    innerControl(toggle)?.setAttribute(
-      'aria-pressed',
-      String(configuration.visible),
-    );
+    innerControl(toggle)?.setAttribute('aria-pressed', String(visible));
   });
-  status.textContent = configuration.label;
+  status.textContent = `${configuration.label}${visible && value ? ' Password is visible.' : ''}`;
   status.dataset.status = configuration.variant;
+}
+
+function setPasswordVisibility(visible) {
+  const field = $('[data-state-role="password-field"]');
+  const input = passwordInput(field);
+  const value = input?.value ?? '';
+  if (isElementHost(field)) {
+    field.setAttribute('value', value);
+    field.setAttribute('type', visible ? 'text' : 'password');
+  } else if (input) {
+    input.type = visible ? 'text' : 'password';
+  }
+  setPasswordPresentation(value, visible);
+}
+
+function activatePasswordState(state) {
+  const field = $('[data-state-role="password-field"]');
+  const input = passwordInput(field);
+  const samples = {
+    'password-weak': 'astryx',
+    'password-medium': 'Astryx2026',
+    'password-strong': 'Astryx!2026Secure',
+    'password-visible': 'Astryx!2026Secure',
+  };
+  const visible = state === 'password-visible';
+  const value = input?.value || samples[state] || '';
+  if (isElementHost(field)) {
+    if (!input?.value && value) field.setAttribute('value', value);
+    field.setAttribute('type', visible ? 'text' : 'password');
+  } else if (input) {
+    if (!input.value && value) input.value = value;
+    input.type = visible ? 'text' : 'password';
+  }
+  setPasswordPresentation(value, visible);
 }
 
 function setNavigation(state) {
@@ -255,6 +270,8 @@ function focusRecipe(recipe) {
   }
 }
 
+let activatedState = 'default';
+
 async function applyState(state = requestedState()) {
   await Promise.all(
     $$('[data-state-role]')
@@ -265,70 +282,51 @@ async function applyState(state = requestedState()) {
   setHover(false);
   setSubmission('idle');
   setUpload('idle');
-  setPassword('default');
+  activatePasswordState('default');
   setNavigation('default');
 
+  activatedState = state;
   const recipe = STATE_RECIPES.get(state);
   focusRecipe(recipe);
   if (state === 'hover-open') setHover(true);
   if (state === 'loading' || state === 'success') setSubmission(state);
   if (state.startsWith('upload-')) setUpload(state);
-  if (state.startsWith('password-')) setPassword(state);
+  if (state.startsWith('password-')) activatePasswordState(state);
   if (state.startsWith('nav-')) setNavigation(state);
 
   document.documentElement.dataset.activeState = state;
   document.body.dataset.activeState = state;
 }
 
-function setHashState(state) {
-  location.hash = `state=${state}`;
-}
-
 function initializeInteractions() {
   $('[data-state-role="submit-form"]')?.addEventListener('submit', event => {
     event.preventDefault();
-    setHashState('loading');
-    setTimeout(() => setHashState('success'), 900);
+    setSubmission('loading');
+    setTimeout(() => setSubmission('success'), 900);
   });
 
   $('[data-state-role="password-toggle"]')?.addEventListener('click', () => {
     const control = innerControl($('[data-state-role="password-toggle"]'));
-    setHashState(
-      control?.getAttribute('aria-pressed') === 'true'
-        ? 'password-strong'
-        : 'password-visible',
-    );
+    setPasswordVisibility(control?.getAttribute('aria-pressed') !== 'true');
   });
 
   const passwordHost = $('[data-state-role="password-field"]');
-  const passwordInput = isElementHost(passwordHost)
-    ? passwordHost.querySelector('input')
-    : passwordHost;
-  passwordInput?.addEventListener('input', event => {
-    const length = event.target.value.length;
-    setPassword(
-      length >= 14
-        ? 'password-strong'
-        : length >= 9
-          ? 'password-medium'
-          : length > 0
-            ? 'password-weak'
-            : 'default',
-    );
+  const passwordControl = passwordInput(passwordHost);
+  passwordControl?.addEventListener('input', event => {
+    setPasswordPresentation(event.target.value, event.target.type === 'text');
   });
 
   $('[data-state-role="nav-toggle"]')?.addEventListener('click', () => {
     const control = innerControl($('[data-state-role="nav-toggle"]'));
-    setHashState(
+    setNavigation(
       control?.getAttribute('aria-expanded') === 'true'
         ? 'nav-collapsed'
         : 'nav-expanded',
     );
   });
 
-  addEventListener('hashchange', () => void applyState());
   addEventListener('resize', () => {
-    if (!requestedState().startsWith('nav-')) setNavigation('default');
+    if (!activatedState.startsWith('nav-')) setNavigation('default');
   });
 }
 

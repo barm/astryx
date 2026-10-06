@@ -35,3 +35,67 @@
     <div class="ax-progress-bar__fill"></div>
   </div>
 </div>
+
+<!-- variant: upload-in-progress -->
+<div class="ax-progress-bar" style="--ax-progress-value: 64%">
+  <div class="ax-progress-bar__header">
+    <span class="ax-progress-bar__label" id="upload-progress-label"
+      >Uploading files</span
+    >
+    <span class="ax-progress-bar__value">64%</span>
+  </div>
+  <div
+    class="ax-progress-bar__track"
+    role="progressbar"
+    aria-labelledby="upload-progress-label"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="64"
+    aria-valuetext="64%">
+    <div class="ax-progress-bar__fill"></div>
+  </div>
+</div>
+
+<!-- variant: upload-done -->
+<div
+  class="ax-progress-bar ax-progress-bar--success"
+  style="--ax-progress-value: 100%">
+  <div class="ax-progress-bar__header">
+    <span class="ax-progress-bar__label" id="upload-done-label"
+      >Upload complete</span
+    >
+    <span class="ax-progress-bar__value">100%</span>
+  </div>
+  <div
+    class="ax-progress-bar__track"
+    role="progressbar"
+    aria-labelledby="upload-done-label"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="100"
+    aria-valuetext="100%">
+    <div class="ax-progress-bar__fill"></div>
+  </div>
+</div>
+
+<!-- variant: upload-error -->
+<div
+  class="ax-progress-bar ax-progress-bar--error"
+  style="--ax-progress-value: 64%">
+  <div class="ax-progress-bar__header">
+    <span class="ax-progress-bar__label" id="upload-error-label"
+      >Upload failed</span
+    >
+    <span class="ax-progress-bar__value">Stopped at 64%</span>
+  </div>
+  <div
+    class="ax-progress-bar__track"
+    role="progressbar"
+    aria-labelledby="upload-error-label"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="64"
+    aria-valuetext="Stopped at 64%">
+    <div class="ax-progress-bar__fill"></div>
+  </div>
+</div>

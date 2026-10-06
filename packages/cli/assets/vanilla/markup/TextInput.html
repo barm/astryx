@@ -28,3 +28,53 @@
     >Enter a valid email address.</span
   >
 </div>
+
+<!-- variant: password-strength-and-visibility -->
+<div class="ax-stack ax-stack--gap-2">
+  <div class="ax-stack ax-stack--gap-1">
+    <label class="ax-text ax-text--label" for="password-state-input"
+      >Password</label
+    >
+    <span class="ax-text-input">
+      <input
+        id="password-state-input"
+        type="password"
+        name="password"
+        autocomplete="new-password"
+        aria-describedby="password-strength-status" />
+    </span>
+  </div>
+  <button
+    class="ax-button ax-button--secondary"
+    type="button"
+    aria-controls="password-state-input"
+    aria-pressed="false">
+    Show password
+  </button>
+  <div
+    class="ax-progress-bar ax-progress-bar--warning"
+    style="--ax-progress-value: 60%">
+    <div class="ax-progress-bar__header">
+      <span class="ax-progress-bar__label" id="password-strength-label"
+        >Password strength</span
+      >
+      <span class="ax-progress-bar__value">Medium</span>
+    </div>
+    <div
+      class="ax-progress-bar__track"
+      role="progressbar"
+      aria-labelledby="password-strength-label"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="60"
+      aria-valuetext="Medium">
+      <div class="ax-progress-bar__fill"></div>
+    </div>
+  </div>
+  <span
+    class="ax-text ax-text--supporting"
+    id="password-strength-status"
+    role="status">
+    Medium — add a symbol or more words.
+  </span>
+</div>

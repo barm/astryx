@@ -47,6 +47,11 @@ export default {
   <ax-button slot="end-content" size="sm">Invite</ax-button>
 </ax-top-nav>`,
     },
+    {
+      name: 'responsive-states',
+      gallery: false,
+      html: `<ax-top-nav><b slot="heading">A</b><a hidden>H</a><button>Menu</button></ax-top-nav>`,
+    },
   ],
   hooks: {
     afterRender(_host, api) {

@@ -69,6 +69,11 @@ export default {
       name: 'disabled-label',
       html: `<ax-button label="Continue" variant="primary" is-disabled></ax-button>`,
     },
+    {
+      name: 'state-loading-success',
+      gallery: false,
+      html: `<ax-button label="Wait → Done" is-disabled></ax-button>`,
+    },
   ],
   hooks: {
     afterRender(host, api) {
