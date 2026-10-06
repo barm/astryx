@@ -130,10 +130,10 @@ Templates (complete, standalone, already wired to the CDN links above):
 | `login`           | focused credential sign-in                   |
 | `kanban-board`    | task lanes, owners, and progress             |
 
-**Option 1 — install the preview CLI (Node 22.13+):**
+**Option 1 — use the branch-canary CLI (Node 22.13+):**
 
 ```sh
-npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
+npm install -g @astryxdesign/cli@vanilla-poc
 
 astryx template --list --framework html                  # the 9 template ids
 astryx template dashboard --framework html > page.html   # full standalone page
@@ -142,9 +142,21 @@ astryx component Dialog --framework html                 # docs + copyable marku
 astryx component Selector --framework html               # theme switcher and dark mode controls
 ```
 
+Without a global install, prefix any command with the canary package, for example:
+
+```sh
+npx --yes @astryxdesign/cli@vanilla-poc template dashboard --framework html > page.html
+```
+
 `--html` is a deprecated alias for `--framework html`; always use `--framework` in new commands.
 
-**Fallback — clone the pinned source commit:**
+**Pinned tarball fallback:**
+
+```sh
+npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
+```
+
+**Source fallback — clone the pinned commit:**
 
 ```sh
 git clone https://github.com/facebook/astryx.git astryx

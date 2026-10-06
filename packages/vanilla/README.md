@@ -26,11 +26,20 @@ The canonical HTML and web-component templates use `__ASTRYX_VANILLA_CDN__` as t
 
 ## Install
 
-POC branch canaries use the isolated `vanilla-poc` npm channel. After a canary is published, install public packages from that channel with commands such as:
+POC branch canaries use the isolated `vanilla-poc` npm channel. Install the public packages and CLI from that channel with commands such as:
 
 ```sh
 npm install @astryxdesign/core@vanilla-poc
-npm install @astryxdesign/cli@vanilla-poc
+npm install -g @astryxdesign/cli@vanilla-poc
+
+# Or run the CLI without a global install.
+npx --yes @astryxdesign/cli@vanilla-poc component --list --framework html
+```
+
+The commit-pinned preview tarball remains available as a fallback:
+
+```sh
+npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
 ```
 
 The channel does not publish private packages such as `@astryxdesign/vanilla`, or packages marked canary-only, unless the release workflow explicitly includes them.
