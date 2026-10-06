@@ -24,6 +24,17 @@ Experimental no-build Astryx assets for plain HTML pages. Vanilla Astryx combine
 
 The canonical HTML and web-component templates use `__ASTRYX_VANILLA_CDN__` as the base for their CSS and JavaScript URLs. The Astryx CLI and demo renderer replace that placeholder with the same commit-pinned jsDelivr URL.
 
+## Install
+
+POC branch canaries use the isolated `vanilla-poc` npm channel. After a canary is published, install public packages from that channel with commands such as:
+
+```sh
+npm install @astryxdesign/core@vanilla-poc
+npm install @astryxdesign/cli@vanilla-poc
+```
+
+The channel does not publish private packages such as `@astryxdesign/vanilla`, or packages marked canary-only, unless the release workflow explicitly includes them.
+
 ## Try it
 
 Install dependencies and build the package:

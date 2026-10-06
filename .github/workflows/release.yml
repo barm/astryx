@@ -12,21 +12,25 @@
 #   Re-point trust with:
 #     node scripts/npm/setup-trusted-publishing.mjs --setup-trust --replace --workflow release.yml
 #
-# Two jobs, selected by trigger:
-#   - publish (stable): workflow_dispatch only. Publishes the `latest` dist-tag.
-#     The release flow is:
+# Three jobs, selected by trigger and dispatch mode:
+#   - publish (stable): workflow_dispatch with mode=stable. Publishes `latest`.
+#   - branch-canary: workflow_dispatch with mode=branch-canary, accepted only on
+#     poc/vanilla-astryx. Publishes to an isolated caller-supplied dist-tag.
+#   - canary: push to main only. Publishes to the `canary` dist-tag.
+#
+# The stable release flow is:
 #       1. Cut and mark one release/vX.Y.Z branch from exact window-time main.
 #       2. Target the generated Version Packages PR to that branch.
 #       3. Run the final exact-head release checks, tag the merged bump commit,
 #          and dispatch this workflow from that immutable tag with the recorded
-#          release branch and head. Stable publication from main is rejected.
+#          release branch and head.
 #     Version-gated and idempotent: any version already on the registry is
 #     skipped, so re-running (or a `dry-run` first) is safe.
-#   - canary: push to main only. Publishes 0.x.y-canary.<short-sha> to the
-#     `canary` dist-tag on every push to main:
-#       npm install @astryxdesign/core@canary
 #
-# Why both jobs live here instead of in deploy.yml:
+# Main canaries publish 0.x.y-canary.<short-sha> on every push to main:
+#   npm install @astryxdesign/core@canary
+#
+# Why all publishing jobs live here instead of in deploy.yml:
 #   - Single workflow file ⇒ single npm trusted-publisher config covers both.
 #   - deploy.yml uses the `pages-deploy` concurrency group, which serializes/
 #     cancels on a busy main — that repeatedly starved npm publishing. This
@@ -36,8 +40,8 @@
 #
 # Concurrency is per-JOB (deliberately NOT a single workflow-level group): a
 # busy main firing many canary pushes must NEVER cancel or starve a pending
-# stable dispatch. Stable and canary therefore use independent concurrency
-# groups (see each job below).
+# stable dispatch. Stable, branch-canary, and main canary therefore use
+# independent concurrency groups (see each job below).
 #
 # Provenance requires a PUBLIC repo (facebook/astryx is public).
 name: Release
@@ -46,30 +50,43 @@ run-name: Release (${{ github.sha }})
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: 'Release mode'
+        type: choice
+        options:
+          - stable
+          - branch-canary
+        default: stable
+        required: true
+      channel:
+        description: 'Branch-canary prerelease and dist-tag channel'
+        type: string
+        default: vanilla-poc
+        required: true
       dry-run:
-        description: 'Build and resolve what would publish, but do not publish'
+        description: 'Build and pack what would publish, but do not publish'
         type: boolean
-        default: false
+        default: true
       release-branch:
-        description: 'Single marked release/vX.Y.Z branch'
+        description: 'Single marked release/vX.Y.Z branch (stable mode)'
         type: string
-        required: true
+        required: false
       release-version:
-        description: 'Exact X.Y.Z version recorded by the active marker'
+        description: 'Exact X.Y.Z version recorded by the active marker (stable mode)'
         type: string
-        required: true
+        required: false
       release-tag:
-        description: 'Exact immutable vX.Y.Z tag checked out by this run'
+        description: 'Exact immutable vX.Y.Z tag checked out by this run (stable mode)'
         type: string
-        required: true
+        required: false
       expected-head:
-        description: 'Exact full release branch SHA carried by this tag'
+        description: 'Exact full release branch SHA carried by this tag (stable mode)'
         type: string
-        required: true
+        required: false
       plan-digest:
-        description: 'Exact SHA-256 digest recorded by the active marker'
+        description: 'Exact SHA-256 digest recorded by the active marker (stable mode)'
         type: string
-        required: true
+        required: false
   push:
     branches: [main]
 
@@ -78,7 +95,7 @@ permissions: {}
 jobs:
   # Stable publish — manual dispatch only. Publishes the `latest` dist-tag.
   publish:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'stable'
     runs-on: 4-core-ubuntu
     # Dedicated, non-cancelling group. Independent of the canary group so a
     # canary push can never cancel or queue ahead of a stable release.
@@ -178,6 +195,91 @@ jobs:
             published=$((published + 1))
           done
           echo "Published $published package(s)."
+
+  # Branch canary — manual dispatch from the dedicated POC branch only. Private
+  # and canary-only packages remain excluded unless the helper receives an
+  # explicit package include in a future, reviewed workflow change.
+  branch-canary:
+    name: Publish branch canary to npm
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'branch-canary'
+    runs-on: 4-core-ubuntu
+    concurrency:
+      group: npm-release-branch-canary-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write # npm OIDC trusted publishing + provenance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Refuse protected refs and reserved channels
+        env:
+          BRANCH_CANARY_CHANNEL: ${{ inputs.channel }}
+        run: >-
+          node scripts/npm/branch-canary.mjs validate
+          --ref "$GITHUB_REF"
+          --allowed-ref refs/heads/poc/vanilla-astryx
+          --channel "$BRANCH_CANARY_CHANNEL"
+          --sha "$GITHUB_SHA"
+
+      # registry-url makes setup-node write the auth config `npm publish` reads.
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/setup
+        with:
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Stamp branch-canary versions and print package plan
+        env:
+          BRANCH_CANARY_CHANNEL: ${{ inputs.channel }}
+        run: >-
+          node scripts/npm/branch-canary.mjs stamp
+          --ref "$GITHUB_REF"
+          --allowed-ref refs/heads/poc/vanilla-astryx
+          --channel "$BRANCH_CANARY_CHANNEL"
+          --sha "$GITHUB_SHA"
+          --output branch-canary-plan.json
+
+      - name: Upload branch-canary package plan
+        uses: actions/upload-artifact@v7
+        with:
+          name: branch-canary-plan-${{ github.sha }}
+          path: branch-canary-plan.json
+          retention-days: 30
+
+      - name: Publish branch-canary packages
+        env:
+          BRANCH_CANARY_CHANNEL: ${{ inputs.channel }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          set -eu
+          PUBLISH_ARGS=(
+            --tag "$BRANCH_CANARY_CHANNEL"
+            --provenance
+            --access public
+            --no-git-checks
+          )
+          if [ "$DRY_RUN" = "true" ]; then
+            PUBLISH_ARGS+=(--dry-run)
+          fi
+
+          while IFS= read -r PACKAGE_DIR; do
+            NAME=$(node -p "require('./$PACKAGE_DIR/package.json').name")
+            VERSION=$(node -p "require('./$PACKAGE_DIR/package.json').version")
+            echo "Packing ${NAME}@${VERSION} for @${BRANCH_CANARY_CHANNEL}"
+            pnpm publish "./$PACKAGE_DIR" "${PUBLISH_ARGS[@]}"
+          done < <(
+            node -e "for (const pkg of require('./branch-canary-plan.json').packages) console.log(pkg.directory)"
+          )
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Branch-canary dry run complete; nothing was published."
+          else
+            echo "Branch canary published to @${BRANCH_CANARY_CHANNEL}."
+          fi
 
   # Canary publish — runs on every push to main. The @canary dist-tag always
   # points to the latest main commit:
