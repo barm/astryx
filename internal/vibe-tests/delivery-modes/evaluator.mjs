@@ -257,6 +257,7 @@ export function measureAdoptionInDocument(assumeVisible = false) {
 
   const classNames = element =>
     (element.getAttribute('class') ?? '').split(/\s+/).filter(Boolean);
+  const isCustomElementHost = element => element.localName.includes('-');
   const isDesignSystemClass = name =>
     name.startsWith('astryx-') || name.startsWith('ax-');
   const belongsToFamily = (name, root) =>
@@ -272,6 +273,7 @@ export function measureAdoptionInDocument(assumeVisible = false) {
         : [];
     return roots.some(root => belongsToFamily(name, root));
   };
+  const isNonAdoptingClass = name => isLayoutClass(name) || name === 'ax-theme';
   const designSystemClasses = element =>
     classNames(element).filter(isDesignSystemClass);
   const isVisible = element => {
@@ -309,9 +311,11 @@ export function measureAdoptionInDocument(assumeVisible = false) {
   const isAdopted = element => {
     let candidate = element;
     while (candidate && candidate !== doc.body) {
-      const classes = designSystemClasses(candidate);
-      if (classes.length > 0) {
-        return classes.some(name => !isLayoutClass(name));
+      if (!isCustomElementHost(candidate)) {
+        const classes = designSystemClasses(candidate);
+        if (classes.length > 0) {
+          return classes.some(name => !isNonAdoptingClass(name));
+        }
       }
       candidate = candidate.parentElement;
     }
@@ -319,7 +323,9 @@ export function measureAdoptionInDocument(assumeVisible = false) {
   };
 
   const visibleElements = [...doc.querySelectorAll('body *')].filter(isVisible);
-  const eligible = [...targets].filter(isVisible);
+  const eligible = [...targets].filter(
+    element => !isCustomElementHost(element) && isVisible(element),
+  );
   const adoptionTargets = eligible.map(element => ({
     tag: element.tagName.toLowerCase(),
     classes: classNames(element),

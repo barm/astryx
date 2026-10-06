@@ -608,7 +608,7 @@ export function App() {
     readMarkupVariant(markupRoot, 'Banner.html', 'informational-card'),
     readMarkupVariant(markupRoot, 'Card.html', 'default'),
     readMarkupVariant(markupRoot, 'TextInput.html', 'default'),
-    readMarkupVariant(markupRoot, 'Layout.html', 'page-shell'),
+    readMarkupVariant(markupRoot, 'Layout.html', 'page-main'),
   ]);
   fragments[4] = fragments[4].replace(
     '</main>',
