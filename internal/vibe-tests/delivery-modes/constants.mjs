@@ -5,9 +5,9 @@ import {createHash} from 'node:crypto';
 export const DEFAULT_REACT_VERSION = '0.6.5';
 export const DEFAULT_REACT_RUNTIME_VERSION = '19.2.7';
 export const DEFAULT_VANILLA_CDN_REF =
-  'eb7a056250cf98d7d86342d24f1e0c744852bebb';
+  'b32f55c9b2148a510e777e9fca8a295cdd9a5979';
 export const DEFAULT_VANILLA_TARBALL_URL =
-  'https://cdn.jsdelivr.net/gh/facebook/astryx@9f2b5b75b2b638b2759f28749a9036c314d6febd/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz';
+  'https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz';
 
 export const CONFIG_NAMES = [
   'react-build',
