@@ -72,6 +72,12 @@ import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import {MarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {TablePlugin} from '@lexical/react/LexicalTablePlugin';
+import {HorizontalRuleExtension} from '@lexical/extension';
+import {TextSemanticsExtension} from './textSemantics';
+import {TableColumnFloorPlugin} from './TableColumnFloorPlugin';
+import {CodeBlockHeaderPlugin} from './CodeBlockHeaderPlugin';
+import {CodeSyntaxPlugin} from './CodeSyntaxPlugin';
+import {TaskCheckboxPlugin} from './TaskCheckboxPlugin';
 import {type Transformer} from '@lexical/markdown';
 export type {Transformer} from '@lexical/markdown';
 import {$generateHtmlFromNodes} from '@lexical/html';
@@ -556,6 +562,9 @@ export const RichTextEditor = forwardRef<
       theme: themeRef.current,
       editable,
       nodes: nodes ? [...DEFAULT_NODES, ...nodes] : [...DEFAULT_NODES],
+      // Horizontal rules select on click and show their selection; struck
+      // text is a deletion.
+      dependencies: [HorizontalRuleExtension, TextSemanticsExtension],
       // `undefined` (not `null`) leaves Lexical's default initializer in place,
       // which seeds the empty document with one paragraph — what
       // LexicalComposer did when no `editorState` was given. `null` would mean
@@ -672,6 +681,7 @@ export const RichTextEditor = forwardRef<
               />
               <HistoryPlugin />
               <ListPlugin />
+              <TaskCheckboxPlugin isReadOnly={isReadOnly || isDisabled} />
               <LinkPlugin />
               {/* Tab keeps its editor meaning inside a table (indent, and
                   Escape then Tab to leave the editor); arrow keys move
@@ -683,6 +693,9 @@ export const RichTextEditor = forwardRef<
                 hasTabHandler={false}
                 hasHorizontalScroll
               />
+              <TableColumnFloorPlugin />
+              <CodeBlockHeaderPlugin />
+              <CodeSyntaxPlugin />
               <TabIndentationPlugin />
               <TabFocusEscapePlugin />
               {hasMarkdownShortcuts && (

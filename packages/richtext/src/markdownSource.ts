@@ -32,6 +32,7 @@ import {
   type Transformer,
 } from '@lexical/markdown';
 import {$isCodeNode} from '@lexical/code';
+import {$isListItemNode, $isListNode} from '@lexical/list';
 import {
   $createParagraphNode,
   $createTextNode,
@@ -47,6 +48,11 @@ import {
   type LexicalNode,
 } from 'lexical';
 import {isMarkedHardLineBreak} from './markdownHardLineBreak';
+import {normalizeListIndentation} from './markdownListIndentation';
+import {
+  $restoreCharacterReferences,
+  protectCharacterReferences,
+} from './markdownCharacterReferences';
 
 /** The whitespace and content one chunk of Markdown source was split into. */
 export interface MarkdownChunk {
@@ -71,6 +77,11 @@ interface GroupRecord {
   readonly canonicalHash?: string;
   /** The line ending the group's source uses. */
   readonly lineEnding?: string;
+  /**
+   * The group right after this one in the source, recorded only when no
+   * blank line separates them (a thematic break written under a block).
+   */
+  readonly next?: string;
 }
 
 /**
@@ -84,6 +95,7 @@ interface SerializedGroupRecord {
   t?: string;
   h?: string;
   e?: string;
+  x?: string;
 }
 
 /** Facts about the whole imported document, kept on the root. */
@@ -116,6 +128,7 @@ function parseGroupRecord(value: unknown): GroupRecord | null {
     trailing: typeof serialized.t === 'string' ? serialized.t : '\n\n',
     canonicalHash: typeof serialized.h === 'string' ? serialized.h : '',
     lineEnding: typeof serialized.e === 'string' ? serialized.e : '\n',
+    ...(typeof serialized.x === 'string' ? {next: serialized.x} : {}),
   };
 }
 
@@ -135,6 +148,9 @@ function unparseGroupRecord(
       serialized.t = record.trailing;
     }
     serialized.h = record.canonicalHash;
+    if (record.next != null) {
+      serialized.x = record.next;
+    }
     if (record.lineEnding !== '\n') {
       serialized.e = record.lineEnding;
     }
@@ -162,11 +178,21 @@ const documentState = createState('astryxMdDocument', {
 
 const BLANK_LINE = /^[ \t]*\r?$/;
 const FENCE_OPEN = /^ {0,3}(`{3,}|~{3,})/;
+// A thematic break line (CommonMark 0.31), and the dash-only lines that
+// underline a paragraph line above them as a heading instead.
+const THEMATIC_BREAK_LINE = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*\r?$/;
+const SETEXT_DASHES = /^ {0,3}-+[ \t]*\r?$/;
+// Lines that start a block other than a paragraph.
+const BLOCK_START =
+  /^ {0,3}(?:[-*+][ \t]|\d{1,9}[.)][ \t]|>|#{1,6}(?:[ \t]|\r?$)|\|)/;
 
 /**
  * Splits Markdown into chunks: runs of non-blank lines, with a fenced code
- * block kept whole across blank lines. Joining every chunk's leading, content,
- * and trailing text gives back the input exactly.
+ * block kept whole across blank lines, and a thematic break always a chunk of
+ * its own, so editing the block beside a rule never rewrites the rule
+ * (spec:AST-062 FR2). A dash-only line under paragraph lines underlines them
+ * instead, and stays with them. Joining every chunk's leading, content, and
+ * trailing text gives back the input exactly.
  */
 export function splitMarkdownChunks(markdown: string): Array<MarkdownChunk> {
   const lines = markdown.split('\n');
@@ -185,6 +211,8 @@ export function splitMarkdownChunks(markdown: string): Array<MarkdownChunk> {
   while (index < lines.length) {
     const start = index;
     let fence: string | null = null;
+    // Whether every line so far is paragraph text.
+    let isParagraph = true;
     while (index < lines.length) {
       const line = lines[index];
       if (fence != null) {
@@ -200,11 +228,25 @@ export function splitMarkdownChunks(markdown: string): Array<MarkdownChunk> {
       if (BLANK_LINE.test(line)) {
         break;
       }
+      const isRule =
+        THEMATIC_BREAK_LINE.test(line) &&
+        !(isParagraph && index > start && SETEXT_DASHES.test(line));
+      if (isRule && index > start) {
+        // The rule starts a chunk of its own.
+        break;
+      }
       const open = FENCE_OPEN.exec(line);
       if (open != null) {
         fence = open[1];
       }
+      if (open != null || BLOCK_START.test(line)) {
+        isParagraph = false;
+      }
       index++;
+      if (isRule) {
+        // And ends it.
+        break;
+      }
     }
     let content = lines.slice(start, index).join('\n');
     let trailing = '';
@@ -290,6 +332,10 @@ export function importMarkdownKeepingSource(
   const byteOrderMark = markdown.startsWith('\uFEFF');
   const body = byteOrderMark ? markdown.slice(1) : markdown;
   const chunks = splitMarkdownChunks(body);
+  // Lexical reads the same chunks with list nesting spelled its way; the
+  // records keep the authored bytes. Only list item indentation changes, so
+  // the chunks line up one for one.
+  const importChunks = splitMarkdownChunks(normalizeListIndentation(body));
   const lineEnding = lineEndingOf(body, '\n');
   editor.update(
     () => {
@@ -303,11 +349,12 @@ export function importMarkdownKeepingSource(
         const holder = $createParagraphNode();
         root.append(holder);
         // Lexical imports LF lines; the record keeps the authored endings.
-        $convertFromMarkdownString(
-          withoutCarriageReturns(chunk.content),
-          transformers,
-          holder,
+        // Character references go through as stand-ins and come back decoded.
+        const {markdown: chunkMarkdown, standIns} = protectCharacterReferences(
+          withoutCarriageReturns(importChunks[index]?.content ?? chunk.content),
         );
+        $convertFromMarkdownString(chunkMarkdown, transformers, holder);
+        $restoreCharacterReferences(holder, standIns);
         $joinSoftLineBreaks(holder);
         for (const node of holder.getChildren()) {
           $setState(node, groupState, {group: `${importId}:${index}`});
@@ -317,6 +364,7 @@ export function importMarkdownKeepingSource(
         }
         holder.remove();
       });
+      $nestFollowingLists(root);
       if (root.getChildrenSize() === 0) {
         // Nothing to import: keep one empty paragraph, as Lexical does.
         root.append($createParagraphNode());
@@ -372,6 +420,35 @@ export function $joinSoftLineBreaks(element: ElementNode): void {
       next.setTextContent(next.getTextContent().replace(/^[ \t]+/, ''));
     }
     child.replace($createTextNode(' '));
+  }
+}
+
+/**
+ * Moves a list that begins nested right after another list into that list's
+ * last item. Lexical starts a new top-level list for an item of a different
+ * type (a bullet under `1. item`) and nests it there, while CommonMark nests
+ * it inside the item above; without this, writing it back would lose the
+ * nesting (spec:AST-061 FR5, spec:AST-062 FR3).
+ */
+export function $nestFollowingLists(root: ElementNode): void {
+  for (const node of root.getChildren()) {
+    const previous = node.getPreviousSibling();
+    if (!$isListNode(node) || !$isListNode(previous)) {
+      continue;
+    }
+    // Lexical keeps a nested list in an item of its own after its parent.
+    let first = node.getFirstChild();
+    while (
+      $isListItemNode(first) &&
+      first.getChildrenSize() === 1 &&
+      $isListNode(first.getFirstChild())
+    ) {
+      previous.append(first);
+      first = node.getFirstChild();
+    }
+    if (node.getChildrenSize() === 0) {
+      node.remove();
+    }
   }
 }
 
@@ -437,6 +514,9 @@ function $recordGroups(
         content + (covered[covered.length - 1]?.trailing ?? ''),
         '\n',
       ),
+      ...(!isLastGroup && !ENDS_WITH_BLANK_LINE.test(trailing)
+        ? {next: `${importId}:${nextChunk}`}
+        : {}),
     };
     group.forEach((node, position) => {
       $setState(
@@ -619,6 +699,11 @@ interface ExportPiece {
   readonly text: string;
   /** Recorded bytes after the piece, when they belong to this document. */
   readonly trailing: string | null;
+  /** Whether the piece is the group's recorded source, unchanged. */
+  readonly isAsWritten: boolean;
+  /** The piece's group, and the group that followed it in the source. */
+  readonly group: string | null;
+  readonly next: string | null;
 }
 
 const ENDS_WITH_BLANK_LINE = /\n[ \t]*\r?\n[ \t\r]*$/;
@@ -628,6 +713,47 @@ const ENDS_WITH_BLANK_LINE = /\n[ \t]*\r?\n[ \t\r]*$/;
  * new blocks in canonical form, all in the document's envelope. Reads the tree
  * without changing it, so it runs in a read of the live editor state.
  */
+/** Whether `text` is one thematic break line, as written. */
+function isRuleLine(text: string): boolean {
+  return !text.includes('\n') && THEMATIC_BREAK_LINE.test(text);
+}
+
+/**
+ * Whether the bytes recorded after `piece` still separate it from `next`.
+ * Bytes ending in a blank line separate any two blocks. A single line break
+ * only follows or precedes a thematic break (a rule is a chunk of its own),
+ * and it belongs to the block it follows:
+ *
+ * - after a rule as written, it stays whatever comes next, because no line
+ *   after a rule can join it;
+ * - between the same two blocks, both as written, it stays;
+ * - after a changed block, it stays only above the same rule as written when
+ *   that rule cannot underline the block as a heading (`***`, `___`, or
+ *   spaced dashes, not `---`).
+ *
+ * Everywhere else — next to a moved, inserted, deleted, or changed block — a
+ * blank line separates the two, so no block can join its neighbor.
+ */
+function keepsRecordedTrailing(piece: ExportPiece, next: ExportPiece): boolean {
+  // The last block's recorded trailing is empty: it separates nothing.
+  if (piece.trailing == null || !piece.trailing.includes('\n')) {
+    return false;
+  }
+  if (ENDS_WITH_BLANK_LINE.test(piece.trailing)) {
+    return true;
+  }
+  if (piece.isAsWritten && isRuleLine(piece.text)) {
+    return true;
+  }
+  if (piece.next == null || piece.next !== next.group || !next.isAsWritten) {
+    return false;
+  }
+  return (
+    piece.isAsWritten ||
+    (isRuleLine(next.text) && !SETEXT_DASHES.test(next.text))
+  );
+}
+
 export function $exportMarkdownKeepingSource(
   transformers: ReadonlyArray<Transformer>,
 ): string {
@@ -669,6 +795,9 @@ export function $exportMarkdownKeepingSource(
           ? record.content
           : withLineEnding(record.content, lineEnding),
         trailing: isOwn ? (record.trailing ?? null) : null,
+        isAsWritten: isOwn,
+        group: record.group,
+        next: record.next ?? null,
       });
       continue;
     }
@@ -683,6 +812,9 @@ export function $exportMarkdownKeepingSource(
         isOwn && record?.lineEnding != null ? record.lineEnding : lineEnding,
       ),
       trailing: isOwn ? (record?.trailing ?? null) : null,
+      isAsWritten: false,
+      group: record?.group ?? null,
+      next: isOwn ? (record?.next ?? null) : null,
     });
   }
   const separator = lineEnding + lineEnding;
@@ -692,10 +824,9 @@ export function $exportMarkdownKeepingSource(
   pieces.forEach((piece, position) => {
     output += piece.text;
     if (position < pieces.length - 1) {
-      output +=
-        piece.trailing != null && ENDS_WITH_BLANK_LINE.test(piece.trailing)
-          ? piece.trailing
-          : separator;
+      output += keepsRecordedTrailing(piece, pieces[position + 1])
+        ? (piece.trailing ?? '')
+        : separator;
     }
   });
   return output + (document?.trailing ?? '');

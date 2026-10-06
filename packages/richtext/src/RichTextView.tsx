@@ -30,12 +30,11 @@ import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import {TablePlugin} from '@lexical/react/LexicalTablePlugin';
-import {ListNode, ListItemNode} from '@lexical/list';
-import {HeadingNode, QuoteNode} from '@lexical/rich-text';
-import {LinkNode, AutoLinkNode} from '@lexical/link';
-import {CodeNode, CodeHighlightNode} from '@lexical/code';
-import {TableNode, TableRowNode, TableCellNode} from '@lexical/table';
 import {TableScrollRegionPlugin} from './TableScrollRegionPlugin';
+import {TableColumnFloorPlugin} from './TableColumnFloorPlugin';
+import {CodeBlockHeaderPlugin} from './CodeBlockHeaderPlugin';
+import {CodeSyntaxPlugin} from './CodeSyntaxPlugin';
+import {TaskCheckboxPlugin} from './TaskCheckboxPlugin';
 import type {
   AnyLexicalExtension,
   Klass,
@@ -43,26 +42,18 @@ import type {
   EditorThemeClasses,
 } from 'lexical';
 import {defineExtension} from 'lexical';
+import {TextSemanticsExtension} from './textSemantics';
+// The same node set as the editor, so anything it writes renders here.
+import {DEFAULT_NODES} from './editorNodes';
 
 const styles = stylex.create({
   root: {
     width: '100%',
+    // Holds the code block headers and task checkboxes drawn over the
+    // content.
+    position: 'relative',
   },
 });
-
-const DEFAULT_NODES: ReadonlyArray<Klass<LexicalNode>> = [
-  HeadingNode,
-  QuoteNode,
-  ListNode,
-  ListItemNode,
-  LinkNode,
-  AutoLinkNode,
-  CodeNode,
-  CodeHighlightNode,
-  TableNode,
-  TableRowNode,
-  TableCellNode,
-];
 
 /**
  * Lexical's `ContentEditable` renders `role="textbox"` and widget-only ARIA
@@ -271,6 +262,8 @@ export function RichTextView({
       theme: themeRef.current,
       editable: false,
       nodes: nodes ? [...DEFAULT_NODES, ...nodes] : [...DEFAULT_NODES],
+      // Struck text is a deletion.
+      dependencies: [TextSemanticsExtension],
       $initialEditorState: value,
       // A read-only view renders persisted content; a bad node/schema should not
       // crash the host. Surface it via onParseError + fallback instead of re-throwing.
@@ -295,11 +288,17 @@ export function RichTextView({
           hasHorizontalScroll
         />
         <TableScrollRegionPlugin />
+        <TableColumnFloorPlugin />
         <RichTextPlugin
           contentEditable={<ContentEditable {...VIEW_CONTENT_EDITABLE_PROPS} />}
           placeholder={null}
           ErrorBoundary={LexicalErrorBoundary}
         />
+        {/* After the content, so the copy buttons and checkboxes follow it
+            in tab order. */}
+        <CodeBlockHeaderPlugin />
+        <CodeSyntaxPlugin />
+        <TaskCheckboxPlugin isReadOnly />
         {plugins}
       </LexicalExtensionComposer>
     </div>

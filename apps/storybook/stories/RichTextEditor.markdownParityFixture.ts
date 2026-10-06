@@ -123,6 +123,45 @@ export const MARKDOWN_PARITY_BLOCKS: readonly MarkdownParityBlock[] = [
       '```',
     ),
   },
+  // Fences that show no language label, as core CodeBlock decides: no info
+  // string, a blank one, and `plaintext`; and an unknown language, which
+  // shows its name.
+  {
+    key: 'code-plain',
+    label: 'Fenced code, no info string',
+    probe: 'plainFence',
+    markdown: lines('```', 'const plainFence = true;', '```'),
+  },
+  {
+    key: 'code-blank',
+    label: 'Fenced code, blank info string',
+    probe: 'blankFence',
+    markdown: lines('```   ', 'const blankFence = true;', '```'),
+  },
+  {
+    key: 'code-plaintext',
+    label: 'Fenced code, plaintext',
+    probe: 'typedAsIs',
+    markdown: lines('```plaintext', 'typedAsIs = 1', '```'),
+  },
+  {
+    key: 'code-unknown',
+    label: 'Fenced code, unknown language',
+    probe: 'unknownFence',
+    markdown: lines('```notalanguage', 'unknownFence()', '```'),
+  },
+  // A line longer than the prose measure: the frame grows to fit it, up to
+  // the full width, and wraps beyond that.
+  {
+    key: 'code-long',
+    label: 'Fenced code, long line',
+    probe: 'longFenceLine',
+    markdown: lines(
+      '```sh',
+      'echo "longFenceLine: the quick brown fox jumps over the lazy dog, then runs back across the field to do it again"',
+      '```',
+    ),
+  },
   {
     key: 'table',
     label: 'Table',
