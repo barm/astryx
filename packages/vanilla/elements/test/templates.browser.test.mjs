@@ -202,9 +202,60 @@ try {
     assert.deepEqual(consoleErrors, [], label);
     await auditLandmarks(page, label);
   }
+  consoleErrors.length = 0;
+  await page.goto(`${baseURL}/packages/vanilla/demo/canary/index.html`, {
+    waitUntil: 'networkidle',
+  });
+  assert.deepEqual(consoleErrors, [], 'demo/canary/index.html');
+  await auditLandmarks(page, 'demo/canary/index.html');
+
+  const staticNestedPage = await context.newPage();
+  await staticNestedPage.setContent(`<!doctype html>
+    <html lang="en"><head><title>Nested HTML layouts</title></head><body>
+      <div class="ax-layout">
+        <main class="ax-layout__content">
+          <div class="ax-layout ax-layout--regions">
+            <div class="ax-layout__content"><p>Nested content</p></div>
+          </div>
+        </main>
+      </div>
+    </body></html>`);
+  assert.equal(await staticNestedPage.locator('main').count(), 1);
+  assert.equal(await staticNestedPage.locator('main main').count(), 0);
+  await auditLandmarks(staticNestedPage, 'nested-layouts/html');
+  await staticNestedPage.close();
+
+  const elementsNestedPage = await context.newPage();
+  await elementsNestedPage.goto(
+    `${baseURL}/packages/vanilla/examples/elements-gallery.html`,
+    {waitUntil: 'load'},
+  );
+  await elementsNestedPage.waitForFunction(() =>
+    customElements.get('ax-layout'),
+  );
+  await elementsNestedPage.evaluate(() => {
+    document.body.innerHTML = `<ax-layout id="outer-layout" is-main-region>
+      <ax-layout id="inner-layout" is-main-region>
+        <p>Nested content</p>
+      </ax-layout>
+    </ax-layout>`;
+  });
+  await elementsNestedPage.waitForFunction(() => {
+    const outer = document.querySelector('#outer-layout');
+    const inner = document.querySelector('#inner-layout');
+    return (
+      outer?.querySelector(':scope > .ax-layout > main.ax-layout__content') &&
+      inner?.querySelector(':scope > .ax-layout > div.ax-layout__content')
+    );
+  });
+  assert.equal(await elementsNestedPage.locator('main').count(), 1);
+  assert.equal(await elementsNestedPage.locator('main main').count(), 0);
+  await auditLandmarks(elementsNestedPage, 'nested-layouts/web-components');
+  await elementsNestedPage.close();
+
   assert.equal(
     landmarkAudits.length,
-    templateNames.length * 2 + recipePages.length,
+    templateNames.length * 2 + recipePages.length + 3,
   );
 
   console.log(

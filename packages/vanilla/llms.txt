@@ -222,6 +222,10 @@ Each markup file starts with `<!-- docs: ... -->` and lists examples under
   markup files — never invent `ax-*` classes.
 - Layout with components (`ax-layout`, `ax-stack ax-stack--gap-3`,
   `ax-stack--horizontal`, `ax-card`), not ad-hoc `<div style>` layout.
+- Use one explicit main region per page: HTML uses
+  `<main class="ax-layout__content">...</main>`; web components use
+  `<ax-layout is-main-region>...</ax-layout>` once at the page root and omit
+  `is-main-region` from nested layouts.
 - Interactivity comes from `data-ax-*` attributes handled by the JS file
   (e.g. `data-ax-dialog-open="<dialog-id>"`, `data-ax-dropdown-menu`,
   `data-ax-tab-list`, `data-ax-tooltip`, `data-ax-collapsible`). Markup added

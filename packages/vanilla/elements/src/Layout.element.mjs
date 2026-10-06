@@ -16,7 +16,7 @@ export default {
       type: 'boolean',
       default: false,
       description:
-        "Renders the content wrapper as the page's main landmark. Leave off for bounded or nested layouts.",
+        "Makes content the page's main landmark. Omit for bounded or nested layouts.",
     },
   },
   slots: {
@@ -26,7 +26,7 @@ export default {
     end: 'Optional logical-end panel region.',
     footer: 'Optional footer region.',
   },
-  docs: "Arrange header, start, content, end, and footer regions without implying a page landmark. Set is-main-region only when this Layout owns the page's single main region.",
+  docs: "Arrange header, panels, content, and footer without implying a page landmark. Set is-main-region only for the page's single main region.",
   examples: [
     {
       name: 'page-main',
@@ -40,24 +40,46 @@ export default {
     {
       name: 'bounded-regions',
       html: `<ax-layout>
-  <nav slot="start">Navigation</nav>
+  <nav slot="start" aria-label="Workspace navigation">Navigation</nav>
   <a href="#details">Main content</a>
   <aside slot="end">Inspector</aside>
 </ax-layout>`,
     },
   ],
-  render(_host, h) {
+  render(host, h) {
+    const wantsMainRegion = h.attr('is-main-region');
     const hasAuthoredMain = [...h.authorNodes].some(
       node =>
         node.nodeType === 1 &&
         (node.localName === 'main' || Boolean(node.querySelector('main'))),
     );
+    const ancestorMain = wantsMainRegion
+      ? host.parentElement?.closest('main, [role="main"]')
+      : null;
+    const hasOtherDocumentMain =
+      wantsMainRegion &&
+      !ancestorMain &&
+      [
+        ...(host.ownerDocument?.querySelectorAll('main, [role="main"]') ?? []),
+      ].some(main => !host.contains(main) && !main.contains(host));
     const contentTag =
-      h.attr('is-main-region') && !hasAuthoredMain ? 'main' : 'div';
-    if (h.attr('is-main-region') && hasAuthoredMain) {
+      wantsMainRegion && !hasAuthoredMain && !ancestorMain ? 'main' : 'div';
+    if (wantsMainRegion && hasAuthoredMain) {
       h.warn(
         'main-region:authored-main',
         '[Astryx] <ax-layout is-main-region> received an authored <main>; the content wrapper remains a div to avoid nested main landmarks.',
+      );
+    }
+    if (wantsMainRegion && ancestorMain) {
+      h.warn(
+        'main-region:ancestor-main',
+        '[Astryx] <ax-layout is-main-region> is nested inside an existing main landmark; the content wrapper remains a div to avoid nested main landmarks.',
+      );
+    }
+    if (hasOtherDocumentMain) {
+      h.warn(
+        'main-region:duplicate-main',
+        '[Astryx] <ax-layout is-main-region> found another main landmark in the document; use is-main-region only once per page.',
       );
     }
     const hasPanels = h.hasSlot('start') || h.hasSlot('end');

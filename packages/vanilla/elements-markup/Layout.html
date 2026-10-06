@@ -1,7 +1,7 @@
-<!-- docs: Arrange header, start, content, end, and footer regions without implying a page landmark. Set is-main-region only when this Layout owns the page's single main region. -->
+<!-- docs: Arrange header, panels, content, and footer without implying a page landmark. Set is-main-region only for the page's single main region. -->
 <!-- attributes:
 height:fill,auto|fill|Fill the available container or grow with content.
-is-main-region:bool|false|Renders the content wrapper as the page's main landmark. Leave off for bounded or nested layouts.
+is-main-region:bool|false|Makes content the page's main landmark. Omit for bounded or nested layouts.
 -->
 <!-- slots:
 header:Optional header region.
@@ -22,7 +22,7 @@ none
 </ax-layout>
 <!-- variant: bounded-regions -->
 <ax-layout>
-  <nav slot="start">Navigation</nav>
+  <nav slot="start" aria-label="Workspace navigation">Navigation</nav>
   <a href="#details">Main content</a>
   <aside slot="end">Inspector</aside>
 </ax-layout>

@@ -15,12 +15,13 @@
     <script defer src="https://cdn.jsdelivr.net/gh/facebook/astryx@__CDN_REF__/packages/vanilla/dist/astryx-vanilla.js"></script>
   </head>
   <body>
-    <main class="ax-layout">
-      <header class="ax-stack ax-stack--gap-2">
+    <div class="ax-layout">
+      <header class="ax-layout__header ax-stack ax-stack--gap-2">
         <h1 class="ax-heading ax-heading--1">Astryx without a build step</h1>
         <p class="ax-text ax-text--large ax-text--secondary">Readable classes, generated tokens, and shipped themes.</p>
       </header>
 
+      <main class="ax-layout__content ax-stack ax-stack--gap-6">
       <section class="ax-card ax-card--elevation-low">
         <div class="ax-stack ax-stack--horizontal ax-stack--gap-3 ax-stack--wrap">
           <label class="ax-stack ax-stack--gap-1">
@@ -69,6 +70,7 @@
           </div>
         </article>
       </section>
-    </main>
+      </main>
+    </div>
   </body>
 </html>

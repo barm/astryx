@@ -2,7 +2,7 @@
 
 export default {
   name: 'Layout',
-  variant: 'page-shell',
+  variant: 'page-main',
   tag: 'ax-layout',
   attributes: {'is-main-region': true},
   html: '<h1 class="ax-heading ax-heading--1" slot="header">Page title</h1><p class="ax-text">Page content</p><span class="ax-text ax-text--supporting" slot="footer">Footer</span>',
