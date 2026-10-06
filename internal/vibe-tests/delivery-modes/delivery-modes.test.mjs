@@ -212,7 +212,7 @@ test('build-less configs use current pins and isolated framework onboarding', ()
   );
   assert.equal(
     specs.vanilla.vanillaTarballUrl,
-    'https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz',
+    'https://cdn.jsdelivr.net/gh/facebook/astryx@ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz',
   );
   assert.equal(specs['web-components'].outputFile, 'index.html');
   assert.equal(
@@ -228,7 +228,7 @@ Common path selection.
 Pinned ${specs.vanilla.vanillaCdnRef}.
 **Option 1 — install the preview CLI (Node 22.13+):**
 \`\`\`sh
-npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
+npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
 
 astryx component --list --framework html
 \`\`\`
