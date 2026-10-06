@@ -18,7 +18,7 @@ var AstryxElements = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // packages/vanilla/elements/src/index.generated.mjs
+  // elements/src/index.generated.mjs
   var index_generated_exports = {};
   __export(index_generated_exports, {
     definitions: () => definitions,
@@ -26,7 +26,7 @@ var AstryxElements = (() => {
     registerElements: () => registerElements
   });
 
-  // packages/vanilla/elements/src/Avatar.element.mjs
+  // elements/src/Avatar.element.mjs
   var sizes = ["xsm", "sm", "md", "lg", "xl"];
   var shapes = ["circle", "rounded", "square"];
   function initials(name) {
@@ -142,7 +142,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Badge.element.mjs
+  // elements/src/Badge.element.mjs
   var variants = [
     "neutral",
     "info",
@@ -195,7 +195,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Banner.element.mjs
+  // elements/src/Banner.element.mjs
   var statuses = ["info", "warning", "error", "success"];
   var elevations = ["none", "low", "med", "high"];
   var icons = { info: "i", warning: "!", error: "!", success: "\u2713" };
@@ -355,7 +355,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Breadcrumbs.element.mjs
+  // elements/src/Breadcrumbs.element.mjs
   var Breadcrumbs_element_default = {
     name: "Breadcrumbs",
     tag: "ax-breadcrumbs",
@@ -466,7 +466,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Button.element.mjs
+  // elements/src/Button.element.mjs
   var variants2 = ["primary", "secondary", "ghost", "destructive"];
   var sizes2 = ["sm", "md", "lg"];
   var types = ["button", "submit", "reset"];
@@ -572,7 +572,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Card.element.mjs
+  // elements/src/Card.element.mjs
   var variants3 = [
     "default",
     "transparent",
@@ -642,7 +642,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/CheckboxInput.element.mjs
+  // elements/src/CheckboxInput.element.mjs
   var sizes3 = ["sm", "md"];
   var statuses2 = ["none", "error", "warning", "success"];
   var initialized = /* @__PURE__ */ new WeakSet();
@@ -820,7 +820,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Collapsible.element.mjs
+  // elements/src/Collapsible.element.mjs
   var positions = ["start", "end"];
   var initialized2 = /* @__PURE__ */ new WeakSet();
   var Collapsible_element_default = {
@@ -948,7 +948,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/DateInput.element.mjs
+  // elements/src/DateInput.element.mjs
   var sizes4 = ["sm", "md", "lg"];
   var statuses3 = ["none", "error", "warning", "success"];
   var initialized3 = /* @__PURE__ */ new WeakSet();
@@ -1095,7 +1095,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Dialog.element.mjs
+  // elements/src/Dialog.element.mjs
   var variants4 = ["standard", "fullscreen"];
   var purposes = ["info", "form", "required"];
   var returnFocus = /* @__PURE__ */ new WeakMap();
@@ -1292,7 +1292,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Divider.element.mjs
+  // elements/src/Divider.element.mjs
   var Divider_element_default = {
     name: "Divider",
     tag: "ax-divider",
@@ -1344,7 +1344,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/DropdownMenu.element.mjs
+  // elements/src/DropdownMenu.element.mjs
   var placements = ["above", "below", "start", "end"];
   var alignments = ["start", "center", "end"];
   function items(api) {
@@ -1543,7 +1543,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/EmptyState.element.mjs
+  // elements/src/EmptyState.element.mjs
   var levels = ["1", "2", "3", "4", "5", "6"];
   function consumeTitle3(host, api) {
     if (!host.hasAttribute("title")) return false;
@@ -1632,7 +1632,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Heading.element.mjs
+  // elements/src/Heading.element.mjs
   var levels2 = ["1", "2", "3", "4", "5", "6"];
   var colors = [
     "primary",
@@ -1694,7 +1694,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/HoverCard.element.mjs
+  // elements/src/HoverCard.element.mjs
   var placements2 = ["above", "below", "start", "end"];
   var alignments2 = ["start", "center", "end"];
   var focusTriggers = ["auto", "always", "never"];
@@ -1876,7 +1876,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Layout.element.mjs
+  // elements/src/Layout.element.mjs
   var heights = ["fill", "auto"];
   var Layout_element_default = {
     name: "Layout",
@@ -1940,7 +1940,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Lightbox.element.mjs
+  // elements/src/Lightbox.element.mjs
   var openerByHost = /* @__PURE__ */ new WeakMap();
   function mediaItems(api) {
     return api.queryAll("[data-ax-lightbox-item], .ax-lightbox__item");
@@ -2198,7 +2198,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Link.element.mjs
+  // elements/src/Link.element.mjs
   var Link_element_default = {
     name: "Link",
     tag: "ax-link",
@@ -2281,7 +2281,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/NumberInput.element.mjs
+  // elements/src/NumberInput.element.mjs
   var sizes5 = ["sm", "md", "lg"];
   var statuses4 = ["none", "error", "warning", "success"];
   var initialized4 = /* @__PURE__ */ new WeakSet();
@@ -2465,7 +2465,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/ProgressBar.element.mjs
+  // elements/src/ProgressBar.element.mjs
   var variants5 = ["accent", "success", "warning", "error", "neutral"];
   var ProgressBar_element_default = {
     name: "ProgressBar",
@@ -2554,7 +2554,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/RadioList.element.mjs
+  // elements/src/RadioList.element.mjs
   var orientations = ["vertical", "horizontal"];
   var sizes6 = ["sm", "md"];
   var statuses5 = ["none", "error", "warning", "success"];
@@ -2727,7 +2727,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Selector.element.mjs
+  // elements/src/Selector.element.mjs
   var sizes7 = ["sm", "md", "lg"];
   var variants6 = ["input", "ghost"];
   var statuses6 = ["none", "error", "success"];
@@ -2914,7 +2914,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/SideNav.element.mjs
+  // elements/src/SideNav.element.mjs
   function setCollapsed(host, api, collapsed, emit = false) {
     api.reflect("is-collapsed", collapsed);
     api.query(".ax-side-nav")?.classList.toggle("ax-side-nav--collapsed", collapsed);
@@ -3012,7 +3012,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Skeleton.element.mjs
+  // elements/src/Skeleton.element.mjs
   var radii = ["none", "0", "1", "2", "3", "4", "rounded"];
   var Skeleton_element_default = {
     name: "Skeleton",
@@ -3082,7 +3082,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Slider.element.mjs
+  // elements/src/Slider.element.mjs
   var orientations2 = ["horizontal", "vertical"];
   var statuses7 = ["none", "error", "warning", "success"];
   var initialized5 = /* @__PURE__ */ new WeakSet();
@@ -3272,7 +3272,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Stack.element.mjs
+  // elements/src/Stack.element.mjs
   var gaps = ["0", "0.5", "1", "1.5", "2", "3", "4", "5", "6", "8", "10"];
   var alignments3 = [
     "start",
@@ -3400,7 +3400,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/StatusDot.element.mjs
+  // elements/src/StatusDot.element.mjs
   var variants7 = ["success", "warning", "error", "accent", "neutral"];
   var StatusDot_element_default = {
     name: "StatusDot",
@@ -3448,7 +3448,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Switch.element.mjs
+  // elements/src/Switch.element.mjs
   var sizes8 = ["sm", "md"];
   var positions2 = ["start", "end"];
   var spacings = ["hug", "spread"];
@@ -3617,7 +3617,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Tab.element.mjs
+  // elements/src/Tab.element.mjs
   var Tab_element_default = {
     name: "Tab",
     tag: "ax-tab",
@@ -3684,7 +3684,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Table.element.mjs
+  // elements/src/Table.element.mjs
   var Table_element_default = {
     name: "Table",
     tag: "ax-table",
@@ -3796,7 +3796,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/TabList.element.mjs
+  // elements/src/TabList.element.mjs
   var sizes9 = ["sm", "md", "lg"];
   var layouts = ["hug", "fill"];
   var orientations3 = ["horizontal", "vertical"];
@@ -3958,7 +3958,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Text.element.mjs
+  // elements/src/Text.element.mjs
   var types2 = ["body", "large", "label", "supporting", "code", "inherit"];
   var colors2 = [
     "primary",
@@ -4061,7 +4061,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/TextArea.element.mjs
+  // elements/src/TextArea.element.mjs
   var sizes10 = ["sm", "md", "lg"];
   var statuses9 = ["none", "error", "warning", "success"];
   var initialized7 = /* @__PURE__ */ new WeakSet();
@@ -4230,7 +4230,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/TextInput.element.mjs
+  // elements/src/TextInput.element.mjs
   var types3 = ["text", "password", "email"];
   var sizes11 = ["sm", "md", "lg"];
   var statuses10 = ["none", "error", "warning", "success"];
@@ -4417,7 +4417,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Theme.element.mjs
+  // elements/src/Theme.element.mjs
   var Theme_element_default = {
     name: "Theme",
     tag: "ax-theme",
@@ -4452,7 +4452,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/TimeInput.element.mjs
+  // elements/src/TimeInput.element.mjs
   var sizes12 = ["sm", "md", "lg"];
   var statuses11 = ["none", "error", "warning", "success"];
   var initialized8 = /* @__PURE__ */ new WeakSet();
@@ -4601,7 +4601,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Toast.element.mjs
+  // elements/src/Toast.element.mjs
   var types4 = ["info", "error"];
   var timers2 = /* @__PURE__ */ new WeakMap();
   function clearTimer(host) {
@@ -4704,7 +4704,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Tooltip.element.mjs
+  // elements/src/Tooltip.element.mjs
   var placements3 = ["above", "below", "start", "end"];
   var alignments4 = ["start", "center", "end"];
   var focusTriggers2 = ["auto", "always", "never"];
@@ -4885,7 +4885,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/TopNav.element.mjs
+  // elements/src/TopNav.element.mjs
   function enhanceNavigationItems2(api) {
     for (const container of api.queryAll(".ax-top-nav__items")) {
       for (const child of container.children) {
@@ -4952,7 +4952,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/Typeahead.element.mjs
+  // elements/src/Typeahead.element.mjs
   var sizes13 = ["sm", "md", "lg"];
   var statuses12 = ["none", "error", "warning", "success"];
   var initialized9 = /* @__PURE__ */ new WeakSet();
@@ -5121,7 +5121,7 @@ var AstryxElements = (() => {
     }
   };
 
-  // packages/vanilla/elements/src/runtime.mjs
+  // elements/src/runtime.mjs
   var GLOBAL_ATTRIBUTES = /* @__PURE__ */ new Set([
     "accesskey",
     "autocapitalize",
@@ -5840,7 +5840,7 @@ var AstryxElements = (() => {
     return definitions2.map(registerElement);
   }
 
-  // packages/vanilla/elements/src/index.generated.mjs
+  // elements/src/index.generated.mjs
   var definitions = [
     Avatar_element_default,
     Badge_element_default,

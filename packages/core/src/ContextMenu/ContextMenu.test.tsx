@@ -1063,3 +1063,55 @@ describe('ContextMenu press model', () => {
     expect(onCut).not.toHaveBeenCalled();
   });
 });
+
+describe('ContextMenu keyboard', () => {
+  const item = (name: string) =>
+    screen.getByRole('menuitem', {name, hidden: true});
+
+  it('wraps arrow navigation at the ends', () => {
+    render(
+      <ContextMenu items={[{label: 'Cut'}, {label: 'Copy'}, {label: 'Paste'}]}>
+        <div>Right-click me</div>
+      </ContextMenu>,
+    );
+    fireEvent.contextMenu(screen.getByText('Right-click me'));
+    const menu = screen.getByRole('menu', {hidden: true});
+    item('Paste').focus();
+    fireEvent.keyDown(menu, {key: 'ArrowDown'});
+    expect(item('Cut')).toHaveFocus();
+    fireEvent.keyDown(menu, {key: 'ArrowUp'});
+    expect(item('Paste')).toHaveFocus();
+  });
+});
+
+describe('ContextMenu inline trigger (triggerAs)', () => {
+  it('an inline trigger keeps its flow', () => {
+    render(
+      <p>
+        Filed under{' '}
+        <ContextMenu
+          triggerAs="span"
+          data-testid="ref"
+          items={[{label: 'Open', onClick: () => {}}]}>
+          T123
+        </ContextMenu>{' '}
+        yesterday.
+      </p>,
+    );
+    const trigger = screen.getByTestId('ref');
+    expect(trigger.tagName).toBe('SPAN');
+    expect(trigger.parentElement?.tagName).toBe('P');
+    expect(trigger).not.toHaveStyle({display: 'block'});
+    fireEvent.contextMenu(trigger, {clientX: 20, clientY: 10, detail: 1});
+    expect(HTMLElement.prototype.showPopover).toHaveBeenCalled();
+  });
+
+  it('defaults to a block trigger', () => {
+    render(
+      <ContextMenu data-testid="area" items={[{label: 'Open'}]}>
+        Area
+      </ContextMenu>,
+    );
+    expect(screen.getByTestId('area').tagName).toBe('DIV');
+  });
+});
