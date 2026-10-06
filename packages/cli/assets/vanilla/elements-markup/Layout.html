@@ -1,6 +1,7 @@
-<!-- docs: Arrange header, start, content, end, and footer regions in a bounded layout. -->
+<!-- docs: Arrange header, start, content, end, and footer regions without implying a page landmark. Set is-main-region only when this Layout owns the page's single main region. -->
 <!-- attributes:
 height:fill,auto|fill|Fill the available container or grow with content.
+is-main-region:bool|false|Renders the content wrapper as the page's main landmark. Leave off for bounded or nested layouts.
 -->
 <!-- slots:
 header:Optional header region.
@@ -13,15 +14,15 @@ footer:Optional footer region.
 none
 -->
 <!-- properties:attrs→camelCase -->
-<!-- variant: page-shell -->
-<ax-layout>
+<!-- variant: page-main -->
+<ax-layout is-main-region>
   <h1 slot="header">Page title</h1>
   <p>Page content</p>
   <small slot="footer">Footer</small>
 </ax-layout>
-<!-- variant: named-regions -->
+<!-- variant: bounded-regions -->
 <ax-layout>
   <nav slot="start">Navigation</nav>
-  <main>Main content</main>
+  <a href="#details">Main content</a>
   <aside slot="end">Inspector</aside>
 </ax-layout>

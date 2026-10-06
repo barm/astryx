@@ -1,10 +1,10 @@
-<!-- docs: Use the page shell for simple header-main-footer pages; use named Header, Content, and Panel regions for bounded application layouts. -->
+<!-- docs: Use <main class="ax-layout__content"> only when Layout owns the page's single main region; use <div class="ax-layout__content"> for bounded or nested layouts. -->
 <!-- variant: page-shell -->
 <div class="ax-layout">
   <header class="ax-layout__header">
     <h1 class="ax-heading ax-heading--1">Page title</h1>
   </header>
-  <main class="ax-layout__main"><p class="ax-text">Page content</p></main>
+  <main class="ax-layout__content"><p class="ax-text">Page content</p></main>
   <footer class="ax-layout__footer">
     <span class="ax-text ax-text--supporting">Footer</span>
   </footer>
@@ -25,11 +25,11 @@
       ><a class="ax-link" href="#activity">Activity</a>
     </nav>
   </aside>
-  <main class="ax-layout__content">
+  <div class="ax-layout__content">
     <h2 class="ax-heading ax-heading--2">LayoutContent</h2>
     <p class="ax-text">
       Use named regions when content needs a header, a scrollable center, or
       logical start/end panels.
     </p>
-  </main>
+  </div>
 </div>

@@ -1,7 +1,7 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 /**
- * @input Pinned web-component demo copies plus locally built Vanilla Astryx assets.
- * @output Chromium evidence for all nine templates in two themes and both modes.
+ * @input Pinned template copies, state-recipe pages, and locally built Vanilla Astryx assets.
+ * @output Chromium evidence for template rendering plus landmark audits over both delivery paths and recipe pages.
  * @position Browser acceptance suite for web-component template delivery.
  */
 
@@ -11,6 +11,7 @@ import {readFile, stat} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import AxeBuilder from '@axe-core/playwright';
 import {chromium} from 'playwright';
 
 const repoRoot = path.resolve(
@@ -18,6 +19,7 @@ const repoRoot = path.resolve(
   '../../../..',
 );
 const pinnedRoot = path.join(repoRoot, 'packages/vanilla/demo/elements/pinned');
+const staticPinnedRoot = path.join(repoRoot, 'packages/vanilla/demo/pinned');
 const distRoot = path.join(repoRoot, 'packages/vanilla/dist');
 const templateNames = [
   'dashboard',
@@ -29,6 +31,13 @@ const templateNames = [
   'settings',
   'shell-side-nav',
   'table-filter',
+];
+const recipePages = [
+  ['recipes/state-recipes.html', 'state-recipes.html'],
+  [
+    'elements-recipes/elements-state-recipes.html',
+    'elements-state-recipes.html',
+  ],
 ];
 const mimeTypes = new Map([
   ['.css', 'text/css; charset=utf-8'],
@@ -69,9 +78,28 @@ function startServer() {
 
 const {server, baseURL} = await startServer();
 const browser = await chromium.launch({headless: true});
+const context = await browser.newContext();
 const results = [];
+const landmarkAudits = [];
+
+async function auditLandmarks(page, templatePath) {
+  const axe = await new AxeBuilder({page}).analyze();
+  const violations = axe.violations
+    .filter(violation => violation.id.startsWith('landmark-'))
+    .map(violation => ({
+      id: violation.id,
+      nodes: violation.nodes.map(node => ({
+        target: node.target,
+        html: node.html,
+        summary: node.failureSummary,
+      })),
+    }));
+  assert.deepEqual(violations, [], templatePath);
+  landmarkAudits.push(templatePath);
+}
+
 try {
-  const page = await browser.newPage();
+  const page = await context.newPage();
   const consoleErrors = [];
   page.on('console', message => {
     if (message.type() === 'error') consoleErrors.push(message.text());
@@ -145,18 +173,50 @@ try {
         assert.ok(state.hosts > 0);
         assert.ok(state.bodyWidth > 0);
         assert.deepEqual(consoleErrors, [], `${template}:${theme}:${mode}`);
+        if (theme === 'neutral' && mode === 'light') {
+          await auditLandmarks(page, `elements-templates/${template}.html`);
+        }
         results.push({template, theme, mode, hosts: state.hosts});
       }
     }
   }
   assert.equal(results.length, 36);
+
+  for (const template of templateNames) {
+    consoleErrors.length = 0;
+    await page.goto(
+      `${baseURL}/packages/vanilla/demo/pinned/${template}.html?theme=neutral&mode=light`,
+      {waitUntil: 'networkidle'},
+    );
+    assert.deepEqual(consoleErrors, [], `templates/${template}.html`);
+    await auditLandmarks(page, `templates/${template}.html`);
+  }
+  for (const [label, file] of recipePages) {
+    consoleErrors.length = 0;
+    await page.goto(`${baseURL}/packages/vanilla/examples/${file}`, {
+      waitUntil: 'networkidle',
+    });
+    if (file.startsWith('elements-')) {
+      await page.waitForFunction(() => customElements.get('ax-button'));
+    }
+    assert.deepEqual(consoleErrors, [], label);
+    await auditLandmarks(page, label);
+  }
+  assert.equal(
+    landmarkAudits.length,
+    templateNames.length * 2 + recipePages.length,
+  );
+
   console.log(
     JSON.stringify(
       {
         browser: await browser.version(),
         pinnedRoot,
+        staticPinnedRoot,
         matrices: results.length,
+        landmarkAudits,
         templates: templateNames,
+        recipePages: recipePages.map(([label]) => label),
         themes: ['neutral', 'butter'],
         modes: ['light', 'dark'],
       },
@@ -165,6 +225,7 @@ try {
     ),
   );
 } finally {
+  await context.close();
   await browser.close();
   await new Promise(resolve => server.close(resolve));
 }
