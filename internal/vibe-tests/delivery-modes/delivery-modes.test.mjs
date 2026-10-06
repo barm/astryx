@@ -22,11 +22,11 @@ import {
 import {
   auditAgentContext,
   auditTranscriptCommands,
-  claudeIsolatedArgs,
   countAstryxInvocations,
   countCliLookups,
   createPrivateRunRoot,
 } from './process.mjs';
+import {runnerInvocation, validateRunnerProfile} from './runner-profile.mjs';
 import {
   buildVanillaAgentDocs,
   buildWebComponentsAgentDocs,
@@ -38,6 +38,82 @@ import {
 import {summarize} from './report.mjs';
 
 const temporaryDirectories = [];
+
+function testRunnerProfile() {
+  return validateRunnerProfile({
+    schema: 1,
+    runners: {
+      claude: {
+        command: '/runner/a',
+        input: 'stdin',
+        agentArgs: [
+          'agent',
+          '--policy-mode',
+          '--mcp',
+          '{{MCP_CONFIG}}',
+          '--tools',
+          '{{TOOLS}}',
+        ],
+        judgeArgs: [
+          'judge',
+          '--mcp',
+          '{{MCP_CONFIG}}',
+          '--tools',
+          '{{TOOLS}}',
+          '--schema',
+          '{{JSON_SCHEMA}}',
+        ],
+        audit: {
+          contextPolicies: {
+            '1.0.0': {
+              agents: ['runner-a'],
+              plugins: [
+                {name: 'plugin-a', path: 'builtin', source: 'plugin-a@builtin'},
+                {name: 'plugin-b', path: 'builtin', source: 'plugin-b@builtin'},
+              ],
+            },
+          },
+          requiredStderr: ['configured policy active'],
+          pluginInstallMarker: 'installing extension',
+          knownAsymmetry: 'runner-a asymmetry',
+          projectInstructions: 'runner-a instruction behavior',
+          pathPolicy: 'test path policy',
+        },
+      },
+      muse: {
+        command: '/runner/b',
+        input: 'none',
+        maxModelSteps: 80,
+        agentArgs: [
+          'agent',
+          '--project',
+          '{{PROJECT}}',
+          '--task',
+          '{{TASK_FILE}}',
+          '--steps',
+          '{{MAX_MODEL_STEPS}}',
+        ],
+        audit: {
+          pluginGateOffMarker: 'runner-b extensions disabled',
+          pluginInstallMarker: 'installing extension',
+          knownAsymmetry: 'runner-b asymmetry',
+          pathPolicy: 'test path policy',
+        },
+      },
+    },
+    sandbox: {
+      mountScript: 'exit 0',
+      probeScript: 'exit 0',
+      hostUserRoot: '/host/users',
+      transcriptAuditPaths: ['/private/root', '/host/bin'],
+      manifest: {runnerContext: {}, isolation: {}},
+      probeReceipt: {configuredChecksPassed: true},
+    },
+    versionCommands: {
+      node: {command: '/runtime/node', args: ['--version']},
+    },
+  });
+}
 afterEach(async () => {
   await Promise.all(
     temporaryDirectories
@@ -619,14 +695,13 @@ test('all supported Astryx CLI invocation forms are counted', () => {
   assert.equal(countCliLookups(transcript), commands.length);
 });
 
-test('transcript audit flags every sensitive host-path command', () => {
+test('transcript audit flags every profile-configured sensitive path', () => {
+  const profile = testRunnerProfile();
   const transcript = [
     'cat index.html',
     'sed s/data-theme="light"/data-theme="dark"/ index.html',
-    'cat /proc/1/root/secret',
-    '/usr/local/bin/scsc ls',
-    'ls /var/facebook/credentials',
-    'ls /data/users',
+    'cat /private/root/secret',
+    '/host/bin/private-tool --help',
   ]
     .map(command =>
       JSON.stringify({
@@ -635,106 +710,123 @@ test('transcript audit flags every sensitive host-path command', () => {
       }),
     )
     .join('\n');
-  const audit = auditTranscriptCommands(transcript);
+  const audit = auditTranscriptCommands(transcript, profile);
   assert.equal(audit.passed, false);
-  assert.equal(audit.flaggedCommandCount, 4);
-  assert.deepEqual(audit.touchedPaths, [
-    '/data',
-    '/proc',
-    '/usr/local/bin',
-    '/var/facebook',
+  assert.equal(audit.flaggedCommandCount, 2);
+  assert.deepEqual(audit.touchedPaths, ['/host/bin', '/private/root']);
+});
+
+test('runner invocations come entirely from profile templates', () => {
+  const profile = testRunnerProfile();
+  const agent = runnerInvocation(profile, 'claude', 'agent', {
+    MCP_CONFIG: '/sandbox/empty.json',
+    TOOLS: 'Read,Write',
+  });
+  assert.equal(agent.command, '/runner/a');
+  assert.deepEqual(agent.args, [
+    'agent',
+    '--policy-mode',
+    '--mcp',
+    '/sandbox/empty.json',
+    '--tools',
+    'Read,Write',
   ]);
+
+  const judge = runnerInvocation(profile, 'claude', 'judge', {
+    MCP_CONFIG: '/sandbox/empty.json',
+    TOOLS: 'Read',
+    JSON_SCHEMA: '{"type":"object"}',
+  });
+  assert.deepEqual(judge.args.slice(-2), ['--schema', '{"type":"object"}']);
+  assert.throws(
+    () => runnerInvocation(profile, 'claude', 'judge', {}),
+    /requires value MCP_CONFIG/,
+  );
 });
 
-test('isolated Claude args always use secure internet mode', () => {
-  for (const tools of ['Bash,Read,Write,Edit', 'Read']) {
-    const args = claudeIsolatedArgs({
-      mcpConfig: '/mnt/run/empty-mcp.json',
-      tools,
-    });
-    assert.equal(args[0], '--secure-internet-mode');
-    assert.equal(
-      args.filter(argument => argument === '--secure-internet-mode').length,
-      1,
-    );
-    assert.equal(args.includes('--safe-mode'), true);
-    assert.equal(args.at(args.indexOf('--tools') + 1), tools);
-  }
-});
-
-test('context audit enforces the exact Claude 2.1.289 init policy', () => {
+test('context audit enforces the exact profile policy', () => {
+  const profile = testRunnerProfile();
   const cleanInit = {
     type: 'system',
     subtype: 'init',
     cwd: '/mnt/run/project',
-    claude_code_version: '2.1.289',
-    tools: ['Bash', 'Read', 'Write', 'Edit'],
-    agents: ['claude', 'Explore', 'general-purpose', 'Plan'],
+    claude_code_version: '1.0.0',
+    tools: ['Read', 'Write'],
+    agents: ['runner-a'],
     skills: [],
     slash_commands: [],
     mcp_servers: [],
     plugins: [
-      {
-        name: 'cc-plugin-sec-default',
-        path: 'builtin',
-        source: 'cc-plugin-sec-default@builtin',
-      },
-      {
-        name: 'cc-plugin-agents-md',
-        path: 'builtin',
-        source: 'cc-plugin-agents-md@builtin',
-      },
+      {name: 'plugin-b', path: 'builtin', source: 'plugin-b@builtin'},
+      {name: 'plugin-a', path: 'builtin', source: 'plugin-a@builtin'},
     ],
   };
-  const secureModeStderr = [
-    'Using --secure-internet-mode with restricted user data access.',
-    'Your session will not have access to user data.',
-  ].join('\n');
   const clean = auditAgentContext(
     'claude',
     JSON.stringify(cleanInit),
-    secureModeStderr,
+    'configured policy active',
+    profile,
   );
   assert.equal(clean.passed, true, JSON.stringify(clean.violations));
-  assert.equal(clean.runnerVersion, '2.1.289');
+  assert.equal(clean.runnerVersion, '1.0.0');
   assert.equal(clean.plugins.length, 2);
-  const insecure = auditAgentContext('claude', JSON.stringify(cleanInit), '');
-  assert.equal(insecure.passed, false);
+  const unconfirmed = auditAgentContext(
+    'claude',
+    JSON.stringify(cleanInit),
+    '',
+    profile,
+  );
+  assert.equal(unconfirmed.passed, false);
   assert.equal(
-    insecure.violations.includes(
-      'Claude did not confirm secure internet mode with restricted user data',
+    unconfirmed.violations.includes(
+      'Claude did not confirm the configured launcher policy',
     ),
     true,
   );
 
-  const pluginAuthoring = structuredClone(cleanInit);
-  pluginAuthoring.plugins.push({
-    name: 'cc-plugin-plugin-authoring',
+  const unexpectedPlugin = structuredClone(cleanInit);
+  unexpectedPlugin.plugins.push({
+    name: 'plugin-c',
     path: 'builtin',
-    source: 'cc-plugin-plugin-authoring@builtin',
+    source: 'plugin-c@builtin',
   });
   assert.equal(
-    auditAgentContext('claude', JSON.stringify(pluginAuthoring), '').passed,
+    auditAgentContext(
+      'claude',
+      JSON.stringify(unexpectedPlugin),
+      'configured policy active',
+      profile,
+    ).passed,
     false,
   );
-  const unknownVersion = {...cleanInit, claude_code_version: '2.1.290'};
+  const unknownVersion = {...cleanInit, claude_code_version: '1.0.1'};
   assert.equal(
-    auditAgentContext('claude', JSON.stringify(unknownVersion), '').passed,
+    auditAgentContext(
+      'claude',
+      JSON.stringify(unknownVersion),
+      'configured policy active',
+      profile,
+    ).passed,
     false,
   );
   const contaminated = {
     ...cleanInit,
-    skills: ['plugin-authoring'],
-    slash_commands: ['plugin-authoring'],
-    mcp_servers: [{name: 'meta'}],
-    agents: [...cleanInit.agents, 'unexpected'],
+    skills: ['unexpected-skill'],
+    slash_commands: ['unexpected-command'],
+    mcp_servers: [{name: 'unexpected-server'}],
+    agents: [...cleanInit.agents, 'unexpected-agent'],
   };
   const contaminatedTranscript = [
     JSON.stringify(contaminated),
     JSON.stringify({type: 'system', subtype: 'hook_started'}),
   ].join('\n');
   assert.equal(
-    auditAgentContext('claude', contaminatedTranscript, '').passed,
+    auditAgentContext(
+      'claude',
+      contaminatedTranscript,
+      'configured policy active',
+      profile,
+    ).passed,
     false,
   );
 
@@ -744,7 +836,8 @@ test('context audit enforces the exact Claude 2.1.289 init policy', () => {
       payload_type: 'task.lifecycle.proposed',
       payload: {event: {task_kind: 'reminder.agent.skill-reminder'}},
     }),
-    'muse: gate plugins: off (MUSE_EXPERIMENTAL_PLUGINS)',
+    'runner-b extensions disabled',
+    profile,
   );
   assert.equal(muse.passed, true);
   assert.equal(muse.builtInReminderEvents, 1);

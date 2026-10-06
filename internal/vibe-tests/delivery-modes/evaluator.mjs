@@ -9,11 +9,11 @@ import {AxeBuilder} from '@axe-core/playwright';
 import {chromium} from 'playwright';
 import {
   auditAgentContext,
-  claudeIsolatedArgs,
   createPrivateRunRoot,
   runCommand,
   runIsolatedCommand,
 } from './process.mjs';
+import {runnerInvocation} from './runner-profile.mjs';
 
 const fsp = fs.promises;
 
@@ -23,6 +23,7 @@ export async function evaluateRun({
   prompt,
   screenshotPath,
   baselineSources,
+  runnerProfile,
   skipJudge = false,
   verifyStarterTyping = false,
 }) {
@@ -114,7 +115,7 @@ export async function evaluateRun({
       ? zeroJudgment('Render failed, was blank, or emitted runtime errors')
       : skipJudge
         ? {skipped: true}
-        : await runBlindJudge({prompt, screenshotPath});
+        : await runBlindJudge({prompt, screenshotPath, runnerProfile});
 
     return {
       build: commandReceipt(build),
@@ -652,7 +653,7 @@ async function waitForUrl(url, child, logPath) {
   throw new Error(`Timed out waiting for ${url}`);
 }
 
-async function runBlindJudge({prompt, screenshotPath}) {
+async function runBlindJudge({prompt, screenshotPath, runnerProfile}) {
   const schema = {
     type: 'object',
     properties: {
@@ -685,7 +686,12 @@ Do not infer implementation details, identify the system, inspect other files, o
   const attempts = [];
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     attempts.push(
-      await runBlindJudgeAttempt({judgePrompt, schema, screenshotPath}),
+      await runBlindJudgeAttempt({
+        judgePrompt,
+        schema,
+        screenshotPath,
+        runnerProfile,
+      }),
     );
     const resolved = resolveJudgeAttempts(attempts, attempt === 2);
     if (resolved) {
@@ -726,7 +732,12 @@ export function resolveJudgeAttempts(attempts, exhausted = false) {
   };
 }
 
-async function runBlindJudgeAttempt({judgePrompt, schema, screenshotPath}) {
+async function runBlindJudgeAttempt({
+  judgePrompt,
+  schema,
+  screenshotPath,
+  runnerProfile,
+}) {
   const privateRun = await createPrivateRunRoot('judge-');
   const anonymousScreenshot = path.join(
     privateRun.projectDir,
@@ -735,23 +746,21 @@ async function runBlindJudgeAttempt({judgePrompt, schema, screenshotPath}) {
   await fsp.copyFile(screenshotPath, anonymousScreenshot);
 
   try {
+    const invocation = runnerInvocation(runnerProfile, 'claude', 'judge', {
+      MCP_CONFIG: `${privateRun.sandboxProjectDir}/../empty-mcp.json`,
+      TOOLS: 'Read',
+      JSON_SCHEMA: JSON.stringify(schema),
+      PROJECT: privateRun.sandboxProjectDir,
+      TASK_FILE: `${privateRun.sandboxProjectDir}/TASK.md`,
+      MAX_MODEL_STEPS: runnerProfile.runners.claude.maxModelSteps ?? '',
+    });
     const result = await runIsolatedCommand(
       privateRun.root,
-      '/usr/local/bin/claude_code/os/claude',
-      [
-        ...claudeIsolatedArgs({
-          mcpConfig: `${privateRun.sandboxProjectDir}/../empty-mcp.json`,
-          tools: 'Read',
-        }),
-        '-p',
-        '--output-format',
-        'stream-json',
-        '--verbose',
-        '--json-schema',
-        JSON.stringify(schema),
-      ],
+      invocation.command,
+      invocation.args,
+      runnerProfile,
       {
-        input: judgePrompt,
+        input: invocation.input === 'stdin' ? judgePrompt : undefined,
         timeoutMs: 5 * 60 * 1000,
         transcriptPath: privateRun.transcriptPath,
       },
@@ -767,6 +776,7 @@ async function runBlindJudgeAttempt({judgePrompt, schema, screenshotPath}) {
       'claude',
       result.stdout,
       result.stderr,
+      runnerProfile,
     );
     return {
       configBlind: true,

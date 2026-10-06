@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "runners": {
+    "claude": {
+      "command": "/path/to/runner-a",
+      "input": "stdin",
+      "agentArgs": [
+        "run",
+        "--tools",
+        "{{TOOLS}}",
+        "--config",
+        "{{MCP_CONFIG}}"
+      ],
+      "judgeArgs": [
+        "judge",
+        "--tools",
+        "{{TOOLS}}",
+        "--schema",
+        "{{JSON_SCHEMA}}"
+      ],
+      "audit": {
+        "contextPolicies": {
+          "REPLACE_ME_VERSION": {
+            "agents": ["REPLACE_ME_AGENT"],
+            "plugins": [
+              {
+                "name": "REPLACE_ME_PLUGIN",
+                "path": "REPLACE_ME_PATH",
+                "source": "REPLACE_ME_SOURCE"
+              }
+            ]
+          }
+        },
+        "requiredStderr": ["REPLACE_ME_READY_MARKER"],
+        "pluginInstallMarker": "REPLACE_ME_INSTALL_MARKER",
+        "knownAsymmetry": "REPLACE_ME_RUNNER_A_ASYMMETRY",
+        "projectInstructions": "REPLACE_ME_PROJECT_INSTRUCTION_BEHAVIOR",
+        "pathPolicy": "REPLACE_ME_PATH_POLICY"
+      }
+    },
+    "muse": {
+      "command": "/path/to/runner-b",
+      "input": "none",
+      "maxModelSteps": 80,
+      "agentArgs": [
+        "run",
+        "--workspace",
+        "{{PROJECT}}",
+        "--task",
+        "{{TASK_FILE}}",
+        "--steps",
+        "{{MAX_MODEL_STEPS}}"
+      ],
+      "audit": {
+        "pluginGateOffMarker": "REPLACE_ME_GATE_MARKER",
+        "pluginInstallMarker": "REPLACE_ME_INSTALL_MARKER",
+        "knownAsymmetry": "REPLACE_ME_RUNNER_B_ASYMMETRY",
+        "pathPolicy": "REPLACE_ME_PATH_POLICY"
+      }
+    }
+  },
+  "sandbox": {
+    "mountScript": "set -eu\necho 'replace with the local mount-namespace launcher' >&2\nexit 64",
+    "probeScript": "set -eu\necho 'replace with the local isolation probe' >&2\nexit 64",
+    "hostUserRoot": "/path/to/host/users",
+    "transcriptAuditPaths": ["/path/to/sensitive/root"],
+    "manifest": {
+      "runnerContext": {
+        "claude": "REPLACE_ME_RUNNER_A_CONTEXT",
+        "muse": "REPLACE_ME_RUNNER_B_CONTEXT"
+      },
+      "isolation": {
+        "summary": "REPLACE_ME_ISOLATION_SUMMARY"
+      }
+    },
+    "probeReceipt": {
+      "configuredChecksPassed": true
+    }
+  },
+  "versionCommands": {
+    "node": {
+      "command": "/path/to/node",
+      "args": ["--version"]
+    },
+    "runnerB": {
+      "command": "/path/to/runner-b",
+      "args": ["--version"]
+    }
+  }
+}

@@ -9,122 +9,6 @@ import * as path from 'node:path';
 const DEFAULT_CAPTURE_LIMIT = 20 * 1024 * 1024;
 export const SANDBOX_ROOT = '/mnt/run';
 export const SANDBOX_PROJECT = `${SANDBOX_ROOT}/project`;
-export const CLAUDE_SAFE_SETTINGS = JSON.stringify({
-  enabledPlugins: {'cc-plugin-plugin-authoring@builtin': false},
-});
-
-export function claudeIsolatedArgs({mcpConfig, tools}) {
-  return [
-    '--secure-internet-mode',
-    '--safe-mode',
-    '--settings',
-    CLAUDE_SAFE_SETTINGS,
-    '--strict-mcp-config',
-    '--mcp-config',
-    mcpConfig,
-    '--no-session-persistence',
-    '--permission-mode',
-    'bypassPermissions',
-    '--dangerously-skip-permissions',
-    '--disable-slash-commands',
-    '--tools',
-    tools,
-  ];
-}
-
-const CLAUDE_CONTEXT_POLICY = {
-  '2.1.289': {
-    agents: ['claude', 'Explore', 'general-purpose', 'Plan'],
-    plugins: [
-      {
-        name: 'cc-plugin-agents-md',
-        path: 'builtin',
-        source: 'cc-plugin-agents-md@builtin',
-      },
-      {
-        name: 'cc-plugin-sec-default',
-        path: 'builtin',
-        source: 'cc-plugin-sec-default@builtin',
-      },
-    ],
-  },
-};
-
-const MOUNT_NAMESPACE_SCRIPT = `set -eu
-uid="$1"
-gid="$2"
-private_root="$3"
-browser_cache="$4"
-username="$5"
-shift 5
-command="$1"
-shift
-mount --make-rprivate /
-mount -t tmpfs tmpfs /mnt
-mkdir -p ${SANDBOX_ROOT} ${SANDBOX_ROOT}/browser-cache
-mount --bind "$private_root" ${SANDBOX_ROOT}
-mount --bind "$browser_cache" ${SANDBOX_ROOT}/browser-cache
-mount -o remount,bind,ro ${SANDBOX_ROOT}/browser-cache
-mkdir -p /mnt/host-claude-code /mnt/host-muse-code
-mount --bind /usr/local/bin/claude_code /mnt/host-claude-code
-mount --bind /usr/local/bin/muse_code /mnt/host-muse-code
-touch /mnt/host-servicerouter
-mount --bind /usr/local/bin/servicerouter /mnt/host-servicerouter
-mount -t tmpfs tmpfs /tmp
-mount -t tmpfs tmpfs /home
-mount -t tmpfs tmpfs /data
-mount -t tmpfs tmpfs /var/tmp
-mount -t tmpfs tmpfs /dev/shm
-mount -t tmpfs -o noexec,nosuid,nodev tmpfs /usr/local/bin
-mkdir -p /usr/local/bin/claude_code /usr/local/bin/muse_code
-mount --bind /mnt/host-claude-code /usr/local/bin/claude_code
-mount -o remount,bind,ro /usr/local/bin/claude_code
-mount --bind /mnt/host-muse-code /usr/local/bin/muse_code
-mount -o remount,bind,ro /usr/local/bin/muse_code
-touch /usr/local/bin/servicerouter
-mount --bind /mnt/host-servicerouter /usr/local/bin/servicerouter
-mount -o remount,bind,ro /usr/local/bin/servicerouter
-mount --rbind /var/facebook /var/facebook
-mount --make-rprivate /var/facebook
-mount -o remount,bind,rw,noexec,nosuid,nodev /var/facebook
-mount -t tmpfs -o noexec,nosuid,nodev tmpfs /opt/facebook
-umount /mnt/host-claude-code
-umount /mnt/host-muse-code
-umount /mnt/host-servicerouter
-rmdir /mnt/host-claude-code /mnt/host-muse-code
-rm /mnt/host-servicerouter
-for forbidden in \
-  /usr/bin/sudo \
-  /usr/bin/nsenter \
-  /usr/bin/hg \
-  /usr/bin/arc \
-  /usr/bin/dotslash \
-  /usr/local/jellyfish/jf \
-  /usr/local/fbcode/platform010/bin/fbpython \
-  /usr/local/fbcode/bin/fbpython
-do
-  if [ -e "$forbidden" ]; then
-    mount --bind /bin/false "$forbidden"
-  fi
-done
-mount -o remount,bind,ro,noexec,nosuid,nodev /usr/local/bin
-mount -o remount,bind,rw,noexec,nosuid,nodev /var/facebook
-mount -o remount,bind,ro,noexec,nosuid,nodev /opt/facebook
-cd ${SANDBOX_PROJECT}
-exec setpriv --reuid="$uid" --regid="$gid" --clear-groups -- env \
-  HOME=${SANDBOX_ROOT}/home \
-  CLAUDE_CONFIG_DIR=${SANDBOX_ROOT}/home/.claude \
-  XDG_CONFIG_HOME=${SANDBOX_ROOT}/home/.config \
-  XDG_RUNTIME_DIR=/run/user/$uid \
-  DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus \
-  TMPDIR=${SANDBOX_ROOT}/tmp \
-  PATH=${SANDBOX_ROOT}/bin:/usr/bin:/bin \
-  PLAYWRIGHT_BROWSERS_PATH=${SANDBOX_ROOT}/browser-cache \
-  MUSE_EXPERIMENTAL_PLUGINS=0 \
-  MCP_TIMEOUT=60000 \
-  LANG=C.UTF-8 \
-  "$command" "$@"`;
-
 const SCREENSHOT_HELPER = `#!/bin/sh
 set -eu
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
@@ -261,6 +145,7 @@ export async function runIsolatedCommand(
   privateRoot,
   command,
   args,
+  profile,
   options = {},
 ) {
   if (process.platform !== 'linux') {
@@ -283,7 +168,7 @@ export async function runIsolatedCommand(
       '--mount',
       '/bin/sh',
       '-c',
-      MOUNT_NAMESPACE_SCRIPT,
+      profile.sandbox.mountScript,
       'sandbox',
       String(uid),
       String(gid),
@@ -431,7 +316,11 @@ function samePluginSet(actual, expected) {
   return sameStringSet(actual.map(key), expected.map(key));
 }
 
-export function auditAgentContext(agent, stdout, stderr) {
+export function auditAgentContext(agent, stdout, stderr, profile) {
+  const runner = profile.runners[agent];
+  if (!runner) {
+    throw new Error(`Runner profile does not define ${agent}`);
+  }
   const records = [];
   for (const line of stdout.split('\n')) {
     try {
@@ -442,6 +331,7 @@ export function auditAgentContext(agent, stdout, stderr) {
   }
 
   if (agent === 'claude') {
+    const audit = runner.audit;
     const init = records.find(
       value => value.type === 'system' && value.subtype === 'init',
     );
@@ -449,7 +339,7 @@ export function auditAgentContext(agent, stdout, stderr) {
       value => value.type === 'system' && value.subtype?.startsWith('hook_'),
     );
     const version = init?.claude_code_version ?? null;
-    const policy = version ? CLAUDE_CONTEXT_POLICY[version] : null;
+    const policy = version ? audit.contextPolicies?.[version] : null;
     const plugins = init?.plugins ?? [];
     const pluginPolicyPassed =
       policy != null && samePluginSet(plugins, policy.plugins);
@@ -457,15 +347,12 @@ export function auditAgentContext(agent, stdout, stderr) {
     const skills = init?.skills ?? [];
     const slashCommands = init?.slash_commands ?? [];
     const mcpServers = init?.mcp_servers ?? [];
-    const secureInternetMode =
-      stderr.includes(
-        'Using --secure-internet-mode with restricted user data access.',
-      ) && stderr.includes('Your session will not have access to user data.');
+    const launcherPolicyConfirmed = (audit.requiredStderr ?? []).every(marker =>
+      stderr.includes(marker),
+    );
     const violations = [];
-    if (!secureInternetMode) {
-      violations.push(
-        'Claude did not confirm secure internet mode with restricted user data',
-      );
+    if (!launcherPolicyConfirmed) {
+      violations.push('Claude did not confirm the configured launcher policy');
     }
     if (!init) {
       violations.push('missing Claude init event');
@@ -475,7 +362,7 @@ export function auditAgentContext(agent, stdout, stderr) {
     }
     if (!pluginPolicyPassed) {
       violations.push(
-        'Claude plugin set did not match the exact built-in allowlist',
+        'Claude plugin set did not match the configured allowlist',
       );
     }
     if (
@@ -483,7 +370,9 @@ export function auditAgentContext(agent, stdout, stderr) {
       !policy ||
       !sameStringSet(agents, policy.agents)
     ) {
-      violations.push('Claude agent set did not match the standard allowlist');
+      violations.push(
+        'Claude agent set did not match the configured allowlist',
+      );
     }
     if (!Array.isArray(init?.skills) || skills.length > 0) {
       violations.push('Claude skills were missing or non-empty');
@@ -497,6 +386,8 @@ export function auditAgentContext(agent, stdout, stderr) {
     if (hooks.length > 0) {
       violations.push('Claude ran hooks');
     }
+    const installMarker = audit.pluginInstallMarker ?? 'Installing ';
+    const installAttempts = stderr.split(installMarker).length - 1;
     return {
       passed: violations.length === 0,
       violations,
@@ -506,26 +397,19 @@ export function auditAgentContext(agent, stdout, stderr) {
       slashCommands,
       mcpServers,
       hookEvents: hooks.length,
-      secureInternetMode: {
-        enabled: secureInternetMode,
-        restrictedUserData: secureInternetMode,
-      },
+      launcherPolicyConfirmed,
       tools: init?.tools ?? [],
       cwd: init?.cwd ?? null,
       runnerVersion: version,
-      launcherPluginInstallAttempts: (stderr.match(/^Installing /gm) ?? [])
-        .length,
-      launcherPluginInstallBlocked:
-        (stderr.match(/^Installing /gm) ?? []).length > 0 && pluginPolicyPassed,
-      knownAsymmetry:
-        'Claude Code 2.1.289 runs in secure internet mode with restricted user-data access and seats cc-plugin-sec-default from host managed settings. The plugin has no components, adds no context, cannot be disabled per run, and both conditions are identical across configs and judges.',
-      safeModeProjectInstructions:
-        'Safe mode suppresses automatic project-instruction loading; Claude reads AGENTS.md with a tool call, while Muse auto-loads it. This is identical across configs.',
-      pathPolicy:
-        'private bin + /usr/bin + /bin; internal executable roots and sensitive host paths are sandbox-blocked',
+      launcherPluginInstallAttempts: installAttempts,
+      launcherPluginInstallBlocked: installAttempts > 0 && pluginPolicyPassed,
+      knownAsymmetry: audit.knownAsymmetry,
+      projectInstructions: audit.projectInstructions,
+      pathPolicy: audit.pathPolicy,
     };
   }
 
+  const audit = runner.audit;
   const reminderKinds = records
     .filter(
       value =>
@@ -538,8 +422,10 @@ export function auditAgentContext(agent, stdout, stderr) {
       .toLowerCase()
       .includes('mcp'),
   ).length;
-  const pluginGateOff = stderr.includes('muse: gate plugins: off');
-  const pluginInstallAttempt = stderr.includes('Installing ');
+  const pluginGateOff = stderr.includes(audit.pluginGateOffMarker);
+  const pluginInstallAttempt = stderr.includes(
+    audit.pluginInstallMarker ?? 'Installing ',
+  );
   const violations = [];
   if (!pluginGateOff) {
     violations.push('Muse plugin gate was not off');
@@ -559,20 +445,20 @@ export function auditAgentContext(agent, stdout, stderr) {
     builtInReminderEvents: reminderKinds.length,
     builtInReminderKinds: [...new Set(reminderKinds)].sort(),
     externalSkillContentLoaded: false,
-    knownAsymmetry:
-      'Muse emits built-in skill and final-verification reminder lifecycle events; external rules, foreign context, plugins, MCP, and external skill content are disabled identically for every config.',
-    pathPolicy:
-      'private bin + /usr/bin + /bin; internal executable roots and sensitive host paths are sandbox-blocked',
+    knownAsymmetry: audit.knownAsymmetry,
+    pathPolicy: audit.pathPolicy,
   };
 }
 
-export function auditTranscriptCommands(text) {
-  const sensitivePaths = [
-    ['/proc', /\/proc(?=\/|$|[\s"'`;&|),\]}])/],
-    ['/usr/local/bin', /\/usr\/local\/bin(?=\/|$|[\s"'`;&|),\]}])/],
-    ['/var/facebook', /\/var\/facebook(?=\/|$|[\s"'`;&|),\]}])/],
-    ['/data', /\/data(?=\/|$|[\s"'`;&|),\]}])/],
-  ];
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function auditTranscriptCommands(text, profile) {
+  const sensitivePaths = profile.sandbox.transcriptAuditPaths.map(pathname => [
+    pathname,
+    new RegExp(`${escapeRegExp(pathname)}(?=\\/|$|[\\s"'\`;&|),\\]}])`),
+  ]);
   const flaggedCommands = [];
   for (const command of extractToolCommands(text)) {
     const touchedPaths = sensitivePaths

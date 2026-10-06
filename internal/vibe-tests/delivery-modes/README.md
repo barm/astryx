@@ -9,11 +9,20 @@ This harness compares Astryx across four public consumer delivery modes while ho
 
 Each matrix cell starts a context-free agent in a unique private root. Generated source, transcripts, screenshots, and reports are never written to tracked paths.
 
+## Local runner profile
+
+The harness requires `VIBE_RUNNER_PROFILE` to point to an uncommitted JSON file outside the checkout. Concrete runner commands, launcher arguments, expected built-in context, host paths, isolation scripts, transcript-audit paths, and version commands belong there—not in this public repository. The harness fails before setup when the variable, file, or a required field is missing.
+
+`runner-profile.example.json` is the schema example. It contains placeholders only. Copy it outside the checkout, replace every `REPLACE_ME` value and placeholder command with values for the local host, and keep that concrete file untracked. Argument arrays may use `{{MCP_CONFIG}}`, `{{TOOLS}}`, `{{PROJECT}}`, `{{TASK_FILE}}`, `{{MAX_MODEL_STEPS}}`, and `{{JSON_SCHEMA}}`; the harness fails on a missing substitution.
+
+The profile's `sandbox.mountScript` receives the current uid, gid, private run root, browser cache, username, command, and command arguments as shell positional parameters. `sandbox.probeScript` runs inside that namespace and receives the sibling-run path, private temporary-file paths, and host-user path. Keep the manifest and probe receipt descriptions aligned with what those scripts actually enforce.
+
 ## Run
 
 The Linux host must support passwordless `sudo` for constructing mount namespaces. The host launcher uses it before entering the namespace; `sudo` is replaced with `/bin/false` inside every agent and judge sandbox.
 
 ```sh
+VIBE_RUNNER_PROFILE="$HOME/.config/astryx/vibe-runner-profile.json" \
 pnpm -F @astryxdesign/vibe-tests delivery:run \
   --configs react-build,react-nobuild,vanilla,web-components \
   --agents claude,muse \
@@ -43,22 +52,22 @@ A build failure, page error, blank render, runner failure, timeout, or forbidden
 
 Every prompt states the same wall-clock budget and advertises the same `screenshot <file-or-url> [output.png]` helper. The helper runs the same read-only Playwright Chromium build in all three delivery configs.
 
-The output directory contains `report.md`, a self-contained `report.html`, `report.json`, screenshots, runner transcripts, and per-run receipts. The manifest records runner versions, concurrency, wall-clock limits, and Muse's 80-model-step cap. Wall time is a secondary metric because Muse has a step cap while Claude has only the shared wall-clock timeout.
+The output directory contains `report.md`, a self-contained `report.html`, `report.json`, screenshots, runner transcripts, and per-run receipts. The manifest records the profile schema, runner versions, concurrency, wall-clock limits, and any configured model-step caps. Wall time remains a secondary metric when runners use different caps.
 
 ## Isolation and context audit
 
-Every agent and judge runs in its own mode-`0700` root with a unique project, `HOME`, configuration directory, and `TMPDIR`. A private mount namespace replaces `/home`, `/tmp`, `/data`, `/var/tmp`, and `/dev/shm`; sibling-run and host-user paths therefore do not exist inside the run. The namespace hides `/usr/local/bin` except the two agent runtime trees and their model-auth transport, hides `/opt/facebook`, and remounts `/var/facebook` writable but `noexec` for model authentication; tool-command access to that path is forbidden by the transcript audit. Shared results are copied out only after the agent and evaluator finish, and shared output paths are outside every agent-readable namespace. The blind judge gets a separate root containing only its screenshot.
+Every agent and judge runs in its own mode-`0700` root with a unique project, home, configuration directory, and temporary directory. The profile's mount script creates the private namespace, exposes only the runtimes and authentication transport that host requires, and blocks its sensitive paths and executables. Shared results are copied out only after the agent and evaluator finish; the blind judge receives a separate root containing only its screenshot.
 
-The isolated `PATH` is `/mnt/run/bin:/usr/bin:/bin`, with Node, Git, and the identical screenshot helper added to the private bin. The startup probe must prove that privilege escalation, the required absolute-path internal CLI probes, `/data/users/*`, an exact sibling path, `/var/tmp`, and `/dev/shm` are inaccessible before any matrix cell runs. A post-run transcript audit context-fails and reports every cell whose tool commands touch `/proc`, `/usr/local/bin`, `/var/facebook`, or `/data`.
+The committed harness adds Node, Git, and the identical screenshot helper to a private bin. The profile defines the host-specific startup probe and transcript-audit path list. The probe must prove that the run can write its own project but cannot read sibling runs or host-only context before any matrix cell starts. A post-run transcript audit fails and reports every cell whose tool commands touch a configured sensitive path.
 
-- Claude runs in secure internet mode plus safe mode with restricted user-data access, strict empty MCP configuration, no session persistence, no slash commands, an explicit tool allowlist, and `cc-plugin-plugin-authoring@builtin` disabled through per-run settings. Secure mode is identical for every config and blind judge and avoids the internet-to-non-internet attestation path without bypassing it. Safe mode intentionally suppresses automatic project-instruction loading, so Claude reads `AGENTS.md` with a tool call while Muse auto-loads it; this cross-agent cost is identical across configs. Claude Code 2.1.289 still seats `cc-plugin-sec-default@builtin` from host managed settings; it has no components, adds no context, cannot be disabled per run, and is identical across configs and runs. The exact audited plugin allowlist is `cc-plugin-agents-md@builtin` plus `cc-plugin-sec-default@builtin`; the init event must also report empty skills, slash commands and MCP servers, zero hook events, and exactly the standard `claude`, `Explore`, `general-purpose`, and `Plan` agents. The audit additionally requires the secure-mode restricted-user-data banner. Unknown runner-version/plugin combinations fail closed. A failed judge context audit discards its scores, triggers one fresh re-judge, and records both attempts; two failed audits leave judge scores null.
-- Muse runs the same `native-basic` preset for every config with plugins gated off, foreign personal context disabled, web tools disabled, no session log, and `--disable-muse-llm-rules`. Muse still emits built-in skill and final-verification reminder lifecycle records; this is reported as a runner-wide asymmetry, with no external skill content loaded. Any external plugin install or MCP event fails the run.
+Runner commands, flags, expected versions, built-in context, diagnostic markers, and known asymmetries all come from the local profile. The harness applies the same configured policy to every delivery mode and to the blind judge, fails closed on any policy mismatch, retries one failed judge audit, and leaves judge scores null after two failures. Concrete profile values are recorded in the untracked run manifest, not in repository source.
 
 ## Fairness review
 
 Print generated task prompts without installing packages or starting agents:
 
 ```sh
+VIBE_RUNNER_PROFILE="$HOME/.config/astryx/vibe-runner-profile.json" \
 pnpm -F @astryxdesign/vibe-tests delivery:run --sample 3 --dry-run
 ```
 
@@ -75,6 +84,7 @@ The adoption regression tests cover real React/Vanilla output plus pinned web-co
 Override delivery inputs for a later branch snapshot without editing the harness:
 
 ```sh
+VIBE_RUNNER_PROFILE="$HOME/.config/astryx/vibe-runner-profile.json" \
 pnpm -F @astryxdesign/vibe-tests delivery:run \
   --vanilla-cdn-ref <commit> \
   --vanilla-tarball-url <public-tarball-url> \

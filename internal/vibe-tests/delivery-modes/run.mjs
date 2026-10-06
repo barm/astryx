@@ -22,7 +22,6 @@ import {
   SANDBOX_PROJECT,
   auditAgentContext,
   auditTranscriptCommands,
-  claudeIsolatedArgs,
   countCliLookups,
   countToolCalls,
   createPrivateRunRoot,
@@ -30,16 +29,17 @@ import {
   runCommand,
   runIsolatedCommand,
 } from './process.mjs';
+import {loadRunnerProfile, runnerInvocation} from './runner-profile.mjs';
 import {prepareProject} from './projects.mjs';
 import {buildReports} from './report.mjs';
 
 const fsp = fs.promises;
 const here = path.dirname(fileURLToPath(import.meta.url));
 const vibeTestsRoot = path.resolve(here, '..');
-const MUSE_MAX_MODEL_STEPS = 80;
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
+  const runnerProfile = loadRunnerProfile();
   const specs = getDeliverySpecs(options);
   validateSelections(options, specs);
   const testSet = JSON.parse(
@@ -89,54 +89,22 @@ async function main() {
     vanillaTarballUrl: options.vanillaTarballUrl,
     concurrency: options.concurrency,
     agentTimeoutMinutes: options.timeoutMinutes,
-    runnerLimits: {
-      claude: 'no model-step cap; wall-clock timeout only',
-      muse: `${MUSE_MAX_MODEL_STEPS} model steps plus the same wall-clock timeout`,
-    },
-    runnerContext: {
-      claude: {
-        secureInternetMode:
-          'enabled uniformly for agents and judges; restricts user-data access and avoids the internet-to-non-internet attestation path without bypassing it',
-        safeMode:
-          'kept to block managed Meta context; AGENTS.md is read by a tool call instead of auto-loaded',
-        managedPlugin:
-          'Claude Code 2.1.289 seats cc-plugin-sec-default from host managed settings; it has no components, adds no context, cannot be disabled per run, and is identical across configs and runs',
-        disabledPlugin: 'cc-plugin-plugin-authoring@builtin',
-        allowedPlugins: [
-          'cc-plugin-agents-md@builtin',
-          'cc-plugin-sec-default@builtin',
-        ],
-        requiredEmptyContext: ['skills', 'slash_commands', 'mcp_servers'],
-        requiredAgents: ['claude', 'Explore', 'general-purpose', 'Plan'],
-      },
-      muse: {
-        projectInstructions: 'AGENTS.md auto-loads',
-        externalContext:
-          'plugins, foreign context, MCP, external skill content, and llm-rules disabled',
-      },
-    },
+    runnerProfileSchema: runnerProfile.schema,
+    runnerLimits: Object.fromEntries(
+      Object.entries(runnerProfile.runners).map(([name, runner]) => [
+        name,
+        {
+          maxModelSteps: runner.maxModelSteps ?? null,
+          wallClockTimeoutMinutes: options.timeoutMinutes,
+        },
+      ]),
+    ),
+    runnerContext: runnerProfile.sandbox.manifest.runnerContext,
     isolation: {
-      privateRootMode: '0700',
-      mountNamespace: true,
-      freshHomeTmpAndProject: true,
-      sharedResultsAfterCompletionOnly: true,
-      path: '/mnt/run/bin:/usr/bin:/bin (sandbox hides /usr/local/bin and blocks internal executable roots)',
-      hiddenHostPaths: [
-        '/home',
-        '/tmp',
-        '/data',
-        '/var/tmp',
-        '/dev/shm',
-        '/usr/local/bin',
-        '/opt/facebook',
-      ],
-      protectedHostPaths: [
-        '/var/facebook (writable/noexec for model auth; transcript access forbidden)',
-      ],
-      browserTool: 'screenshot <file-or-url> [output.png]',
-      startupProbe: await probeIsolation(),
+      ...runnerProfile.sandbox.manifest.isolation,
+      startupProbe: await probeIsolation(runnerProfile),
     },
-    runnerVersions: await runnerVersions(),
+    runnerVersions: await runnerVersions(runnerProfile),
   };
   if (priorManifest) {
     assertCompatibleManifest(priorManifest, manifest);
@@ -183,6 +151,7 @@ async function main() {
       spec: specs[job.config],
       outputDir,
       options,
+      runnerProfile,
     });
     results.push(result);
     completed += 1;
@@ -308,7 +277,15 @@ async function verifyStarter(spec, outputDir) {
   }
 }
 
-async function runOne({prompt, config, agent, spec, outputDir, options}) {
+async function runOne({
+  prompt,
+  config,
+  agent,
+  spec,
+  outputDir,
+  options,
+  runnerProfile,
+}) {
   const id = jobId(prompt.id, config, agent);
   const sharedRunDir = path.join(outputDir, 'runs', id);
   const sharedScreenshot = path.join(outputDir, 'screenshots', `${id}.png`);
@@ -343,6 +320,7 @@ async function runOne({prompt, config, agent, spec, outputDir, options}) {
       privateRun,
       taskPrompt,
       timeoutMs: options.timeoutMinutes * 60 * 1000,
+      runnerProfile,
     });
     result.evaluation = await evaluateRun({
       config,
@@ -350,6 +328,7 @@ async function runOne({prompt, config, agent, spec, outputDir, options}) {
       prompt,
       screenshotPath: privateScreenshot,
       baselineSources,
+      runnerProfile,
       skipJudge: options.skipJudge,
     });
     if (result.runner.timedOut) {
@@ -402,64 +381,44 @@ async function runOne({prompt, config, agent, spec, outputDir, options}) {
   return result;
 }
 
-async function runAgent({agent, privateRun, taskPrompt, timeoutMs}) {
-  let command;
-  let args;
-  let input;
-  if (agent === 'claude') {
-    command = '/usr/local/bin/claude_code/os/claude';
-    args = [
-      ...claudeIsolatedArgs({
-        mcpConfig: '/mnt/run/empty-mcp.json',
-        tools: 'Bash,Read,Write,Edit',
-      }),
-      '-p',
-      '--output-format',
-      'stream-json',
-      '--verbose',
-    ];
-    input = taskPrompt;
-  } else if (agent === 'muse') {
-    command = '/usr/local/bin/muse_code/muse';
-    args = [
-      'exec',
-      '--json',
-      '--workspace',
-      SANDBOX_PROJECT,
-      '--prompt-file',
-      `${SANDBOX_PROJECT}/TASK.md`,
-      '--provider',
-      'meta',
-      '--preset',
-      'native-basic',
-      '--trust-workspace',
-      '--parallel-tool-calls',
-      '--no-foreign-personal-context',
-      '--no-session-log',
-      '--max-model-steps',
-      String(MUSE_MAX_MODEL_STEPS),
-      '--disable-web-tools',
-      '--approval-mode',
-      'never',
-      '--disable-muse-llm-rules',
-    ];
-  } else {
-    throw new Error(`Unsupported agent: ${agent}`);
-  }
-
-  const execution = await runIsolatedCommand(privateRun.root, command, args, {
-    input,
-    timeoutMs,
-    transcriptPath: privateRun.transcriptPath,
+async function runAgent({
+  agent,
+  privateRun,
+  taskPrompt,
+  timeoutMs,
+  runnerProfile,
+}) {
+  const invocation = runnerInvocation(runnerProfile, agent, 'agent', {
+    MCP_CONFIG: '/mnt/run/empty-mcp.json',
+    TOOLS: 'Bash,Read,Write,Edit',
+    PROJECT: SANDBOX_PROJECT,
+    TASK_FILE: `${SANDBOX_PROJECT}/TASK.md`,
+    MAX_MODEL_STEPS: runnerProfile.runners[agent].maxModelSteps ?? '',
+    JSON_SCHEMA: '',
   });
+  const execution = await runIsolatedCommand(
+    privateRun.root,
+    invocation.command,
+    invocation.args,
+    runnerProfile,
+    {
+      input: invocation.input === 'stdin' ? taskPrompt : undefined,
+      timeoutMs,
+      transcriptPath: privateRun.transcriptPath,
+    },
+  );
   const usage = parseUsage(execution.stdout);
   const combined = `${execution.stdout}\n${execution.stderr}`;
   const contextAudit = auditAgentContext(
     agent,
     execution.stdout,
     execution.stderr,
+    runnerProfile,
   );
-  const transcriptAudit = auditTranscriptCommands(execution.stdout);
+  const transcriptAudit = auditTranscriptCommands(
+    execution.stdout,
+    runnerProfile,
+  );
   if (!transcriptAudit.passed) {
     contextAudit.passed = false;
     contextAudit.violations.push(
@@ -484,10 +443,7 @@ async function runAgent({agent, privateRun, taskPrompt, timeoutMs}) {
     cliLookups: countCliLookups(execution.stdout),
     contextAudit,
     transcriptAudit,
-    limits:
-      agent === 'muse'
-        ? {maxModelSteps: MUSE_MAX_MODEL_STEPS}
-        : {maxModelSteps: null},
+    limits: {maxModelSteps: invocation.maxModelSteps},
     stderr: execution.stderr,
   };
 }
@@ -556,7 +512,7 @@ async function assertIsolationAvailable() {
   }
 }
 
-async function probeIsolation() {
+async function probeIsolation(runnerProfile) {
   const left = await createPrivateRunRoot('probe-left-');
   const right = await createPrivateRunRoot('probe-right-');
   const nonce = `${process.pid}-${Date.now()}`;
@@ -571,19 +527,23 @@ async function probeIsolation() {
     await fsp.writeFile(siblingSecret, 'sibling secret\n');
     await fsp.writeFile(varTmpSecret, 'var tmp secret\n');
     await fsp.writeFile(sharedMemorySecret, 'shared memory secret\n');
-    const dataUserPath = path.join('/data/users', os.userInfo().username);
+    const hostUserPath = path.join(
+      runnerProfile.sandbox.hostUserRoot,
+      os.userInfo().username,
+    );
     const execution = await runIsolatedCommand(
       left.root,
       '/bin/sh',
       [
         '-c',
-        'set -eu; test "$(cat /mnt/run/project/allowed.html | grep -c allowed)" -ge 1; printf written > /mnt/run/project/written.txt; test ! -e "$1"; test ! -e "$2"; test ! -e "$3"; test ! -e "$4"; ! /usr/bin/sudo -n true >/dev/null 2>&1; ! /usr/bin/nsenter -t 1 -m true >/dev/null 2>&1; ! /usr/local/bin/meta --help >/dev/null 2>&1; for tool in /usr/local/bin/scsc /usr/local/jellyfish/jf /usr/local/bin/sl /usr/local/bin/knots; do ! "$tool" --help >/dev/null 2>&1; done; ! /opt/facebook/network-seal-status >/dev/null 2>&1; findmnt -n -o OPTIONS --target /var/facebook | grep -qw noexec; findmnt -n -o OPTIONS --target /opt/facebook | grep -qw noexec; ! command -v meta >/dev/null 2>&1; screenshot /mnt/run/project/allowed.html /mnt/run/project/browser-probe.png >/dev/null; test -s /mnt/run/project/browser-probe.png; printf "own-root=read-write\\nsibling=hidden\\nvar-tmp=private\\ndev-shm=private\\ndata=hidden\\nsudo=blocked\\nnsenter=blocked\\nmeta-absolute=blocked\\ninternal-cli-absolute=blocked\\nusr-local-bin=hidden\\nvar-facebook=noexec\\nopt-facebook=noexec\\nbrowser=available\\n"',
+        runnerProfile.sandbox.probeScript,
         'probe',
         siblingSecret,
         varTmpSecret,
         sharedMemorySecret,
-        dataUserPath,
+        hostUserPath,
       ],
+      runnerProfile,
       {timeoutMs: 60_000},
     );
     const ownWrite = await fsp.readFile(
@@ -597,20 +557,7 @@ async function probeIsolation() {
     }
     return {
       passed: true,
-      ownRootReadWrite: true,
-      exactSiblingPathHidden: true,
-      varTmpPrivate: true,
-      devShmPrivate: true,
-      dataHidden: true,
-      sudoBlocked: true,
-      nsenterBlocked: true,
-      metaAbsolutePathBlocked: true,
-      internalCliAbsolutePathsBlocked: true,
-      usrLocalBinHidden: true,
-      varFacebookExecutablesBlocked: true,
-      optFacebookExecutablesBlocked: true,
-      metaAbsentFromPath: true,
-      identicalBrowserHelperAvailable: true,
+      ...runnerProfile.sandbox.probeReceipt,
       output: execution.stdout.trim().split('\n'),
     };
   } finally {
@@ -627,20 +574,17 @@ async function probeIsolation() {
   }
 }
 
-async function runnerVersions() {
-  const commands = {
-    node: [process.execPath, ['--version']],
-    npm: ['/usr/bin/npm', ['--version']],
-    muse: ['/usr/local/bin/muse', ['--version']],
-  };
+async function runnerVersions(runnerProfile) {
   const entries = await Promise.all(
-    Object.entries(commands).map(async ([name, [command, args]]) => {
-      const result = await runCommand(command, args, {
-        cwd: vibeTestsRoot,
-        timeoutMs: 30_000,
-      });
-      return [name, (result.stdout || result.stderr).trim()];
-    }),
+    Object.entries(runnerProfile.versionCommands).map(
+      async ([name, {command, args}]) => {
+        const result = await runCommand(command, args, {
+          cwd: vibeTestsRoot,
+          timeoutMs: 30_000,
+        });
+        return [name, (result.stdout || result.stderr).trim()];
+      },
+    ),
   );
   return Object.fromEntries(entries);
 }
@@ -809,6 +753,9 @@ Options:
   --vanilla-cdn-ref <sha>        commit pin used by Vanilla Astryx docs
   --vanilla-tarball-url <url>    preview CLI tarball
   --skip-judge                   omit the blind Claude visual judge
+
+Environment:
+  VIBE_RUNNER_PROFILE            required path to an uncommitted local profile
 `);
 }
 
