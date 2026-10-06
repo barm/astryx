@@ -11,11 +11,13 @@ Each matrix cell starts a context-free agent in a unique private root. Generated
 
 ## Local runner profile
 
-The harness requires `VIBE_RUNNER_PROFILE` to point to an uncommitted JSON file outside the checkout. Concrete runner commands, launcher arguments, expected built-in context, host paths, isolation scripts, transcript-audit paths, and version commands belong there—not in this public repository. The harness fails before setup when the variable, file, or a required field is missing.
+The harness requires `VIBE_RUNNER_PROFILE` to point to an uncommitted JSON file outside the checkout. Concrete runner commands, launcher arguments, expected built-in context, host paths, isolation scripts, transcript adapters and audit paths, and version commands belong there—not in this public repository. The harness fails before setup when the variable, file, or a required field is missing.
 
 `runner-profile.example.json` is the schema example. It contains placeholders only. Copy it outside the checkout, replace every `REPLACE_ME` value and placeholder command with values for the local host, and keep that concrete file untracked. Argument arrays may use `{{MCP_CONFIG}}`, `{{TOOLS}}`, `{{PROJECT}}`, `{{TASK_FILE}}`, `{{MAX_MODEL_STEPS}}`, and `{{JSON_SCHEMA}}`; the harness fails on a missing substitution.
 
 The profile's `sandbox.mountScript` receives the current uid, gid, private run root, browser cache, username, command, and command arguments as shell positional parameters. `sandbox.probeScript` runs inside that namespace and receives the sibling-run path, private temporary-file paths, and host-user path. Keep the manifest and probe receipt descriptions aligned with what those scripts actually enforce.
+
+Each runner's `transcript` defines a generic JSONL adapter. `toolCalls` selects countable records with dotted-path matchers; optional `recordsPath` iterates an array inside a record. `commands` may select separate command-result records, and `commandFormat: "json"` can decode a JSON string before reading `commandJsonPath`. `usage` selects token-count records. Context-event selectors used by audits live in the same local profile, so committed code has no built-in knowledge of a runner's private event names or record layout.
 
 ## Run
 
@@ -60,7 +62,7 @@ Every agent and judge runs in its own mode-`0700` root with a unique project, ho
 
 The committed harness adds Node, Git, and the identical screenshot helper to a private bin. The profile defines the host-specific startup probe and transcript-audit path list. The probe must prove that the run can write its own project but cannot read sibling runs or host-only context before any matrix cell starts. A post-run transcript audit fails and reports every cell whose tool commands touch a configured sensitive path.
 
-Runner commands, flags, expected versions, built-in context, diagnostic markers, and known asymmetries all come from the local profile. The harness applies the same configured policy to every delivery mode and to the blind judge, fails closed on any policy mismatch, retries one failed judge audit, and leaves judge scores null after two failures. Concrete profile values are recorded in the untracked run manifest, not in repository source.
+Runner commands, flags, transcript adapters, expected versions, built-in context, diagnostic markers, and known asymmetries all come from the local profile. The harness applies the same configured policy to every delivery mode and to the blind judge, fails closed on any policy mismatch, retries one failed judge audit, and leaves judge scores null after two failures. Concrete profile values are recorded in the untracked run manifest, not in repository source.
 
 ## Fairness review
 

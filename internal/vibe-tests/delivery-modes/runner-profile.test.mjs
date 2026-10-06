@@ -48,6 +48,26 @@ test('the placeholder-only example satisfies the schema', () => {
   assert.equal(validateRunnerProfile(example), example);
 });
 
+test('transcript adapters reject invalid paths and decoders', () => {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const example = JSON.parse(
+    fs.readFileSync(path.join(here, 'runner-profile.example.json'), 'utf8'),
+  );
+  const invalidPath = structuredClone(example);
+  invalidPath.runners.claude.transcript.toolCalls[0].recordsPath =
+    'message.items[]';
+  assert.throws(
+    () => validateRunnerProfile(invalidPath),
+    /recordsPath must be a dotted JSON field path/,
+  );
+  const missingJsonPath = structuredClone(example);
+  delete missingJsonPath.runners.muse.transcript.commands[0].commandJsonPath;
+  assert.throws(
+    () => validateRunnerProfile(missingJsonPath),
+    /commandJsonPath must be a dotted JSON field path/,
+  );
+});
+
 test('loads a valid local profile and reports unresolved substitutions', () => {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const example = fs.readFileSync(

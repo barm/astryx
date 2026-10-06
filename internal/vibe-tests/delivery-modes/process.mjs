@@ -218,43 +218,46 @@ function terminate(child) {
   }, 3000).unref();
 }
 
-export function parseUsage(text) {
-  const values = [];
-  const visit = value => {
-    if (!value || typeof value !== 'object') {
-      return;
-    }
-    if (
-      typeof value.input_tokens === 'number' ||
-      typeof value.output_tokens === 'number'
-    ) {
-      values.push({
-        inputTokens: value.input_tokens ?? 0,
-        outputTokens: value.output_tokens ?? 0,
-      });
-    }
-    for (const child of Object.values(value)) {
-      if (Array.isArray(child)) {
-        child.forEach(visit);
-      } else {
-        visit(child);
-      }
-    }
-  };
-
+export function parseTranscript(text, adapter) {
+  if (adapter?.format !== 'jsonl') {
+    throw new Error('Transcript adapter format must be jsonl');
+  }
+  const records = [];
   for (const line of text.split('\n')) {
+    if (!line.trim()) {
+      continue;
+    }
     try {
-      visit(JSON.parse(line));
+      const record = JSON.parse(line);
+      if (record && typeof record === 'object' && !Array.isArray(record)) {
+        records.push(record);
+      }
     } catch {
-      // Transcripts can contain non-JSON diagnostics.
+      // Transcripts can contain non-JSON diagnostics beside JSONL records.
     }
   }
-  try {
-    visit(JSON.parse(text));
-  } catch {
-    // A JSONL transcript is not one JSON document.
-  }
+  return records;
+}
 
+export function parseUsage(text, adapter) {
+  if (!adapter?.usage) {
+    return {inputTokens: null, outputTokens: null};
+  }
+  const records = parseTranscript(text, adapter);
+  const candidates = adapter.usage.recursive
+    ? records.flatMap(collectObjects)
+    : records;
+  const values = candidates
+    .filter(record => matchesRecord(record, adapter.usage.matches))
+    .map(record => ({
+      inputTokens: readNumber(record, adapter.usage.inputTokensPath),
+      outputTokens: readNumber(record, adapter.usage.outputTokensPath),
+    }))
+    .filter(value => value.inputTokens != null || value.outputTokens != null)
+    .map(value => ({
+      inputTokens: value.inputTokens ?? 0,
+      outputTokens: value.outputTokens ?? 0,
+    }));
   if (values.length === 0) {
     return {inputTokens: null, outputTokens: null};
   }
@@ -266,31 +269,25 @@ export function parseUsage(text) {
   );
 }
 
-export function countToolCalls(text) {
-  let count = 0;
-  for (const line of text.split('\n')) {
-    try {
-      const value = JSON.parse(line);
-      if (
-        value.payload_type === 'task.lifecycle.proposed' &&
-        value.payload?.event?.task_kind?.startsWith('tool.')
-      ) {
-        count += 1;
-      }
-      if (value.type === 'assistant' && Array.isArray(value.message?.content)) {
-        count += value.message.content.filter(
-          block => block.type === 'tool_use',
-        ).length;
-      }
-    } catch {
-      // A transcript can contain non-JSON diagnostics.
-    }
-  }
-  return count;
+export function countToolCalls(text, adapter) {
+  const records = parseTranscript(text, adapter);
+  return records.reduce(
+    (total, record) =>
+      total +
+      (adapter.toolCalls ?? []).reduce(
+        (ruleTotal, rule) =>
+          ruleTotal +
+          expandRuleRecords(record, rule).filter(candidate =>
+            matchesRecord(candidate, rule.matches),
+          ).length,
+        0,
+      ),
+    0,
+  );
 }
 
-export function countCliLookups(text) {
-  return extractToolCommands(text).reduce(
+export function countCliLookups(text, adapter) {
+  return extractToolCommands(text, adapter).reduce(
     (total, command) => total + countAstryxInvocations(command),
     0,
   );
@@ -321,14 +318,7 @@ export function auditAgentContext(agent, stdout, stderr, profile) {
   if (!runner) {
     throw new Error(`Runner profile does not define ${agent}`);
   }
-  const records = [];
-  for (const line of stdout.split('\n')) {
-    try {
-      records.push(JSON.parse(line));
-    } catch {
-      // Ignore non-JSON output.
-    }
-  }
+  const records = parseTranscript(stdout, runner.transcript);
 
   if (agent === 'claude') {
     const audit = runner.audit;
@@ -410,17 +400,13 @@ export function auditAgentContext(agent, stdout, stderr, profile) {
   }
 
   const audit = runner.audit;
-  const reminderKinds = records
-    .filter(
-      value =>
-        value.payload_type === 'task.lifecycle.proposed' &&
-        value.payload?.event?.task_kind?.startsWith('reminder.agent.'),
-    )
-    .map(value => value.payload.event.task_kind);
-  const mcpEvents = records.filter(value =>
-    String(value.payload_type ?? '')
-      .toLowerCase()
-      .includes('mcp'),
+  const reminderKinds = selectTranscriptValues(
+    records,
+    audit.transcriptEvents.reminders,
+  ).filter(value => typeof value === 'string');
+  const externalContextEvents = selectTranscriptValues(
+    records,
+    audit.transcriptEvents.externalContext,
   ).length;
   const pluginGateOff = stderr.includes(audit.pluginGateOffMarker);
   const pluginInstallAttempt = stderr.includes(
@@ -433,7 +419,7 @@ export function auditAgentContext(agent, stdout, stderr, profile) {
   if (pluginInstallAttempt) {
     violations.push('Muse attempted to install external plugins');
   }
-  if (mcpEvents > 0) {
+  if (externalContextEvents > 0) {
     violations.push('Muse emitted MCP events');
   }
   return {
@@ -454,13 +440,17 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export function auditTranscriptCommands(text, profile) {
+export function auditTranscriptCommands(text, profile, runnerName) {
+  const runner = profile.runners[runnerName];
+  if (!runner) {
+    throw new Error(`Runner profile does not define ${runnerName}`);
+  }
   const sensitivePaths = profile.sandbox.transcriptAuditPaths.map(pathname => [
     pathname,
     new RegExp(`${escapeRegExp(pathname)}(?=\\/|$|[\\s"'\`;&|),\\]}])`),
   ]);
   const flaggedCommands = [];
-  for (const command of extractToolCommands(text)) {
+  for (const command of extractToolCommands(text, runner.transcript)) {
     const touchedPaths = sensitivePaths
       .filter(([, pattern]) => pattern.test(command))
       .map(([label]) => label);
@@ -481,38 +471,105 @@ export function auditTranscriptCommands(text, profile) {
   };
 }
 
-export function extractToolCommands(text) {
+export function extractToolCommands(text, adapter) {
   const commands = [];
-  for (const line of text.split('\n')) {
-    try {
-      const value = JSON.parse(line);
-      if (
-        value.payload_type === 'task.lifecycle.output' &&
-        value.payload?.event?.final_result &&
-        typeof value.payload.event.chunk === 'string'
-      ) {
-        try {
-          const chunk = JSON.parse(value.payload.event.chunk);
-          if (typeof chunk.command === 'string') {
-            commands.push(chunk.command);
-          }
-        } catch {
-          // Some tools stream plain text instead of a JSON command receipt.
+  for (const record of parseTranscript(text, adapter)) {
+    for (const rule of adapter.commands ?? adapter.toolCalls ?? []) {
+      for (const candidate of expandRuleRecords(record, rule)) {
+        if (!matchesRecord(candidate, rule.matches)) {
+          continue;
         }
-      }
-      if (value.type === 'assistant' && Array.isArray(value.message?.content)) {
-        for (const block of value.message.content) {
-          if (
-            block.type === 'tool_use' &&
-            typeof block.input?.command === 'string'
-          ) {
-            commands.push(block.input.command);
+        let command = readPath(candidate, rule.commandPath);
+        if (rule.commandFormat === 'json') {
+          try {
+            command = readPath(JSON.parse(command), rule.commandJsonPath);
+          } catch {
+            continue;
           }
         }
+        if (typeof command === 'string') {
+          commands.push(command);
+        }
       }
-    } catch {
-      // A transcript can contain non-JSON diagnostics.
     }
   }
   return commands;
+}
+
+function selectTranscriptValues(records, selector) {
+  const values = [];
+  for (const record of records) {
+    for (const candidate of expandRuleRecords(record, selector)) {
+      if (!matchesRecord(candidate, selector.matches)) {
+        continue;
+      }
+      values.push(
+        selector.valuePath
+          ? readPath(candidate, selector.valuePath)
+          : candidate,
+      );
+    }
+  }
+  return values;
+}
+
+function expandRuleRecords(record, rule) {
+  if (!rule.recordsPath) {
+    return [record];
+  }
+  const candidates = readPath(record, rule.recordsPath);
+  return Array.isArray(candidates) ? candidates : [];
+}
+
+function matchesRecord(record, matches = []) {
+  return matches.every(match => {
+    const value = readPath(record, match.path);
+    if ('equals' in match) {
+      return value === match.equals;
+    }
+    if ('startsWith' in match) {
+      return typeof value === 'string' && value.startsWith(match.startsWith);
+    }
+    if ('includes' in match) {
+      if (typeof value !== 'string') {
+        return false;
+      }
+      const candidate = match.caseInsensitive ? value.toLowerCase() : value;
+      const expected = match.caseInsensitive
+        ? match.includes.toLowerCase()
+        : match.includes;
+      return candidate.includes(expected);
+    }
+    return match.exists ? value !== undefined : value === undefined;
+  });
+}
+
+function collectObjects(value) {
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+  return [
+    value,
+    ...Object.values(value).flatMap(child => collectObjects(child)),
+  ];
+}
+
+function readPath(value, dottedPath) {
+  if (!dottedPath) {
+    return undefined;
+  }
+  return dottedPath
+    .split('.')
+    .reduce(
+      (current, part) =>
+        current && typeof current === 'object' ? current[part] : undefined,
+      value,
+    );
+}
+
+function readNumber(value, dottedPath) {
+  const candidate = readPath(value, dottedPath);
+  return typeof candidate === 'number' && Number.isFinite(candidate)
+    ? candidate
+    : null;
 }

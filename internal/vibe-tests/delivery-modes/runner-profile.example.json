@@ -36,6 +36,31 @@
         "knownAsymmetry": "REPLACE_ME_RUNNER_A_ASYMMETRY",
         "projectInstructions": "REPLACE_ME_PROJECT_INSTRUCTION_BEHAVIOR",
         "pathPolicy": "REPLACE_ME_PATH_POLICY"
+      },
+      "transcript": {
+        "format": "jsonl",
+        "toolCalls": [
+          {
+            "recordsPath": "message.items",
+            "matches": [
+              {
+                "path": "kind",
+                "equals": "command"
+              }
+            ],
+            "commandPath": "input.command"
+          }
+        ],
+        "usage": {
+          "matches": [
+            {
+              "path": "kind",
+              "equals": "usage"
+            }
+          ],
+          "inputTokensPath": "metrics.input",
+          "outputTokensPath": "metrics.output"
+        }
       }
     },
     "muse": {
@@ -55,7 +80,70 @@
         "pluginGateOffMarker": "REPLACE_ME_GATE_MARKER",
         "pluginInstallMarker": "REPLACE_ME_INSTALL_MARKER",
         "knownAsymmetry": "REPLACE_ME_RUNNER_B_ASYMMETRY",
-        "pathPolicy": "REPLACE_ME_PATH_POLICY"
+        "pathPolicy": "REPLACE_ME_PATH_POLICY",
+        "transcriptEvents": {
+          "reminders": {
+            "matches": [
+              {
+                "path": "kind",
+                "equals": "reminder"
+              }
+            ],
+            "valuePath": "event.name"
+          },
+          "externalContext": {
+            "matches": [
+              {
+                "path": "kind",
+                "equals": "external-context"
+              }
+            ]
+          }
+        }
+      },
+      "transcript": {
+        "format": "jsonl",
+        "toolCalls": [
+          {
+            "matches": [
+              {
+                "path": "kind",
+                "equals": "work-proposed"
+              },
+              {
+                "path": "event.category",
+                "startsWith": "tool."
+              }
+            ]
+          }
+        ],
+        "commands": [
+          {
+            "matches": [
+              {
+                "path": "kind",
+                "equals": "work-output"
+              },
+              {
+                "path": "event.complete",
+                "equals": true
+              }
+            ],
+            "commandPath": "event.detail",
+            "commandFormat": "json",
+            "commandJsonPath": "command"
+          }
+        ],
+        "usage": {
+          "matches": [
+            {
+              "path": "kind",
+              "equals": "usage"
+            }
+          ],
+          "inputTokensPath": "metrics.input",
+          "outputTokensPath": "metrics.output"
+        }
       }
     }
   },

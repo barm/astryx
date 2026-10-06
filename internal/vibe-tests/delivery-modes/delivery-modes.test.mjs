@@ -24,7 +24,10 @@ import {
   auditTranscriptCommands,
   countAstryxInvocations,
   countCliLookups,
+  countToolCalls,
   createPrivateRunRoot,
+  extractToolCommands,
+  parseUsage,
 } from './process.mjs';
 import {runnerInvocation, validateRunnerProfile} from './runner-profile.mjs';
 import {
@@ -63,6 +66,21 @@ function testRunnerProfile() {
           '--schema',
           '{{JSON_SCHEMA}}',
         ],
+        transcript: {
+          format: 'jsonl',
+          toolCalls: [
+            {
+              recordsPath: 'message.content',
+              matches: [{path: 'type', equals: 'tool_use'}],
+              commandPath: 'input.command',
+            },
+          ],
+          usage: {
+            matches: [{path: 'type', equals: 'result'}],
+            inputTokensPath: 'usage.input_tokens',
+            outputTokensPath: 'usage.output_tokens',
+          },
+        },
         audit: {
           contextPolicies: {
             '1.0.0': {
@@ -93,11 +111,47 @@ function testRunnerProfile() {
           '--steps',
           '{{MAX_MODEL_STEPS}}',
         ],
+        transcript: {
+          format: 'jsonl',
+          toolCalls: [
+            {
+              matches: [
+                {path: 'kind', equals: 'work-proposed'},
+                {path: 'event.category', startsWith: 'tool.'},
+              ],
+            },
+          ],
+          commands: [
+            {
+              matches: [
+                {path: 'kind', equals: 'work-output'},
+                {path: 'event.complete', equals: true},
+              ],
+              commandPath: 'event.detail',
+              commandFormat: 'json',
+              commandJsonPath: 'command',
+            },
+          ],
+          usage: {
+            matches: [{path: 'kind', equals: 'usage'}],
+            inputTokensPath: 'metrics.input',
+            outputTokensPath: 'metrics.output',
+          },
+        },
         audit: {
           pluginGateOffMarker: 'runner-b extensions disabled',
           pluginInstallMarker: 'installing extension',
           knownAsymmetry: 'runner-b asymmetry',
           pathPolicy: 'test path policy',
+          transcriptEvents: {
+            reminders: {
+              matches: [{path: 'kind', equals: 'reminder'}],
+              valuePath: 'event.name',
+            },
+            externalContext: {
+              matches: [{path: 'kind', equals: 'external-context'}],
+            },
+          },
         },
       },
     },
@@ -692,7 +746,46 @@ test('all supported Astryx CLI invocation forms are counted', () => {
       }),
     )
     .join('\n');
-  assert.equal(countCliLookups(transcript), commands.length);
+  assert.equal(
+    countCliLookups(transcript, testRunnerProfile().runners.claude.transcript),
+    commands.length,
+  );
+});
+
+test('profile adapter controls synthetic JSONL transcript parsing', () => {
+  const profile = testRunnerProfile();
+  const adapter = profile.runners.muse.transcript;
+  const transcript = [
+    {kind: 'work-proposed', event: {category: 'tool.shell'}},
+    {
+      kind: 'work-output',
+      event: {
+        complete: true,
+        detail: JSON.stringify({command: 'npx astryx component Button'}),
+      },
+    },
+    {kind: 'usage', metrics: {input: 12, output: 4}},
+    {kind: 'reminder', event: {name: 'built-in-reminder'}},
+  ]
+    .map(record => JSON.stringify(record))
+    .join('\n');
+  assert.equal(countToolCalls(transcript, adapter), 1);
+  assert.deepEqual(extractToolCommands(transcript, adapter), [
+    'npx astryx component Button',
+  ]);
+  assert.equal(countCliLookups(transcript, adapter), 1);
+  assert.deepEqual(parseUsage(transcript, adapter), {
+    inputTokens: 12,
+    outputTokens: 4,
+  });
+  const context = auditAgentContext(
+    'muse',
+    transcript,
+    'runner-b extensions disabled',
+    profile,
+  );
+  assert.equal(context.passed, true);
+  assert.deepEqual(context.builtInReminderKinds, ['built-in-reminder']);
 });
 
 test('transcript audit flags every profile-configured sensitive path', () => {
@@ -710,7 +803,7 @@ test('transcript audit flags every profile-configured sensitive path', () => {
       }),
     )
     .join('\n');
-  const audit = auditTranscriptCommands(transcript, profile);
+  const audit = auditTranscriptCommands(transcript, profile, 'claude');
   assert.equal(audit.passed, false);
   assert.equal(audit.flaggedCommandCount, 2);
   assert.deepEqual(audit.touchedPaths, ['/host/bin', '/private/root']);
@@ -833,8 +926,8 @@ test('context audit enforces the exact profile policy', () => {
   const muse = auditAgentContext(
     'muse',
     JSON.stringify({
-      payload_type: 'task.lifecycle.proposed',
-      payload: {event: {task_kind: 'reminder.agent.skill-reminder'}},
+      kind: 'reminder',
+      event: {name: 'built-in-reminder'},
     }),
     'runner-b extensions disabled',
     profile,

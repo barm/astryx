@@ -407,7 +407,8 @@ async function runAgent({
       transcriptPath: privateRun.transcriptPath,
     },
   );
-  const usage = parseUsage(execution.stdout);
+  const transcript = runnerProfile.runners[agent].transcript;
+  const usage = parseUsage(execution.stdout, transcript);
   const combined = `${execution.stdout}\n${execution.stderr}`;
   const contextAudit = auditAgentContext(
     agent,
@@ -418,6 +419,7 @@ async function runAgent({
   const transcriptAudit = auditTranscriptCommands(
     execution.stdout,
     runnerProfile,
+    agent,
   );
   if (!transcriptAudit.passed) {
     contextAudit.passed = false;
@@ -439,8 +441,8 @@ async function runAgent({
         combined,
       ),
     usage,
-    toolCalls: countToolCalls(execution.stdout),
-    cliLookups: countCliLookups(execution.stdout),
+    toolCalls: countToolCalls(execution.stdout, transcript),
+    cliLookups: countCliLookups(execution.stdout, transcript),
     contextAudit,
     transcriptAudit,
     limits: {maxModelSteps: invocation.maxModelSteps},

@@ -37,6 +37,7 @@ function validateRunner(profile, name, {judge = false} = {}) {
       `Runner profile field runners.${name}.input must be stdin or none`,
     );
   }
+  validateTranscript(runner.transcript, `runners.${name}.transcript`);
   const audit = required(runner.audit, `runners.${name}.audit`, 'object');
   if (judge) {
     const judgeArgs = required(
@@ -115,12 +116,163 @@ function validateRunner(profile, name, {judge = false} = {}) {
       'string',
     );
     required(audit.pathPolicy, `runners.${name}.audit.pathPolicy`, 'string');
+    const transcriptEvents = required(
+      audit.transcriptEvents,
+      `runners.${name}.audit.transcriptEvents`,
+      'object',
+    );
+    validateSelector(
+      transcriptEvents.reminders,
+      `runners.${name}.audit.transcriptEvents.reminders`,
+      {valuePath: true},
+    );
+    validateSelector(
+      transcriptEvents.externalContext,
+      `runners.${name}.audit.transcriptEvents.externalContext`,
+    );
   }
   for (const [index, argument] of runner.agentArgs.entries()) {
     required(argument, `runners.${name}.agentArgs[${index}]`, 'string');
   }
   for (const [index, argument] of (runner.judgeArgs ?? []).entries()) {
     required(argument, `runners.${name}.judgeArgs[${index}]`, 'string');
+  }
+}
+
+function validateTranscript(transcript, label) {
+  required(transcript, label, 'object');
+  if (transcript.format !== 'jsonl') {
+    throw new Error(`Runner profile field ${label}.format must be jsonl`);
+  }
+  const toolCalls = required(
+    transcript.toolCalls,
+    `${label}.toolCalls`,
+    'array',
+  );
+  for (const [index, rule] of toolCalls.entries()) {
+    validateSelector(rule, `${label}.toolCalls[${index}]`);
+    validateCommandExtraction(rule, `${label}.toolCalls[${index}]`, {
+      optional: true,
+    });
+  }
+  if (transcript.commands != null) {
+    const commands = required(
+      transcript.commands,
+      `${label}.commands`,
+      'array',
+    );
+    for (const [index, rule] of commands.entries()) {
+      validateSelector(rule, `${label}.commands[${index}]`);
+      validateCommandExtraction(rule, `${label}.commands[${index}]`);
+    }
+  }
+  if (transcript.usage != null) {
+    const usage = required(transcript.usage, `${label}.usage`, 'object');
+    validateMatches(usage.matches, `${label}.usage.matches`);
+    if (usage.recursive != null && typeof usage.recursive !== 'boolean') {
+      throw new Error(
+        `Runner profile field ${label}.usage.recursive must be a boolean`,
+      );
+    }
+    validatePath(usage.inputTokensPath, `${label}.usage.inputTokensPath`);
+    validatePath(usage.outputTokensPath, `${label}.usage.outputTokensPath`);
+  }
+}
+
+function validateCommandExtraction(rule, label, {optional = false} = {}) {
+  if (optional && rule.commandPath == null) {
+    if (rule.commandFormat != null || rule.commandJsonPath != null) {
+      throw new Error(
+        `Runner profile field ${label}.commandPath is required for command decoding`,
+      );
+    }
+    return;
+  }
+  validatePath(rule.commandPath, `${label}.commandPath`);
+  if (rule.commandFormat != null && rule.commandFormat !== 'json') {
+    throw new Error(
+      `Runner profile field ${label}.commandFormat must be json when set`,
+    );
+  }
+  if (rule.commandFormat === 'json') {
+    validatePath(rule.commandJsonPath, `${label}.commandJsonPath`);
+  } else if (rule.commandJsonPath != null) {
+    throw new Error(
+      `Runner profile field ${label}.commandJsonPath requires commandFormat json`,
+    );
+  }
+}
+
+function validateSelector(selector, label, {valuePath = false} = {}) {
+  required(selector, label, 'object');
+  if (selector.recordsPath != null) {
+    validatePath(selector.recordsPath, `${label}.recordsPath`);
+  }
+  validateMatches(selector.matches, `${label}.matches`);
+  if (valuePath) {
+    validatePath(selector.valuePath, `${label}.valuePath`);
+  } else if (selector.valuePath != null) {
+    validatePath(selector.valuePath, `${label}.valuePath`);
+  }
+}
+
+function validateMatches(matches, label) {
+  required(matches, label, 'array');
+  for (const [index, match] of matches.entries()) {
+    required(match, `${label}[${index}]`, 'object');
+    validatePath(match.path, `${label}[${index}].path`);
+    const operators = ['equals', 'startsWith', 'includes', 'exists'].filter(
+      operator => operator in match,
+    );
+    if (operators.length !== 1) {
+      throw new Error(
+        `Runner profile field ${label}[${index}] requires exactly one matcher`,
+      );
+    }
+    if ('startsWith' in match && typeof match.startsWith !== 'string') {
+      throw new Error(
+        `Runner profile field ${label}[${index}].startsWith must be a string`,
+      );
+    }
+    if ('includes' in match && typeof match.includes !== 'string') {
+      throw new Error(
+        `Runner profile field ${label}[${index}].includes must be a string`,
+      );
+    }
+    if ('exists' in match && typeof match.exists !== 'boolean') {
+      throw new Error(
+        `Runner profile field ${label}[${index}].exists must be a boolean`,
+      );
+    }
+    if (
+      'equals' in match &&
+      match.equals !== null &&
+      !['string', 'number', 'boolean'].includes(typeof match.equals)
+    ) {
+      throw new Error(
+        `Runner profile field ${label}[${index}].equals must be a scalar`,
+      );
+    }
+    if (
+      match.caseInsensitive != null &&
+      (typeof match.caseInsensitive !== 'boolean' || !('includes' in match))
+    ) {
+      throw new Error(
+        `Runner profile field ${label}[${index}].caseInsensitive requires an includes matcher`,
+      );
+    }
+  }
+}
+
+function validatePath(value, label) {
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    !value.split('.').every(part => /^[A-Za-z0-9_-]+$/.test(part))
+  ) {
+    throw new Error(
+      `Runner profile field ${label} must be a dotted JSON field path`,
+    );
   }
 }
 
