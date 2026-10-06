@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en" data-astryx-theme="neutral" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Start a one-off app with the Vanilla Astryx canary, agent guidance, templates, components, and themes." />
+    <title>Build with Vanilla Astryx</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&amp;family=Outfit:wght@400;500;600;700&amp;family=Poppins:wght@400;500;600;700&amp;display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/core@0.6.5/src/reset.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-neutral@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-butter@0.6.5/dist/theme.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@astryxdesign/theme-y2k@0.6.5/dist/theme.css" />
+    <style>
+      @layer astryx-base {
+        .canary-shell {
+          min-height: 100vh;
+          background:
+            radial-gradient(
+              circle at top right,
+              color-mix(in srgb, var(--color-accent) 18%, transparent),
+              transparent 28rem
+            ),
+            var(--color-background-body);
+        }
+        .canary-main {
+          width: min(100% - 2 * var(--spacing-4), 72rem);
+          margin-inline: auto;
+          padding-block: var(--spacing-8) var(--spacing-10);
+        }
+        .canary-hero {
+          display: grid;
+          grid-template-columns: minmax(0, 1.3fr) minmax(18rem, 0.7fr);
+          align-items: end;
+          gap: var(--spacing-6);
+        }
+        .canary-kicker {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-2);
+          flex-wrap: wrap;
+        }
+        .canary-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: var(--spacing-4);
+        }
+        .canary-card {
+          min-height: 100%;
+        }
+        .canary-actions {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-2);
+          flex-wrap: wrap;
+        }
+        .canary-code {
+          overflow-x: auto;
+          padding: var(--spacing-3);
+          border: var(--border-width) solid var(--color-border);
+          border-radius: var(--radius-element);
+          background: var(--color-background-muted);
+          color: var(--color-text-primary);
+          font-family: var(--font-family-mono);
+          font-size: var(--text-supporting-size);
+          white-space: pre-wrap;
+        }
+        .canary-list {
+          margin: 0;
+          padding-inline-start: var(--spacing-5);
+          color: var(--color-text-secondary);
+        }
+        .canary-list li + li {
+          margin-block-start: var(--spacing-2);
+        }
+        .canary-path {
+          border-inline-start: calc(2 * var(--border-width)) solid
+            var(--color-accent);
+        }
+        @media (max-width: 48rem) {
+          .canary-main {
+            width: min(100% - 2 * var(--spacing-3), 72rem);
+            padding-block-start: var(--spacing-5);
+          }
+          .canary-hero,
+          .canary-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    </style>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.js"></script>
+  </head>
+  <body class="canary-shell">
+    <main class="canary-main ax-stack ax-stack--gap-8">
+      <header class="canary-hero">
+        <div class="ax-stack ax-stack--gap-3">
+          <div class="canary-kicker">
+            <span class="ax-badge ax-badge--success">vanilla-poc canary</span>
+            <span class="ax-badge ax-badge--info">No build step</span>
+          </div>
+          <h1 class="ax-heading ax-heading--1">
+            Build a one-off app with Astryx
+          </h1>
+          <p class="ax-text ax-text--large ax-text--secondary">
+            Start from a complete page template, copy version-matched
+            components, and ship one browser-ready HTML file. Vanilla HTML is
+            the recommended path for single-page artifacts while this experiment
+            is evaluated.
+          </p>
+          <div class="canary-actions">
+            <a
+              class="ax-button ax-button--primary"
+              href="https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/llms.txt"
+              >Read llms.txt</a
+            >
+            <a
+              class="ax-button ax-button--secondary"
+              href="https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/DEMO.md"
+              >Prime an agent</a
+            >
+          </div>
+        </div>
+        <section
+          class="ax-card ax-card--elevation-low ax-stack ax-stack--gap-3"
+          aria-labelledby="start-title">
+          <h2 class="ax-heading ax-heading--3" id="start-title">Start here</h2>
+          <p class="ax-text ax-text--secondary">
+            Run the public branch-canary CLI without installing it globally.
+          </p>
+          <pre
+            class="canary-code"><code>npx --yes @astryxdesign/cli@vanilla-poc template dashboard --framework html &gt; index.html</code></pre>
+          <a
+            class="ax-link"
+            href="https://registry.npmjs.org/@astryxdesign%2Fcli"
+            >Inspect the CLI package</a
+          >
+        </section>
+      </header>
+
+      <hr class="ax-divider" />
+
+      <section class="ax-stack ax-stack--gap-4" aria-labelledby="path-title">
+        <div class="ax-stack ax-stack--gap-1">
+          <h2 class="ax-heading ax-heading--2" id="path-title">
+            Choose by lifespan
+          </h2>
+          <p class="ax-text ax-text--secondary">
+            The path decision comes before component selection.
+          </p>
+        </div>
+        <div class="canary-grid">
+          <article
+            class="canary-card canary-path ax-card ax-card--elevation-low ax-stack ax-stack--gap-3">
+            <span class="ax-badge ax-badge--success"
+              >Recommended for one-offs</span
+            >
+            <h3 class="ax-heading ax-heading--3">Path A · Vanilla HTML</h3>
+            <p class="ax-text ax-text--secondary">
+              Use for a single page or disposable artifact. It opens directly in
+              a browser and uses readable <code>ax-*</code> classes, native
+              controls, and no bundler.
+            </p>
+          </article>
+          <article
+            class="canary-card ax-card ax-card--elevation-low ax-stack ax-stack--gap-3">
+            <span class="ax-badge ax-badge--info"
+              >Long-lived repository app</span
+            >
+            <h3 class="ax-heading ax-heading--3">Path B · React + Next.js</h3>
+            <p class="ax-text ax-text--secondary">
+              Use the supported React packages when the app will live in a
+              repository, evolve over time, and needs a framework build.
+            </p>
+          </article>
+          <article
+            class="canary-card ax-card ax-card--muted ax-stack ax-stack--gap-3">
+            <span class="ax-badge ax-badge--neutral">Alternative</span>
+            <h3 class="ax-heading ax-heading--3">Build-less React</h3>
+            <p class="ax-text ax-text--secondary">
+              For a single-file React experiment, use the import-map recipe that
+              guarantees one React implementation.
+            </p>
+            <a
+              class="ax-link"
+              href="https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/cli/assets/cdn.template.html"
+              >Open the single-React CDN recipe</a
+            >
+          </article>
+          <article
+            class="canary-card ax-card ax-card--muted ax-stack ax-stack--gap-3">
+            <span class="ax-badge ax-badge--warning">Experimental</span>
+            <h3 class="ax-heading ax-heading--3">Web components</h3>
+            <p class="ax-text ax-text--secondary">
+              Try compact light-DOM <code>&lt;ax-*&gt;</code> tags with
+              generated attributes and slots. Prefer vanilla HTML for the
+              default one-off path today.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="ax-stack ax-stack--gap-4" aria-labelledby="explore-title">
+        <div class="ax-stack ax-stack--gap-1">
+          <h2 class="ax-heading ax-heading--2" id="explore-title">
+            Templates and component galleries
+          </h2>
+          <p class="ax-text ax-text--secondary">
+            Use a template first, then inspect only the components you need.
+          </p>
+        </div>
+        <div class="canary-grid">
+          <article
+            class="canary-card ax-card ax-card--elevation-low ax-stack ax-stack--gap-3">
+            <span class="ax-badge ax-badge--success">HTML</span>
+            <h3 class="ax-heading ax-heading--3">Vanilla galleries</h3>
+            <ul class="canary-list">
+              <li>
+                <a
+                  class="ax-link"
+                  href="https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/demo/pinned/index.html"
+                  >Nine page templates</a
+                >
+              </li>
+              <li>
+                <a
+                  class="ax-link"
+                  href="https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/examples/gallery-static.html"
+                  >Layout and display components</a
+                >
+              </li>
+              <li>
+                <a
+                  class="ax-link"
+                  href="https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/examples/gallery-forms.html"
+                  >Form components</a
+                >
+              </li>
+              <li>
+                <a
+                  class="ax-link"
+                  href="https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/examples/gallery-interactive.html"
+                  >Interactive components</a
+                >
+              </li>
+            </ul>
+          </article>
+          <article
+            class="canary-card ax-card ax-card--elevation-low ax-stack ax-stack--gap-3">
+            <span class="ax-badge ax-badge--warning">Web components</span>
+            <h3 class="ax-heading ax-heading--3">Experimental galleries</h3>
+            <ul class="canary-list">
+              <li>
+                <a
+                  class="ax-link"
+                  href="https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/demo/elements/pinned/index.html"
+                  >Nine page templates</a
+                >
+              </li>
+              <li>
+                <a
+                  class="ax-link"
+                  href="https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/examples/elements-gallery.html"
+                  >Layout, display, and interactive components</a
+                >
+              </li>
+              <li>
+                <a
+                  class="ax-link"
+                  href="https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/examples/elements-gallery-forms.html"
+                  >Form components</a
+                >
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section
+        class="ax-card ax-card--elevation-low ax-stack ax-stack--gap-3"
+        aria-labelledby="themes-title">
+        <div class="canary-kicker">
+          <span class="ax-badge ax-badge--neutral">Neutral</span>
+          <span class="ax-badge ax-badge--warning">Butter</span>
+          <span class="ax-badge ax-badge--info">Y2K</span>
+        </div>
+        <h2 class="ax-heading ax-heading--3" id="themes-title">
+          Themes and modes
+        </h2>
+        <p class="ax-text ax-text--secondary">
+          Choose a shipped theme, scope themes inside a page, add nested dark
+          mode, or define a custom semantic token set.
+        </p>
+        <a
+          class="ax-link"
+          href="https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/docs/theming.md"
+          >Read the theming guide</a
+        >
+      </section>
+    </main>
+  </body>
+</html>

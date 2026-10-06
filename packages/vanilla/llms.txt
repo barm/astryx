@@ -9,22 +9,31 @@ Everything on this site — component docs, markup, page templates, tokens and
 design rules — is also available through the Astryx CLI, in a form built for
 agents. Prefer the CLI (or the direct file URLs below) over crawling pages.
 
-## Step 1 — Choose a path
+## Step 1 — Choose by lifespan
 
 Pick ONE path before writing any code:
 
-- **Path A1 — Build-less HTML.** Use readable `ax-*` classes when the user wants
-  plain HTML with direct control over the native markup.
-- **Path A2 — Build-less web components.** Use light-DOM `<ax-*>` elements when
-  the user wants compact component tags and documented attributes/slots without
-  React or a build step.
-- **Path B — React with a dev server.** Use when the workspace already has React
-  (`package.json` lists `react`), or the user asks for a React/Next/Vite app.
+- **Path A — Build-less vanilla HTML (recommended for one-off artifacts).** Use
+  for a single page, prototype, or disposable artifact. Start from an HTML
+  template, use readable `ax-*` classes, and ship one file that opens directly
+  in a browser with no React, install, or bundler.
+- **Path B — React + Next.js (recommended for long-lived repository apps).** Use
+  when the app will live in a repository and evolve over time. This is also the
+  path when the workspace already has React or the user explicitly asks for
+  React, Next.js, or a framework build.
 
-Both build-less paths produce standalone files that open directly in a browser,
-use the same CSS, themes, and native controls, and need no install or bundler.
-Choose A1 or A2 from the requested authoring style rather than treating either
-as the default. If the workspace already uses React, choose Path B.
+Two build-less alternatives are available when the user asks for them:
+
+- **React from a CDN.** Start from the single-React import-map recipe at
+  https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/cli/assets/cdn.template.html.
+  It is useful for a single-file React experiment, but Path A is the simpler
+  default for one-off artifacts.
+- **Web components (experimental).** Use light-DOM `<ax-*>` elements for compact
+  component tags with documented attributes and slots. They share the same CSS,
+  themes, and native controls as Path A, but are not the recommended default yet.
+
+Choose Path A unless the request or the artifact's expected lifespan clearly
+calls for another option.
 
 ## Deterministic interaction states
 
@@ -40,25 +49,25 @@ astryx component TopNav --framework html
 # Replace html with web-components for the light-DOM element variants.
 ```
 
-Pinned complete galleries and guidance:
+Live branch galleries and guidance:
 
 - HTML gallery:
-  https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/examples/state-recipes.html
+  https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/examples/state-recipes.html
 - Web-component gallery:
-  https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/examples/elements-state-recipes.html
+  https://raw.githack.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/examples/elements-state-recipes.html
 - Source and state-manifest guide:
-  https://raw.githubusercontent.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/docs/states.md
+  https://raw.githubusercontent.com/facebook/astryx/poc/vanilla-astryx/packages/vanilla/docs/states.md
 
 Both galleries accept `#state=<name>` and render the requested state on the
-initial load without navigating to another document. Download the pinned source
+initial load without navigating to another document. Download the branch source
 or use the CLI variants when copying a recipe. The guide documents optional
 multi-state manifests and the rule that every state must work from a fresh load.
 
 ---
 
-## Path A1 — Build-less HTML
+## Path A — Build-less vanilla HTML
 
-### A1.1. Page setup (copy exactly; versions are pinned)
+### A.1. Page setup (copy exactly; versions are pinned)
 
 ```html
 <!doctype html>
@@ -134,7 +143,7 @@ multi-state manifests and the rule that every state must work from a fresh load.
   `https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.mjs`
   (exports `setTheme`, `setMode`, `initThemeModeSwitchers`).
 
-### A1.2. Start every page from a template — never lay out a page from scratch
+### A.2. Start every page from a template — never lay out a page from scratch
 
 Templates (complete, standalone, already wired to the CDN links above):
 
@@ -196,7 +205,7 @@ These are served as plain text: download the content, don't link to it.
 Live preview of all templates (after a one-time notice page):
 https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/demo/pinned/index.html
 
-### A1.3. Then add components
+### A.3. Then add components
 
 Available components (use these exact names with `component <Name> --framework html`
 or the markup URL): Badge, Button, Card, CheckboxInput, Collapsible, Dialog,
@@ -206,7 +215,7 @@ Switch, TabList, Table, Text, TextInput, Theme, Toast, Tooltip, TopNav.
 Each markup file starts with `<!-- docs: ... -->` and lists examples under
 `<!-- variant: <name> -->`. Copy a variant, then change its content.
 
-### A1.4. Rules for Path A1
+### A.4. Rules for Path A
 
 - Classes are readable BEM: block `ax-button`, modifier `ax-button--primary`,
   element `ax-card__header`. Only use classes that appear in the CLI output or
@@ -229,9 +238,9 @@ Each markup file starts with `<!-- docs: ... -->` and lists examples under
 
 ---
 
-## Path A2 — Build-less web components
+## Experimental alternative — Build-less web components
 
-### A2.1. Page setup (copy exactly; versions are pinned)
+### Web components: page setup (copy exactly; versions are pinned)
 
 ```html
 <!doctype html>
@@ -270,7 +279,7 @@ The ESM alternative is
 Load `astryx-vanilla.js` as shown for theme controls and progressive behaviors;
 element-owned interactions work in either script order.
 
-### A2.2. Start from a web-component template, then inspect components
+### Web components: start from a template, then inspect components
 
 ```sh
 astryx template --list --framework web-components
@@ -280,7 +289,7 @@ astryx component Button --framework web-components
 astryx component TextInput --framework web-components
 ```
 
-The same nine template IDs listed in Path A1 are available. Direct source files:
+The same nine template IDs listed in Path A are available. Direct source files:
 
 ```
 https://raw.githubusercontent.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/demo/elements/pinned/<template-id>.html
@@ -290,7 +299,7 @@ https://raw.githubusercontent.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828b
 Live template index (after a one-time notice page):
 https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/demo/elements/pinned/index.html
 
-### A2.3. Rules for Path A2
+### Web components: rules
 
 - Attributes mirror React prop names in kebab-case: `is-disabled`, `html-name`,
   `auto-complete`, `is-open`. Use only the canonical names printed by the CLI,
@@ -314,7 +323,7 @@ https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac
 
 ---
 
-## Path B — React with a dev server
+## Path B — React + Next.js for long-lived apps
 
 ### B1. Install (React 19+)
 
