@@ -91,16 +91,17 @@ Then serve the repository root with any static file server. The canonical HTML d
 
 ## Theming
 
-Vanilla Astryx supports Neutral, Butter, Y2K, Stone, Matcha, Chocolate, and Gothic. Load the corresponding `@astryxdesign/theme-*` stylesheets, then switch themes by changing `data-astryx-theme` on the document root. Gothic is intentionally dark-only.
+Vanilla Astryx supports Neutral, Butter, Y2K, Stone, Matcha, Chocolate, and Gothic. Load the corresponding `@astryxdesign/theme-*` stylesheets, then switch themes by changing `data-astryx-theme`. Theme and mode attributes can live on the document root or a subtree; nested `data-theme="dark"` scopes resolve dark tokens inside a light page. Gothic is intentionally dark-only.
 
-The JavaScript bundle persists controls marked with `data-ax-theme-switch`, `data-ax-mode-switch`, `data-ax-theme-toggle`, or `data-ax-mode-toggle`. The demo and templates restore the saved choice before styles load, and template query parameters named `theme` and `mode` take precedence.
+Custom themes override semantic CSS variables in one `astryx-theme` layer block. Keep literal brand values in that dedicated definition; templates and component styles should only consume semantic tokens. Use `.ax-theme` for HTML scopes or `<ax-theme theme="…" mode="…">` for web-component scopes.
 
-Custom themes override semantic CSS variables in the `astryx-theme` layer. Keep literal brand values in the dedicated theme definition; templates and component styles should only consume semantic tokens.
+The JavaScript bundle persists controls marked with `data-ax-theme-switch`, `data-ax-mode-switch`, `data-ax-theme-toggle`, or `data-ax-mode-toggle`. A theme `<select>` may offer shipped slugs and custom slugs together; the demo and templates restore the saved choice before styles load, and query parameters named `theme` and `mode` take precedence.
 
-See [`docs/theming.md`](docs/theming.md) for the complete stylesheet, font, switcher, persistence, and custom-theme examples. Copy the theme and mode controls from the CLI with:
+See [`docs/theming.md`](docs/theming.md) for complete HTML and web-component recipes for a scoped brand section, nested dark mode, and a persisted three-theme switcher. Copy the version-matched scope examples with:
 
 ```sh
-node packages/cli/clients/cli/bin/astryx.mjs component Selector --framework html
+node packages/cli/clients/cli/bin/astryx.mjs component Theme --framework html
+node packages/cli/clients/cli/bin/astryx.mjs component Theme --framework web-components
 ```
 
 ## Known gaps

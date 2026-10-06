@@ -4438,17 +4438,17 @@ var AstryxElements = (() => {
     docs: "Scope a Vanilla Astryx subtree to a loaded theme name and color mode.",
     examples: [
       {
-        name: "neutral-light",
-        html: '<ax-theme theme="neutral" mode="light"><p>Neutral theme</p></ax-theme>'
+        name: "brand-section",
+        html: '<ax-theme theme="brand"><ax-card><ax-heading level="3">Brand workspace</ax-heading><ax-button variant="primary">Continue</ax-button></ax-card></ax-theme>'
       },
       {
-        name: "butter-dark",
-        html: '<ax-theme theme="butter" mode="dark"><p>Butter theme</p></ax-theme>'
+        name: "nested-dark",
+        html: '<ax-theme theme="neutral" mode="dark"><ax-card><ax-heading level="3">Dark tools</ax-heading><ax-text>This subtree is dark inside a light page.</ax-text></ax-card></ax-theme>'
       }
     ],
     render(_host, h) {
       const mode = h.attr("mode");
-      return `<div style="display:contents" data-astryx-theme="${h.escape(h.attr("theme"))}"${mode === "system" ? "" : ` data-theme="${mode}"`} ${h.slot()}></div>`;
+      return `<div class="ax-theme" data-astryx-theme="${h.escape(h.attr("theme"))}"${mode === "system" ? "" : ` data-theme="${mode}"`} ${h.slot()}></div>`;
     }
   };
 

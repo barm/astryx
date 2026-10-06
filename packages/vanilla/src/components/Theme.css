@@ -1,0 +1,14 @@
+/* Copyright (c) Meta Platforms, Inc. and affiliates. */
+
+/* Theme scopes only change inherited tokens and color mode; they add no box. */
+:where(.ax-theme) {
+  display: contents;
+}
+
+:where(.ax-theme[data-theme='light']) {
+  color-scheme: light;
+}
+
+:where(.ax-theme[data-theme='dark']) {
+  color-scheme: dark;
+}

@@ -92,17 +92,24 @@ from a fresh load; never redirect or depend on an earlier interaction.
 </html>
 ```
 
-- Theme: set `data-astryx-theme` on `<html>` to `neutral`, `butter`, `y2k`,
-  `stone`, `matcha`, `chocolate`, or `gothic` (all seven theme files are loaded
-  above, so switching is just the attribute). Gothic is intentionally dark-only.
-- Mode: set `data-theme` to `light` or `dark`.
+- Theme: set `data-astryx-theme` on `<html>` or one subtree to `neutral`,
+  `butter`, `y2k`, `stone`, `matcha`, `chocolate`, `gothic`, or a loaded custom
+  slug. Gothic is intentionally dark-only. Use `.ax-theme` for HTML scopes or
+  `<ax-theme theme="…" mode="…">` for web-component scopes.
+- Mode: set `data-theme` to `light` or `dark` on the page or scope. A nested dark
+  scope resolves `light-dark()` tokens independently inside a light page.
 - Switchers marked with `data-ax-theme-switch`, `data-ax-mode-switch`,
-  `data-ax-theme-toggle`, or `data-ax-mode-toggle` persist across reloads.
-- Custom theme: add a named `[data-astryx-theme="brand"]` rule after the shipped
-  styles in `@layer astryx-theme` and override semantic custom properties such
-  as `--color-accent`, `--color-on-accent`, `--color-text-accent`, and
-  `--color-background-body`. Keep literal brand values in that dedicated theme
-  definition; templates and component styles should only consume tokens.
+  `data-ax-theme-toggle`, or `data-ax-mode-toggle` persist across reloads. A
+  theme `<select>` can contain 3+ shipped and custom slugs together.
+- Custom theme: define one named `[data-astryx-theme="brand"]` rule after the
+  shipped styles in `@layer astryx-theme`. Keep all literal brand values in that
+  one token-definition block; templates and components only consume semantic
+  variables such as `--color-accent`, `--color-on-accent`,
+  `--color-text-accent`, and `--color-background-body`.
+- Full scoped-brand, nested-dark, and persisted-switcher recipes for both paths:
+  `packages/vanilla/docs/theming.md`. Version-matched snippets:
+  `astryx component Theme --framework html` and
+  `astryx component Theme --framework web-components`.
 - ES-module alternative to the classic script:
   `https://cdn.jsdelivr.net/gh/facebook/astryx@b32f55c9b2148a510e777e9fca8a295cdd9a5979/packages/vanilla/dist/astryx-vanilla.mjs`
   (exports `setTheme`, `setMode`, `initThemeModeSwitchers`).
@@ -162,7 +169,7 @@ https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac
 Available components (use these exact names with `component <Name> --framework html`
 or the markup URL): Badge, Button, Card, CheckboxInput, Collapsible, Dialog,
 Divider, DropdownMenu, Heading, Layout, Link, Selector, SideNav, Stack,
-Switch, TabList, Table, Text, TextInput, Toast, Tooltip, TopNav.
+Switch, TabList, Table, Text, TextInput, Theme, Toast, Tooltip, TopNav.
 
 Each markup file starts with `<!-- docs: ... -->` and lists examples under
 `<!-- variant: <name> -->`. Copy a variant, then change its content.

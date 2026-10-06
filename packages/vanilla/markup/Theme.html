@@ -1,0 +1,29 @@
+<!-- docs: Scope a Vanilla Astryx subtree to a loaded theme name and color mode. -->
+<!-- variant: brand-section -->
+<div class="ax-theme" data-astryx-theme="brand">
+  <div class="ax-card">
+    <h2 class="ax-heading ax-heading--3">Brand workspace</h2>
+    <button class="ax-button ax-button--primary" type="button">Continue</button>
+  </div>
+</div>
+
+<!-- variant: nested-dark -->
+<div class="ax-theme" data-astryx-theme="neutral" data-theme="dark">
+  <div class="ax-card">
+    <h2 class="ax-heading ax-heading--3">Dark tools</h2>
+    <p class="ax-text">This subtree is dark inside a light page.</p>
+  </div>
+</div>
+
+<!-- variant: persisted-switcher -->
+<label class="ax-selector">
+  <span class="ax-selector__label">Theme</span>
+  <span class="ax-selector__control">
+    <select class="ax-selector__select" data-ax-theme-switch>
+      <option value="neutral">Neutral</option>
+      <option value="butter">Butter</option>
+      <option value="brand">Brand</option>
+    </select>
+    <span class="ax-selector__indicator" aria-hidden="true"></span>
+  </span>
+</label>

@@ -523,13 +523,23 @@
         </section>
         <section class="gallery__component" data-gallery-element="Theme">
           <h3 class="ax-heading ax-heading--3">Theme</h3>
-          <div class="gallery__example" data-gallery-example="neutral-light">
-            <ax-theme theme="neutral" mode="light"
-              ><p>Neutral theme</p></ax-theme
+          <div class="gallery__example" data-gallery-example="brand-section">
+            <ax-theme theme="brand"
+              ><ax-card
+                ><ax-heading level="3">Brand workspace</ax-heading
+                ><ax-button variant="primary">Continue</ax-button></ax-card
+              ></ax-theme
             >
           </div>
-          <div class="gallery__example" data-gallery-example="butter-dark">
-            <ax-theme theme="butter" mode="dark"><p>Butter theme</p></ax-theme>
+          <div class="gallery__example" data-gallery-example="nested-dark">
+            <ax-theme theme="neutral" mode="dark"
+              ><ax-card
+                ><ax-heading level="3">Dark tools</ax-heading
+                ><ax-text
+                  >This subtree is dark inside a light page.</ax-text
+                ></ax-card
+              ></ax-theme
+            >
           </div>
         </section>
         <section class="gallery__component" data-gallery-element="TimeInput">
