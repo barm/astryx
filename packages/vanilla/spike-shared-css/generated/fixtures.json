@@ -1,0 +1,1364 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": [
+    "packages/core/src/utils/focusOutline.stylex.ts",
+    "packages/core/src/Button/Button.tsx",
+    "packages/core/src/utils/interactionOverlay.stylex.ts",
+    "packages/core/src/Card/Card.tsx",
+    "packages/core/src/Layout/container.stylex.ts",
+    "packages/core/src/Field/inputStyles.stylex.ts",
+    "packages/core/src/TextInput/TextInput.tsx"
+  ],
+  "cases": [
+    {
+      "component": "Button",
+      "variant": "primary",
+      "hookClass": "astryx-button",
+      "attributes": {
+        "data-size": "md",
+        "data-variant": "primary",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-button",
+        "ax-button--md",
+        "ax-button--primary",
+        "ax-button--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "button.focus",
+          "button.base",
+          "button.size.md",
+          "button.overlay",
+          "button.pressable",
+          "button.elevation.none",
+          "button.variant.primary"
+        ]
+      },
+      "states": [
+        "rest",
+        "hover",
+        "focus"
+      ],
+      "id": "Button:primary",
+      "atomicClasses": {
+        "root": [
+          "axref1k57tk5",
+          "axref1vidyx5",
+          "axref1t137rt",
+          "axref1jhp3zv",
+          "axrefx47ajj",
+          "axref1wfwxd8",
+          "axref13aywxo",
+          "axref16bblx1",
+          "axref1n2onr6",
+          "axref3nfvp2",
+          "axref6s0dn4",
+          "axrefl56j7k",
+          "axref1txdalj",
+          "axrefce4md1",
+          "axrefrrkdod",
+          "axrefc342km",
+          "axrefng3xce",
+          "axref1jxw6zd",
+          "axrefjb2p0i",
+          "axrefcr08ib",
+          "axref1kq96og",
+          "axref1e4wzip",
+          "axrefuxw1ft",
+          "axrefeuugli",
+          "axref193iq5w",
+          "axref1ypdohk",
+          "axref16khyan",
+          "axrefrafxwg",
+          "axrefuedmi6",
+          "axref12w9bfk",
+          "axreflr8y92",
+          "axref1ueg155",
+          "axref7uyq82",
+          "axrefmvprkv",
+          "axrefetgvay",
+          "axref3oybdh",
+          "axref8ppqj",
+          "axref1gnnqk1",
+          "axref1ewilqj",
+          "axref17wrial"
+        ]
+      }
+    },
+    {
+      "component": "Button",
+      "variant": "secondary",
+      "hookClass": "astryx-button",
+      "attributes": {
+        "data-size": "md",
+        "data-variant": "secondary",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-button",
+        "ax-button--md",
+        "ax-button--secondary",
+        "ax-button--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "button.focus",
+          "button.base",
+          "button.size.md",
+          "button.overlay",
+          "button.pressable",
+          "button.elevation.none",
+          "button.variant.secondary"
+        ]
+      },
+      "states": [
+        "rest",
+        "hover",
+        "focus"
+      ],
+      "id": "Button:secondary",
+      "atomicClasses": {
+        "root": [
+          "axref1k57tk5",
+          "axref1vidyx5",
+          "axref1t137rt",
+          "axref1jhp3zv",
+          "axrefx47ajj",
+          "axref1wfwxd8",
+          "axref13aywxo",
+          "axref16bblx1",
+          "axref1n2onr6",
+          "axref3nfvp2",
+          "axref6s0dn4",
+          "axrefl56j7k",
+          "axref1txdalj",
+          "axrefce4md1",
+          "axrefrrkdod",
+          "axrefc342km",
+          "axrefng3xce",
+          "axref1jxw6zd",
+          "axrefjb2p0i",
+          "axrefcr08ib",
+          "axref1kq96og",
+          "axref1e4wzip",
+          "axrefuxw1ft",
+          "axrefeuugli",
+          "axref193iq5w",
+          "axref1ypdohk",
+          "axref16khyan",
+          "axrefrafxwg",
+          "axrefuedmi6",
+          "axref12w9bfk",
+          "axreflr8y92",
+          "axref1ueg155",
+          "axref7uyq82",
+          "axrefmvprkv",
+          "axrefetgvay",
+          "axref3oybdh",
+          "axref8ppqj",
+          "axref1gnnqk1",
+          "axref17x4s8c",
+          "axref1tgivj0"
+        ]
+      }
+    },
+    {
+      "component": "Button",
+      "variant": "ghost",
+      "hookClass": "astryx-button",
+      "attributes": {
+        "data-size": "md",
+        "data-variant": "ghost",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-button",
+        "ax-button--md",
+        "ax-button--ghost",
+        "ax-button--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "button.focus",
+          "button.base",
+          "button.size.md",
+          "button.overlay",
+          "button.pressable",
+          "button.elevation.none",
+          "button.variant.ghost"
+        ]
+      },
+      "states": [
+        "rest",
+        "hover",
+        "focus"
+      ],
+      "id": "Button:ghost",
+      "atomicClasses": {
+        "root": [
+          "axref1k57tk5",
+          "axref1vidyx5",
+          "axref1t137rt",
+          "axref1jhp3zv",
+          "axrefx47ajj",
+          "axref1wfwxd8",
+          "axref13aywxo",
+          "axref16bblx1",
+          "axref1n2onr6",
+          "axref3nfvp2",
+          "axref6s0dn4",
+          "axrefl56j7k",
+          "axref1txdalj",
+          "axrefce4md1",
+          "axrefrrkdod",
+          "axrefc342km",
+          "axrefng3xce",
+          "axref1jxw6zd",
+          "axrefjb2p0i",
+          "axrefcr08ib",
+          "axref1kq96og",
+          "axref1e4wzip",
+          "axrefuxw1ft",
+          "axrefeuugli",
+          "axref193iq5w",
+          "axref1ypdohk",
+          "axref16khyan",
+          "axrefrafxwg",
+          "axrefuedmi6",
+          "axref12w9bfk",
+          "axreflr8y92",
+          "axref1ueg155",
+          "axref7uyq82",
+          "axrefmvprkv",
+          "axrefetgvay",
+          "axref3oybdh",
+          "axref8ppqj",
+          "axref1gnnqk1",
+          "axrefjbqb8w",
+          "axref1tgivj0"
+        ]
+      }
+    },
+    {
+      "component": "Button",
+      "variant": "destructive",
+      "hookClass": "astryx-button",
+      "attributes": {
+        "data-size": "md",
+        "data-variant": "destructive",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-button",
+        "ax-button--md",
+        "ax-button--destructive",
+        "ax-button--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "button.focus",
+          "button.base",
+          "button.size.md",
+          "button.overlay",
+          "button.pressable",
+          "button.elevation.none",
+          "button.variant.destructive"
+        ]
+      },
+      "states": [
+        "rest",
+        "hover",
+        "focus"
+      ],
+      "id": "Button:destructive",
+      "atomicClasses": {
+        "root": [
+          "axref1k57tk5",
+          "axref1vidyx5",
+          "axref1t137rt",
+          "axref1jhp3zv",
+          "axref1e0x2sz",
+          "axref1wfwxd8",
+          "axref13aywxo",
+          "axref16bblx1",
+          "axref1n2onr6",
+          "axref3nfvp2",
+          "axref6s0dn4",
+          "axrefl56j7k",
+          "axref1txdalj",
+          "axrefce4md1",
+          "axrefrrkdod",
+          "axrefc342km",
+          "axrefng3xce",
+          "axref1jxw6zd",
+          "axrefjb2p0i",
+          "axrefcr08ib",
+          "axref1kq96og",
+          "axref1e4wzip",
+          "axrefuxw1ft",
+          "axrefeuugli",
+          "axref193iq5w",
+          "axref1ypdohk",
+          "axref16khyan",
+          "axrefrafxwg",
+          "axrefuedmi6",
+          "axref12w9bfk",
+          "axreflr8y92",
+          "axref1ueg155",
+          "axref7uyq82",
+          "axrefmvprkv",
+          "axrefetgvay",
+          "axref3oybdh",
+          "axref8ppqj",
+          "axref1gnnqk1",
+          "axref1pjz0fi",
+          "axref1m024r3"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "default",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "default",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--default",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.default",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY",
+          "card.withBorder"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:default",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref1de1mus",
+          "axrefw28qpl",
+          "axref9f619",
+          "axrefs19ii7",
+          "axref12frdag",
+          "axref1nex4ik",
+          "axrefbv1mwh",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e",
+          "axref1litavf",
+          "axref1y0btm7",
+          "axref14i3s5s"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "transparent",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "transparent",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--transparent",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.transparent",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:transparent",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axrefjbqb8w",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "muted",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "muted",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--muted",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.muted",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:muted",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axrefwmxj5m",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "blue",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "blue",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--blue",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.blue",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:blue",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref1o0wnni",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "cyan",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "cyan",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--cyan",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.cyan",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:cyan",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref1rgj867",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "gray",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "gray",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--gray",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.gray",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:gray",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axrefspzpui",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "green",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "green",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--green",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.green",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:green",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref1sqjeoo",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "orange",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "orange",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--orange",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.orange",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:orange",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref1e9xt6e",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "pink",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "pink",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--pink",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.pink",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:pink",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axrefnpoty2",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "purple",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "purple",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--purple",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.purple",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:purple",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref16i6n6f",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "red",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "red",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--red",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.red",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:red",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref1cibrc5",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "teal",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "teal",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--teal",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.teal",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:teal",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref1jtji5o",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "Card",
+      "variant": "yellow",
+      "hookClass": "astryx-card",
+      "attributes": {
+        "data-variant": "yellow",
+        "data-elevation": "none"
+      },
+      "readableClasses": [
+        "ax-card",
+        "ax-card--yellow",
+        "ax-card--elevation-none"
+      ],
+      "parts": {
+        "root": [
+          "card.base",
+          "card.variant.yellow",
+          "card.elevation.none",
+          "card.container",
+          "card.padding.containerPaddingInlineStart",
+          "card.padding.containerPaddingInlineEnd",
+          "card.padding.containerPaddingBlockStart",
+          "card.padding.containerPaddingBlockEnd",
+          "card.padding.layoutPaddingOuterX",
+          "card.padding.layoutPaddingOuterY",
+          "card.padding.layoutPaddingInnerX",
+          "card.padding.layoutPaddingInnerY"
+        ]
+      },
+      "states": [
+        "rest"
+      ],
+      "id": "Card:yellow",
+      "atomicClasses": {
+        "root": [
+          "axref2kkz0m",
+          "axref153u1i6",
+          "axref7giv3",
+          "axref1p8z4y0",
+          "axref1bo7t0x",
+          "axrefw28qpl",
+          "axref9f619",
+          "axref1c35znw",
+          "axref64h4k7",
+          "axref14m0hsi",
+          "axrefc1wllq",
+          "axrefjmlhfd",
+          "axref1ihxwbr",
+          "axref1rqz8me",
+          "axref1omyuck",
+          "axref14rzhog",
+          "axrefjej9fs",
+          "axref4poyjn",
+          "axref1u1kw4e"
+        ]
+      }
+    },
+    {
+      "component": "TextInput",
+      "variant": "default",
+      "hookClass": "astryx-text-input",
+      "attributes": {
+        "data-size": "md"
+      },
+      "readableClasses": [
+        "ax-text-input",
+        "ax-text-input--md",
+        "ax-text-input--default"
+      ],
+      "parts": {
+        "root": [
+          "textInput.wrapper",
+          "textInput.size.md"
+        ],
+        "control": [
+          "textInput.input"
+        ]
+      },
+      "states": [
+        "rest",
+        "hover",
+        "focus"
+      ],
+      "id": "TextInput:default",
+      "atomicClasses": {
+        "root": [
+          "axref9f619",
+          "axref1n2onr6",
+          "axref1vjfegm",
+          "axref78zum5",
+          "axref6s0dn4",
+          "axref1txdalj",
+          "axrefu0wf1k",
+          "axreff314gf",
+          "axref1litavf",
+          "axref1y0btm7",
+          "axrefvy26l8",
+          "axref6q1khz",
+          "axref1832zxr",
+          "axrefvdfih8",
+          "axref10xzikg",
+          "axref12zzom9",
+          "axrefuedmi6",
+          "axref12w9bfk",
+          "axreflr8y92",
+          "axref1gnnqk1",
+          "axref1xqjsvb",
+          "axrefuihb5h",
+          "axref1a2a7pz",
+          "axref1ueg155"
+        ],
+        "control": [
+          "axref1lliihq",
+          "axref98rzlu",
+          "axrefeuugli",
+          "axrefc342km",
+          "axrefng3xce",
+          "axref1717udv",
+          "axref9ynric",
+          "axrefjm74w1",
+          "axreff9zqsd",
+          "axrefw6l6zx",
+          "axref1tgivj0",
+          "axrefjbqb8w",
+          "axref1a2a7pz",
+          "axrefeyghm5"
+        ]
+      }
+    },
+    {
+      "component": "TextInput",
+      "variant": "success",
+      "hookClass": "astryx-text-input",
+      "attributes": {
+        "data-size": "md",
+        "data-status": "success"
+      },
+      "readableClasses": [
+        "ax-text-input",
+        "ax-text-input--md",
+        "ax-text-input--success"
+      ],
+      "parts": {
+        "root": [
+          "textInput.wrapper",
+          "textInput.size.md",
+          "textInput.status.success.border",
+          "textInput.status.success.hover",
+          "textInput.status.success.focus"
+        ],
+        "control": [
+          "textInput.input"
+        ]
+      },
+      "states": [
+        "rest",
+        "hover",
+        "focus"
+      ],
+      "id": "TextInput:success",
+      "atomicClasses": {
+        "root": [
+          "axref9f619",
+          "axref1n2onr6",
+          "axref1vjfegm",
+          "axref78zum5",
+          "axref6s0dn4",
+          "axref1txdalj",
+          "axrefu0wf1k",
+          "axreff314gf",
+          "axref1litavf",
+          "axref1y0btm7",
+          "axref16m2moy",
+          "axrefyq33ac",
+          "axref1832zxr",
+          "axrefvdfih8",
+          "axref10xzikg",
+          "axref12zzom9",
+          "axrefuedmi6",
+          "axref12w9bfk",
+          "axreflr8y92",
+          "axref1gnnqk1",
+          "axref8wp45d",
+          "axref1a2a7pz",
+          "axref1ueg155"
+        ],
+        "control": [
+          "axref1lliihq",
+          "axref98rzlu",
+          "axrefeuugli",
+          "axrefc342km",
+          "axrefng3xce",
+          "axref1717udv",
+          "axref9ynric",
+          "axrefjm74w1",
+          "axreff9zqsd",
+          "axrefw6l6zx",
+          "axref1tgivj0",
+          "axrefjbqb8w",
+          "axref1a2a7pz",
+          "axrefeyghm5"
+        ]
+      }
+    },
+    {
+      "component": "TextInput",
+      "variant": "warning",
+      "hookClass": "astryx-text-input",
+      "attributes": {
+        "data-size": "md",
+        "data-status": "warning"
+      },
+      "readableClasses": [
+        "ax-text-input",
+        "ax-text-input--md",
+        "ax-text-input--warning"
+      ],
+      "parts": {
+        "root": [
+          "textInput.wrapper",
+          "textInput.size.md",
+          "textInput.status.warning.border",
+          "textInput.status.warning.hover",
+          "textInput.status.warning.focus"
+        ],
+        "control": [
+          "textInput.input"
+        ]
+      },
+      "states": [
+        "rest",
+        "hover",
+        "focus"
+      ],
+      "id": "TextInput:warning",
+      "atomicClasses": {
+        "root": [
+          "axref9f619",
+          "axref1n2onr6",
+          "axref1vjfegm",
+          "axref78zum5",
+          "axref6s0dn4",
+          "axref1txdalj",
+          "axrefu0wf1k",
+          "axreff314gf",
+          "axref1litavf",
+          "axref1y0btm7",
+          "axref8wg1ba",
+          "axrefa1yw2k",
+          "axref1832zxr",
+          "axrefvdfih8",
+          "axref10xzikg",
+          "axref12zzom9",
+          "axrefuedmi6",
+          "axref12w9bfk",
+          "axreflr8y92",
+          "axref1gnnqk1",
+          "axref9156jc",
+          "axref1a2a7pz",
+          "axref1ueg155"
+        ],
+        "control": [
+          "axref1lliihq",
+          "axref98rzlu",
+          "axrefeuugli",
+          "axrefc342km",
+          "axrefng3xce",
+          "axref1717udv",
+          "axref9ynric",
+          "axrefjm74w1",
+          "axreff9zqsd",
+          "axrefw6l6zx",
+          "axref1tgivj0",
+          "axrefjbqb8w",
+          "axref1a2a7pz",
+          "axrefeyghm5"
+        ]
+      }
+    },
+    {
+      "component": "TextInput",
+      "variant": "error",
+      "hookClass": "astryx-text-input",
+      "attributes": {
+        "data-size": "md",
+        "data-status": "error"
+      },
+      "readableClasses": [
+        "ax-text-input",
+        "ax-text-input--md",
+        "ax-text-input--error"
+      ],
+      "parts": {
+        "root": [
+          "textInput.wrapper",
+          "textInput.size.md",
+          "textInput.status.error.border",
+          "textInput.status.error.hover",
+          "textInput.status.error.focus"
+        ],
+        "control": [
+          "textInput.input"
+        ]
+      },
+      "states": [
+        "rest",
+        "hover",
+        "focus"
+      ],
+      "id": "TextInput:error",
+      "atomicClasses": {
+        "root": [
+          "axref9f619",
+          "axref1n2onr6",
+          "axref1vjfegm",
+          "axref78zum5",
+          "axref6s0dn4",
+          "axref1txdalj",
+          "axrefu0wf1k",
+          "axreff314gf",
+          "axref1litavf",
+          "axref1y0btm7",
+          "axref1ofxpqo",
+          "axrefk2sxw7",
+          "axref1832zxr",
+          "axrefvdfih8",
+          "axref10xzikg",
+          "axref12zzom9",
+          "axrefuedmi6",
+          "axref12w9bfk",
+          "axreflr8y92",
+          "axref1gnnqk1",
+          "axref1bgmis8",
+          "axref1a2a7pz",
+          "axref1ueg155"
+        ],
+        "control": [
+          "axref1lliihq",
+          "axref98rzlu",
+          "axrefeuugli",
+          "axrefc342km",
+          "axrefng3xce",
+          "axref1717udv",
+          "axref9ynric",
+          "axrefjm74w1",
+          "axreff9zqsd",
+          "axrefw6l6zx",
+          "axref1tgivj0",
+          "axrefjbqb8w",
+          "axref1a2a7pz",
+          "axrefeyghm5"
+        ]
+      }
+    }
+  ]
+}
