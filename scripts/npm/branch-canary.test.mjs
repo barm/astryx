@@ -11,8 +11,10 @@ import path from 'node:path';
 import {afterEach, describe, expect, it} from 'vitest';
 
 import {
+  ALLOWED_CHANNELS,
   DEFAULT_ALLOWED_REF,
   getBaseVersion,
+  packageVersionExists,
   parseArgs,
   stampWorkspace,
   validateRequest,
@@ -89,7 +91,8 @@ afterEach(() => {
 });
 
 describe('validateRequest', () => {
-  it('accepts the dedicated POC ref and a non-reserved channel', () => {
+  it('accepts only the dedicated POC ref and allowlisted channel', () => {
+    expect(ALLOWED_CHANNELS).toEqual(['vanilla-poc']);
     expect(validateRequest(request())).toMatchObject({
       channel: 'vanilla-poc',
       shortSha: 'abcdef0',
@@ -111,12 +114,21 @@ describe('validateRequest', () => {
     ).toThrow(`may run only from ${DEFAULT_ALLOWED_REF}`);
   });
 
-  it.each(['latest', 'canary', 'next', 'bootstrap', 'beta', 'rc'])(
-    'refuses reserved channel %s',
-    channel => {
-      expect(() => validateRequest(request({channel}))).toThrow('is reserved');
-    },
-  );
+  it.each([
+    'latest',
+    'canary',
+    'next',
+    'bootstrap',
+    'beta',
+    'rc',
+    'x',
+    'v1',
+    'foo-canary',
+  ])('refuses unapproved channel %s', channel => {
+    expect(() => validateRequest(request({channel}))).toThrow(
+      'is not allowed; expected one of: vanilla-poc',
+    );
+  });
 
   it.each(['Vanilla', 'vanilla.poc', '-vanilla', ''])(
     'refuses malformed channel %s',
@@ -127,10 +139,66 @@ describe('validateRequest', () => {
     },
   );
 
+  it('supports an explicitly configured channel list', () => {
+    expect(
+      validateRequest(
+        request({channel: 'preview', allowedChannels: ['preview']}),
+      ),
+    ).toMatchObject({channel: 'preview'});
+  });
+
   it('requires a commit-like SHA', () => {
     expect(() => validateRequest(request({sha: 'abc123'}))).toThrow(
       '7 to 40 lowercase hexadecimal',
     );
+  });
+});
+
+describe('packageVersionExists', () => {
+  it('recognizes an exact published version', () => {
+    const calls = [];
+    const exists = packageVersionExists({
+      name: '@astryxdesign/core',
+      version: '0.6.5-vanilla-poc.abcdef0',
+      run(command, args, options) {
+        calls.push({command, args, options});
+        return '0.6.5-vanilla-poc.abcdef0\n';
+      },
+    });
+
+    expect(exists).toBe(true);
+    expect(calls).toEqual([
+      {
+        command: 'npm',
+        args: [
+          'view',
+          '@astryxdesign/core@0.6.5-vanilla-poc.abcdef0',
+          'version',
+          '--registry',
+          'https://registry.npmjs.org',
+        ],
+        options: {encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore']},
+      },
+    ]);
+  });
+
+  it('does not skip a missing or mismatched version', () => {
+    expect(
+      packageVersionExists({
+        name: '@astryxdesign/core',
+        version: '0.6.5-vanilla-poc.abcdef0',
+        run: () => '0.6.5-vanilla-poc.other\n',
+      }),
+    ).toBe(false);
+    expect(
+      packageVersionExists({
+        name: '@astryxdesign/core',
+        version: '0.6.5-vanilla-poc.abcdef0',
+        run() {
+          throw new Error('npm view returned 404');
+        },
+      }),
+    ).toBe(false);
   });
 });
 

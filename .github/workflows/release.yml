@@ -213,7 +213,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Refuse protected refs and reserved channels
+      - name: Refuse protected refs and unapproved channels
         env:
           BRANCH_CANARY_CHANNEL: ${{ inputs.channel }}
         run: >-
@@ -269,6 +269,10 @@ jobs:
           while IFS= read -r PACKAGE_DIR; do
             NAME=$(node -p "require('./$PACKAGE_DIR/package.json').name")
             VERSION=$(node -p "require('./$PACKAGE_DIR/package.json').version")
+            if node scripts/npm/branch-canary.mjs exists --name "$NAME" --version "$VERSION"; then
+              echo "Skipping ${NAME}@${VERSION} (already on registry)"
+              continue
+            fi
             echo "Packing ${NAME}@${VERSION} for @${BRANCH_CANARY_CHANNEL}"
             pnpm publish "./$PACKAGE_DIR" "${PUBLISH_ARGS[@]}"
           done < <(

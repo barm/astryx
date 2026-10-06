@@ -3,11 +3,12 @@
 /**
  * @file Branch-canary package planning and version stamping.
  *
- * @input  workflow ref, channel, commit SHA, workspace manifests, optional package allowlist
- * @output fail-closed package plan plus ephemeral manifest version/dependency updates
+ * @input  workflow ref, allowed channel, commit SHA, workspace manifests, optional package allowlist, npm registry
+ * @output fail-closed package plan, registry-existence checks, plus ephemeral manifest version/dependency updates
  * @position release helper — invoked only by the branch-canary release job
  */
 
+import {execFileSync} from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -15,19 +16,13 @@ import {fileURLToPath} from 'node:url';
 import {expandWorkspaceDirs} from '../lib/workspace-globs.mjs';
 
 export const DEFAULT_ALLOWED_REF = 'refs/heads/poc/vanilla-astryx';
-export const RESERVED_CHANNELS = new Set([
-  'latest',
-  'canary',
-  'next',
-  'bootstrap',
-  'beta',
-  'rc',
-]);
+export const ALLOWED_CHANNELS = Object.freeze(['vanilla-poc']);
 
 const CHANNEL_RE = /^[a-z][a-z0-9-]*$/;
 const SHA_RE = /^[0-9a-f]{7,40}$/;
 const BASE_VERSION_RE = /^\d+\.\d+\.\d+$/;
 const INTERNAL_SCOPE = '@astryxdesign/';
+const NPM_REGISTRY = 'https://registry.npmjs.org';
 const DEPENDENCY_FIELDS = [
   'dependencies',
   'peerDependencies',
@@ -43,12 +38,15 @@ function usage() {
   return `Usage:
   node scripts/npm/branch-canary.mjs validate --ref <ref> --channel <channel> --sha <sha>
   node scripts/npm/branch-canary.mjs stamp --ref <ref> --channel <channel> --sha <sha> --output <file> [options]
+  node scripts/npm/branch-canary.mjs exists --name <package> --version <version>
 
 Options:
   --allowed-ref <ref>       Exact branch ref allowed to publish. Default: ${DEFAULT_ALLOWED_REF}
   --include-package <name>  Explicitly include one private/canary-only package. Repeatable.
   --root <path>             Repository root. Defaults to this checkout.
   --output <file>           JSON package plan written by the stamp command.
+  --name <package>          Package name checked by the exists command.
+  --version <version>       Exact package version checked by the exists command.
   --help                    Show this help.
 `;
 }
@@ -87,7 +85,13 @@ export function parseArgs(argv) {
   return {command, values};
 }
 
-export function validateRequest({ref, allowedRef, channel, sha}) {
+export function validateRequest({
+  ref,
+  allowedRef,
+  channel,
+  sha,
+  allowedChannels = ALLOWED_CHANNELS,
+}) {
   if (ref === 'refs/heads/main' || ref.startsWith('refs/heads/release/')) {
     throw new Error(`branch-canary refuses protected release ref ${ref}`);
   }
@@ -101,8 +105,10 @@ export function validateRequest({ref, allowedRef, channel, sha}) {
       'channel must start with a lowercase letter and contain only lowercase letters, digits, or hyphens',
     );
   }
-  if (RESERVED_CHANNELS.has(channel)) {
-    throw new Error(`channel "${channel}" is reserved`);
+  if (!allowedChannels.includes(channel)) {
+    throw new Error(
+      `channel "${channel}" is not allowed; expected one of: ${allowedChannels.join(', ')}`,
+    );
   }
   if (!SHA_RE.test(sha ?? '')) {
     throw new Error(
@@ -111,6 +117,19 @@ export function validateRequest({ref, allowedRef, channel, sha}) {
   }
 
   return {ref, allowedRef, channel, sha, shortSha: sha.slice(0, 7)};
+}
+
+export function packageVersionExists({name, version, run = execFileSync}) {
+  try {
+    const publishedVersion = run(
+      'npm',
+      ['view', `${name}@${version}`, 'version', '--registry', NPM_REGISTRY],
+      {encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore']},
+    );
+    return String(publishedVersion).trim() === version;
+  } catch {
+    return false;
+  }
 }
 
 export function getBaseVersion(version) {
@@ -227,6 +246,15 @@ function main() {
   const {command, values} = parseArgs(process.argv.slice(2));
   if (values.help || command === '--help' || command === '-h') {
     console.log(usage());
+    return;
+  }
+
+  if (command === 'exists') {
+    const exists = packageVersionExists({
+      name: required(values, 'name'),
+      version: required(values, 'version'),
+    });
+    process.exitCode = exists ? 0 : 1;
     return;
   }
 
