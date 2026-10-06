@@ -333,32 +333,46 @@ describe('search CLI — exit codes + JSON contract', () => {
     expect(json.stdout).not.toContain('More in packages you could add');
   });
 
-  it('searches the docs and themes when no @astryxdesign/core is reachable, and exits 1 for --type component', async () => {
+  it('searches bundled components, docs, and themes when no local Core package is reachable', async () => {
     const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'astryx-search-cli-no-core-'));
     try {
       const open = await runCli(['--json', 'search', 'make', 'an', 'integration'], empty);
       expect(open.status).toBe(0);
       expect(JSON.parse(open.stdout).data.results[0]).toMatchObject({domain: 'doc'});
-      // Bundled themes need no project, so an open search finds them too.
+
       const theme = await runCli(['--json', 'search', 'neutral'], empty);
       expect(theme.status).toBe(0);
-      expect(JSON.parse(theme.stdout).data.results[0]).toMatchObject({
-        domain: 'theme',
-        name: 'neutral',
-      });
-      // The text says the search covered the docs and themes alone.
-      const text = await runCli(['search', 'button'], empty);
+      expect(JSON.parse(theme.stdout).data.results).toContainEqual(
+        expect.objectContaining({domain: 'theme', name: 'neutral'}),
+      );
+
+      const text = await runCli(['search', 'button', '--type', 'component'], empty);
       expect(text.status).toBe(0);
-      expect(text.stdout).toContain('only the docs and themes were searched');
-      // A themes-only search needs no core, like a docs-only one.
+      expect(text.stdout).toContain('Button');
+      expect(text.stdout).toMatch(
+        /@astryxdesign\/core@\d+\.\d+\.\d+ docs bundled with the CLI/,
+      );
+
+      const json = await runCli(
+        ['--json', 'search', 'button', '--type', 'component'],
+        empty,
+      );
+      expect(json.status).toBe(0);
+      expect(JSON.parse(json.stdout)).toMatchObject({
+        type: 'search',
+        meta: {
+          componentDocs: {
+            source: 'bundled',
+            package: '@astryxdesign/core',
+          },
+        },
+      });
+
       const themes = await runCli(['--json', 'search', 'warm', '--type', 'theme'], empty);
       expect(themes.status).toBe(0);
       const found = JSON.parse(themes.stdout).data.results;
       expect(found.map(r => r.name)).toContain('neutral');
       expect(found.every(r => r.domain === 'theme')).toBe(true);
-      const json = await runCli(['--json', 'search', 'button', '--type', 'component'], empty);
-      expect(json.status).toBe(1);
-      expect(JSON.parse(json.stdout)).toMatchObject({code: 'ERR_CORE_NOT_FOUND'});
     } finally {
       fs.rmSync(empty, {recursive: true, force: true});
     }

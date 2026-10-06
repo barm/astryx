@@ -34,6 +34,13 @@
  */
 
 /**
+ * Provenance attached only when component docs came from the version-matched
+ * snapshot shipped with the CLI instead of a local Core installation.
+ * @typedef {object} ComponentResponseMeta
+ * @property {{source: 'bundled'; package: string; version: string}} componentDocs
+ */
+
+/**
  * astryx --json component [--list] [--category X] [--detail names|compact|full]
  *
  * The list view emits ONE `component.list` type across all three detail levels;
@@ -45,6 +52,7 @@
  * @typedef {object} ComponentListResponse
  * @property {'component.list'} type
  * @property {ComponentListData} data
+ * @property {ComponentResponseMeta} [meta]
  */
 
 /**
@@ -63,7 +71,7 @@
  *   'component.batch',
  *   ComponentSingleResponse,
  *   ComponentBatchCandidate
- * >} ComponentBatchResponse
+ * > & {meta?: ComponentResponseMeta}} ComponentBatchResponse
  */
 
 /**
@@ -123,6 +131,7 @@
  * @typedef {object} ComponentDetailResponse
  * @property {'component.detail'} type
  * @property {import('@astryxdesign/cli/authoring').ComponentDoc & ComponentOwnership & ComponentDetailScope} data
+ * @property {ComponentResponseMeta} [meta]
  */
 
 /**
@@ -147,6 +156,7 @@
  * @typedef {object} ComponentDetailPropsResponse
  * @property {'component.detail.props'} type
  * @property {import('@astryxdesign/cli/authoring').ComponentPropDoc[]} data
+ * @property {ComponentResponseMeta} [meta]
  */
 
 /**
@@ -154,6 +164,7 @@
  * @typedef {object} ComponentDetailSourceResponse
  * @property {'component.detail.source'} type
  * @property {{component: string; source: string}} data
+ * @property {ComponentResponseMeta} [meta]
  */
 
 /**
@@ -161,6 +172,7 @@
  * @typedef {object} ComponentDetailShowcaseResponse
  * @property {'component.detail.showcase'} type
  * @property {{component: string; aspectRatio: number; source: string}} data
+ * @property {ComponentResponseMeta} [meta]
  */
 
 /**
@@ -168,6 +180,7 @@
  * @typedef {object} ComponentDetailBlocksResponse
  * @property {'component.detail.blocks'} type
  * @property {{component: string; showcase: BlockEntry | null; examples: BlockEntry[]; related: BlockEntry[]}} data
+ * @property {ComponentResponseMeta} [meta]
  */
 
 /**

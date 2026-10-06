@@ -21,8 +21,9 @@ export const doc = {
     'reads vanilla HTML or web-component markup. ' +
     "Use 'Button', 'widgets/Button', '@acme/widgets/Button', or " +
     "'@acme/widgets@1.2.3/Button'. A version applies to the package and must match the " +
-    'installed version. Boolean flags narrow every resolved component to just its props, ' +
-    'source, showcase, or example blocks.',
+    'installed version. Without a local Core installation, details, props, and lists use ' +
+    'the version-matched Core docs bundled with the CLI. Boolean flags narrow every ' +
+    'resolved component to just its props, source, showcase, or example blocks.',
   fn: 'component',
   args: [
     {
@@ -108,7 +109,7 @@ export const doc = {
     {code: 0, when: 'success'},
     {
       code: 1,
-      when: 'unknown component, category, package, or framework; an invalid framework combination; more than 100 selectors; any batch row is unresolved; or @astryxdesign/core cannot be resolved',
+      when: 'unknown component, category, package, or framework; an invalid framework combination; more than 100 selectors; any batch row is unresolved; or a source, showcase, or block view needs @astryxdesign/core but it cannot be resolved',
     },
   ],
   related: ['search', 'hook', 'docs', 'template', 'swizzle'],

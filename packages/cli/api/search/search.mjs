@@ -106,6 +106,10 @@ import {
 import {AstryxError} from '../error.mjs';
 import {ERROR_CODES} from '../../foundation/response/error-codes.mjs';
 import {setResultCoverage} from './coverage.mjs';
+import {
+  getBundledComponentDocsMeta,
+  getBundledComponentRecords,
+} from '../../foundation/discovery/bundled-component-docs.mjs';
 
 /**
  * A search candidate gathered from one content domain. Extra underscore-
@@ -966,6 +970,22 @@ async function gatherCoreComponents(coreDir) {
 }
 
 /**
+ * Build component candidates from the version-matched snapshot shipped with
+ * the CLI. Used only when Core is not installed in the consuming project.
+ * @returns {Candidate[]}
+ */
+function gatherBundledCoreComponents() {
+  return getBundledComponentRecords().map(({name, doc}) => ({
+    domain: 'component',
+    name,
+    keywords: Array.isArray(doc.keywords) ? doc.keywords : [],
+    description: doc.usage?.description || doc.description || '',
+    guidance: guidanceFrom(doc),
+    _import: doc.import,
+  }));
+}
+
+/**
  * Build component candidates contributed by the project's configured
  * integrations (astryx.config's `integrations`): name + keywords +
  * usage/description from each component's .doc.mjs, same as core. Without
@@ -1623,28 +1643,31 @@ export async function search(query, options = {}) {
   const term = String(query).trim().toLowerCase();
   const tokens = tokenizeQuery(term);
 
-  // `astryx docs` reads docs without @astryxdesign/core, and `astryx theme
-  // list` reads themes without it (bundled themes need no project), so a
-  // search of either must too. Every other domain reads core: asked for by
-  // name, it is an error without core; an open search then covers the docs
-  // and themes alone.
-  const needsCore = !type || !CORELESS_DOMAINS.includes(type);
-  const coreDir = needsCore ? findCoreDir(cwd) : null;
-  if (type && needsCore && !coreDir) {
+  // Component docs, docs topics, and bundled themes work without an installed
+  // Core package. Hooks, templates, and configured integration components still
+  // require one. An open search outside an app covers the three coreless domains.
+  const coreDir = ['doc', 'theme'].includes(type ?? '') ? null : findCoreDir(cwd);
+  if (type && ['hook', 'template'].includes(type) && !coreDir) {
     throw new AstryxError(
       'Could not find @astryxdesign/core package',
       undefined,
       ERROR_CODES.ERR_CORE_NOT_FOUND,
     );
   }
+  const usesBundledComponents =
+    coreDir == null && (type == null || type === 'component');
 
   // Gather candidates from each requested domain in parallel.
   /** @param {string} d */
   const wants = d =>
-    (!type && (coreDir != null || CORELESS_DOMAINS.includes(d))) || type === d;
+    type
+      ? type === d
+      : coreDir != null || CORELESS_DOMAINS.includes(d) || d === 'component';
   const [components, hooks, docTopics, templates, themes] = await Promise.all([
     wants('component')
-      ? gatherComponents(/** @type {string} */ (coreDir), cwd)
+      ? coreDir
+        ? gatherComponents(coreDir, cwd)
+        : gatherBundledCoreComponents()
       : [],
     wants('hook') ? gatherHooks(/** @type {string} */ (coreDir)) : [],
     wants('doc') ? gatherDocs(cwd) : [],
@@ -1696,6 +1719,9 @@ export async function search(query, options = {}) {
       ),
     },
   };
+  if (usesBundledComponents) {
+    response.meta = getBundledComponentDocsMeta();
+  }
   if (wants('component')) {
     searchedComponentsOf.set(
       response,
