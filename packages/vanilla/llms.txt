@@ -191,14 +191,14 @@ npx --yes @astryxdesign/cli@vanilla-poc template dashboard --framework html > pa
 **Pinned tarball fallback:**
 
 ```sh
-npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
+npm install -g https://cdn.jsdelivr.net/gh/facebook/astryx@9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz
 ```
 
 **Source fallback — clone the pinned commit:**
 
 ```sh
 git clone https://github.com/facebook/astryx.git astryx
-git -C astryx checkout ce7b98c3c01705bb8d71b96861828bfbc07283ac
+git -C astryx checkout 9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb
 cd astryx && npx --yes pnpm@11.10.0 install --frozen-lockfile
 node packages/cli/clients/cli/bin/astryx.mjs template dashboard --framework html > page.html
 ```
@@ -206,13 +206,13 @@ node packages/cli/clients/cli/bin/astryx.mjs template dashboard --framework html
 **Option 2 — direct file URLs (no shell needed; fetch and save as .html):**
 
 ```
-https://raw.githubusercontent.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/demo/pinned/<template-id>.html
-https://raw.githubusercontent.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/markup/<ComponentName>.html
+https://raw.githubusercontent.com/facebook/astryx/9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb/packages/vanilla/demo/pinned/<template-id>.html
+https://raw.githubusercontent.com/facebook/astryx/9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb/packages/vanilla/markup/<ComponentName>.html
 ```
 
 These are served as plain text: download the content, don't link to it.
 Live preview of all templates (after a one-time notice page):
-https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/demo/pinned/index.html
+https://raw.githack.com/facebook/astryx/9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb/packages/vanilla/demo/pinned/index.html
 
 ### A.3. Then add components
 
@@ -305,12 +305,12 @@ astryx component TextInput --framework web-components
 The same nine template IDs listed in Path A are available. Direct source files:
 
 ```
-https://raw.githubusercontent.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/demo/elements/pinned/<template-id>.html
-https://raw.githubusercontent.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/elements-markup/<ComponentName>.html
+https://raw.githubusercontent.com/facebook/astryx/9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb/packages/vanilla/demo/elements/pinned/<template-id>.html
+https://raw.githubusercontent.com/facebook/astryx/9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb/packages/vanilla/elements-markup/<ComponentName>.html
 ```
 
 Live template index (after a one-time notice page):
-https://raw.githack.com/facebook/astryx/ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/demo/elements/pinned/index.html
+https://raw.githack.com/facebook/astryx/9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb/packages/vanilla/demo/elements/pinned/index.html
 
 ### Web components: rules
 

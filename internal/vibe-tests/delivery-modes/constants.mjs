@@ -7,7 +7,7 @@ export const DEFAULT_REACT_RUNTIME_VERSION = '19.2.7';
 export const DEFAULT_VANILLA_CDN_REF =
   '3eb9597f53f557d20b34b3072d450d2bbdbfa1ac';
 export const DEFAULT_VANILLA_TARBALL_URL =
-  'https://cdn.jsdelivr.net/gh/facebook/astryx@ce7b98c3c01705bb8d71b96861828bfbc07283ac/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz';
+  'https://cdn.jsdelivr.net/gh/facebook/astryx@9bd9b20ef7dd4c91d72e7e0d0bbe03b48750dccb/packages/vanilla/dist/cli/astryx-cli-vanilla.tgz';
 
 export const CONFIG_NAMES = [
   'react-build',
