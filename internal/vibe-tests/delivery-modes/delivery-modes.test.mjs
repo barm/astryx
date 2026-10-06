@@ -46,7 +46,7 @@ function testRunnerProfile() {
   return validateRunnerProfile({
     schema: 1,
     runners: {
-      claude: {
+      'runner-a': {
         command: '/runner/a',
         input: 'stdin',
         agentArgs: [
@@ -98,7 +98,7 @@ function testRunnerProfile() {
           pathPolicy: 'test path policy',
         },
       },
-      muse: {
+      'runner-b': {
         command: '/runner/b',
         input: 'none',
         maxModelSteps: 80,
@@ -747,14 +747,17 @@ test('all supported Astryx CLI invocation forms are counted', () => {
     )
     .join('\n');
   assert.equal(
-    countCliLookups(transcript, testRunnerProfile().runners.claude.transcript),
+    countCliLookups(
+      transcript,
+      testRunnerProfile().runners['runner-a'].transcript,
+    ),
     commands.length,
   );
 });
 
 test('profile adapter controls synthetic JSONL transcript parsing', () => {
   const profile = testRunnerProfile();
-  const adapter = profile.runners.muse.transcript;
+  const adapter = profile.runners['runner-b'].transcript;
   const transcript = [
     {kind: 'work-proposed', event: {category: 'tool.shell'}},
     {
@@ -779,7 +782,7 @@ test('profile adapter controls synthetic JSONL transcript parsing', () => {
     outputTokens: 4,
   });
   const context = auditAgentContext(
-    'muse',
+    'runner-b',
     transcript,
     'runner-b extensions disabled',
     profile,
@@ -803,7 +806,7 @@ test('transcript audit flags every profile-configured sensitive path', () => {
       }),
     )
     .join('\n');
-  const audit = auditTranscriptCommands(transcript, profile, 'claude');
+  const audit = auditTranscriptCommands(transcript, profile, 'runner-a');
   assert.equal(audit.passed, false);
   assert.equal(audit.flaggedCommandCount, 2);
   assert.deepEqual(audit.touchedPaths, ['/host/bin', '/private/root']);
@@ -811,7 +814,7 @@ test('transcript audit flags every profile-configured sensitive path', () => {
 
 test('runner invocations come entirely from profile templates', () => {
   const profile = testRunnerProfile();
-  const agent = runnerInvocation(profile, 'claude', 'agent', {
+  const agent = runnerInvocation(profile, 'runner-a', 'agent', {
     MCP_CONFIG: '/sandbox/empty.json',
     TOOLS: 'Read,Write',
   });
@@ -825,14 +828,14 @@ test('runner invocations come entirely from profile templates', () => {
     'Read,Write',
   ]);
 
-  const judge = runnerInvocation(profile, 'claude', 'judge', {
+  const judge = runnerInvocation(profile, 'runner-a', 'judge', {
     MCP_CONFIG: '/sandbox/empty.json',
     TOOLS: 'Read',
     JSON_SCHEMA: '{"type":"object"}',
   });
   assert.deepEqual(judge.args.slice(-2), ['--schema', '{"type":"object"}']);
   assert.throws(
-    () => runnerInvocation(profile, 'claude', 'judge', {}),
+    () => runnerInvocation(profile, 'runner-a', 'judge', {}),
     /requires value MCP_CONFIG/,
   );
 });
@@ -843,7 +846,7 @@ test('context audit enforces the exact profile policy', () => {
     type: 'system',
     subtype: 'init',
     cwd: '/mnt/run/project',
-    claude_code_version: '1.0.0',
+    'runner-a_code_version': '1.0.0',
     tools: ['Read', 'Write'],
     agents: ['runner-a'],
     skills: [],
@@ -855,7 +858,7 @@ test('context audit enforces the exact profile policy', () => {
     ],
   };
   const clean = auditAgentContext(
-    'claude',
+    'runner-a',
     JSON.stringify(cleanInit),
     'configured policy active',
     profile,
@@ -864,7 +867,7 @@ test('context audit enforces the exact profile policy', () => {
   assert.equal(clean.runnerVersion, '1.0.0');
   assert.equal(clean.plugins.length, 2);
   const unconfirmed = auditAgentContext(
-    'claude',
+    'runner-a',
     JSON.stringify(cleanInit),
     '',
     profile,
@@ -872,7 +875,7 @@ test('context audit enforces the exact profile policy', () => {
   assert.equal(unconfirmed.passed, false);
   assert.equal(
     unconfirmed.violations.includes(
-      'Claude did not confirm the configured launcher policy',
+      'runner-a did not confirm the configured launcher policy',
     ),
     true,
   );
@@ -885,17 +888,20 @@ test('context audit enforces the exact profile policy', () => {
   });
   assert.equal(
     auditAgentContext(
-      'claude',
+      'runner-a',
       JSON.stringify(unexpectedPlugin),
       'configured policy active',
       profile,
     ).passed,
     false,
   );
-  const unknownVersion = {...cleanInit, claude_code_version: '1.0.1'};
+  const unknownVersion = {
+    ...cleanInit,
+    'runner-a_code_version': '1.0.1',
+  };
   assert.equal(
     auditAgentContext(
-      'claude',
+      'runner-a',
       JSON.stringify(unknownVersion),
       'configured policy active',
       profile,
@@ -915,7 +921,7 @@ test('context audit enforces the exact profile policy', () => {
   ].join('\n');
   assert.equal(
     auditAgentContext(
-      'claude',
+      'runner-a',
       contaminatedTranscript,
       'configured policy active',
       profile,
@@ -923,8 +929,8 @@ test('context audit enforces the exact profile policy', () => {
     false,
   );
 
-  const muse = auditAgentContext(
-    'muse',
+  const runnerB = auditAgentContext(
+    'runner-b',
     JSON.stringify({
       kind: 'reminder',
       event: {name: 'built-in-reminder'},
@@ -932,8 +938,8 @@ test('context audit enforces the exact profile policy', () => {
     'runner-b extensions disabled',
     profile,
   );
-  assert.equal(muse.passed, true);
-  assert.equal(muse.builtInReminderEvents, 1);
+  assert.equal(runnerB.passed, true);
+  assert.equal(runnerB.builtInReminderEvents, 1);
 });
 
 test('failed judge audits trigger one retry and never retain unsafe scores', () => {
@@ -965,11 +971,16 @@ test('failed judge audits trigger one retry and never retain unsafe scores', () 
 });
 
 test('private run roots use mode 0700', async () => {
-  const privateRun = await createPrivateRunRoot('test-');
+  const privateRun = await createPrivateRunRoot('test-', testRunnerProfile());
   temporaryDirectories.push(privateRun.root);
   assert.equal((await fs.promises.stat(privateRun.root)).mode & 0o777, 0o700);
   assert.equal(
     (await fs.promises.stat(privateRun.projectDir)).mode & 0o777,
+    0o700,
+  );
+  assert.equal(
+    (await fs.promises.stat(path.join(privateRun.root, 'home', '.runner-a')))
+      .mode & 0o777,
     0o700,
   );
   assert.equal(
@@ -1003,7 +1014,7 @@ test('summary includes failure zeros in medians and reports sample counts', () =
 function makeResult({passed, value, timedOut = false}) {
   return {
     config: 'vanilla',
-    agent: 'muse',
+    agent: 'runner-b',
     runner: {
       durationMs: value * 1000,
       usage: {inputTokens: value, outputTokens: 0},

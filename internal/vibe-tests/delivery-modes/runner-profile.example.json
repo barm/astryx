@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "runners": {
-    "claude": {
+    "runner-a": {
       "command": "/path/to/runner-a",
       "input": "stdin",
       "agentArgs": [
@@ -19,6 +19,7 @@
         "{{JSON_SCHEMA}}"
       ],
       "audit": {
+        "versionPath": "runner_version",
         "contextPolicies": {
           "REPLACE_ME_VERSION": {
             "agents": ["REPLACE_ME_AGENT"],
@@ -63,7 +64,7 @@
         }
       }
     },
-    "muse": {
+    "runner-b": {
       "command": "/path/to/runner-b",
       "input": "none",
       "maxModelSteps": 80,
@@ -151,11 +152,12 @@
     "mountScript": "set -eu\necho 'replace with the local mount-namespace launcher' >&2\nexit 64",
     "probeScript": "set -eu\necho 'replace with the local isolation probe' >&2\nexit 64",
     "hostUserRoot": "/path/to/host/users",
+    "privateDirectories": ["home/.runner-a"],
     "transcriptAuditPaths": ["/path/to/sensitive/root"],
     "manifest": {
       "runnerContext": {
-        "claude": "REPLACE_ME_RUNNER_A_CONTEXT",
-        "muse": "REPLACE_ME_RUNNER_B_CONTEXT"
+        "runner-a": "REPLACE_ME_RUNNER_A_CONTEXT",
+        "runner-b": "REPLACE_ME_RUNNER_B_CONTEXT"
       },
       "isolation": {
         "summary": "REPLACE_ME_ISOLATION_SUMMARY"
@@ -165,6 +167,12 @@
       "configuredChecksPassed": true
     }
   },
+  "projectInstructionFiles": [
+    {
+      "path": ".runner-a/INSTRUCTIONS.md",
+      "heading": "# RUNNER INSTRUCTIONS"
+    }
+  ],
   "versionCommands": {
     "node": {
       "command": "/path/to/node",

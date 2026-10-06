@@ -1,6 +1,6 @@
 # Delivery-mode vibe tests
 
-This harness compares Astryx across four public consumer delivery modes while holding the prompt battery, agents, and evaluator constant:
+This harness compares Astryx across four public consumer delivery modes while holding the prompt battery, runners, and evaluator constant:
 
 - `react-build`: Vite, React 19, npm packages, and generated agent docs.
 - `react-nobuild`: one `index.html` using React 19, htm, and Astryx 0.6.5 from public CDNs.
@@ -13,7 +13,7 @@ Each matrix cell starts a context-free agent in a unique private root. Generated
 
 The harness requires `VIBE_RUNNER_PROFILE` to point to an uncommitted JSON file outside the checkout. Concrete runner commands, launcher arguments, expected built-in context, host paths, isolation scripts, transcript adapters and audit paths, and version commands belong there—not in this public repository. The harness fails before setup when the variable, file, or a required field is missing.
 
-`runner-profile.example.json` is the schema example. It contains placeholders only. Copy it outside the checkout, replace every `REPLACE_ME` value and placeholder command with values for the local host, and keep that concrete file untracked. Argument arrays may use `{{MCP_CONFIG}}`, `{{TOOLS}}`, `{{PROJECT}}`, `{{TASK_FILE}}`, `{{MAX_MODEL_STEPS}}`, and `{{JSON_SCHEMA}}`; the harness fails on a missing substitution.
+`runner-profile.example.json` is the schema example. It contains placeholders only. Copy it outside the checkout, replace every `REPLACE_ME` value and placeholder command with values for the local host, and keep that concrete file untracked. Runner object keys are the names used in reports and by `--agents`; omitting `--agents` runs every profile runner. Exactly one runner supplies `judgeArgs` for the blind judge. The judge-runner name also supplies the default private-home directory and generated project instruction path; `sandbox.privateDirectories`, `projectInstructionFiles`, and the policy audit's `versionPath` may override those generic defaults. Argument arrays may use `{{MCP_CONFIG}}`, `{{TOOLS}}`, `{{PROJECT}}`, `{{TASK_FILE}}`, `{{MAX_MODEL_STEPS}}`, and `{{JSON_SCHEMA}}`; the harness fails on a missing substitution.
 
 The profile's `sandbox.mountScript` receives the current uid, gid, private run root, browser cache, username, command, and command arguments as shell positional parameters. `sandbox.probeScript` runs inside that namespace and receives the sibling-run path, private temporary-file paths, and host-user path. Keep the manifest and probe receipt descriptions aligned with what those scripts actually enforce.
 
@@ -27,7 +27,7 @@ The Linux host must support passwordless `sudo` for constructing mount namespace
 VIBE_RUNNER_PROFILE="$HOME/.config/astryx/vibe-runner-profile.json" \
 pnpm -F @astryxdesign/vibe-tests delivery:run \
   --configs react-build,react-nobuild,vanilla,web-components \
-  --agents claude,muse \
+  --agents runner-a,runner-b \
   --sample 15 \
   --seed 20261003 \
   --concurrency 1 \
@@ -48,7 +48,7 @@ The shared evaluator then:
 4. measures visible semantic targets using explicit React and Vanilla class taxonomies; web components are scored from their upgraded light-DOM `ax-*` BEM markup, and custom-element hosts are never targets; component classes and their parts confer adoption, while layout-only families and parts never do;
 5. scans only agent-authored changes after removing HTML/CSS/JS comments; inline styles, raw hex, and raw pixel values are hard-coded metrics, while custom-property and theme definitions are reported separately;
 6. runs axe-core;
-7. asks a headless Claude judge to score prompt fulfillment and visual quality from an anonymized screenshot and the task prompt only.
+7. asks the profile-selected blind judge to score prompt fulfillment and visual quality from an anonymized screenshot and the task prompt only.
 
 A build failure, page error, blank render, runner failure, timeout, or forbidden-context audit failure receives adoption, prompt-fulfillment, and visual-quality scores of 0. Those rows remain in every median and pass-rate denominator. For a timeout, the report separately scores the last complete on-disk state as **best before timeout** so a slow-but-working output is distinguishable from a broken one without changing the primary result. Reports display the sample count for each metric.
 

@@ -7,7 +7,7 @@ import {DEFAULT_REACT_RUNTIME_VERSION} from './constants.mjs';
 
 const fsp = fs.promises;
 
-export async function prepareProject(spec, projectDir) {
+export async function prepareProject(spec, projectDir, runnerProfile = null) {
   await fsp.rm(projectDir, {recursive: true, force: true});
   await fsp.mkdir(projectDir, {recursive: true});
 
@@ -16,7 +16,7 @@ export async function prepareProject(spec, projectDir) {
   } else if (spec.name === 'react-nobuild') {
     await prepareReactNoBuild(spec, projectDir);
   } else if (spec.name === 'vanilla' || spec.name === 'web-components') {
-    await prepareBuildless(spec, projectDir);
+    await prepareBuildless(spec, projectDir, runnerProfile);
   } else {
     throw new Error(`Unsupported delivery config: ${spec.name}`);
   }
@@ -153,7 +153,7 @@ async function prepareReactNoBuild(spec, projectDir) {
   await initializeAgentDocs(projectDir);
 }
 
-async function prepareBuildless(spec, projectDir) {
+async function prepareBuildless(spec, projectDir, runnerProfile) {
   await writeJson(path.join(projectDir, 'package.json'), {
     name: `astryx-delivery-${spec.name}`,
     version: '1.0.0',
@@ -186,11 +186,27 @@ async function prepareBuildless(spec, projectDir) {
       ? buildWebComponentsAgentDocs(publicDocs, spec)
       : buildVanillaAgentDocs(publicDocs, spec);
   await fsp.writeFile(path.join(projectDir, 'AGENTS.md'), agentDocs);
-  await fsp.mkdir(path.join(projectDir, '.claude'), {recursive: true});
-  await fsp.writeFile(
-    path.join(projectDir, '.claude', 'CLAUDE.md'),
-    agentDocs.replace('# AGENTS', '# CLAUDE'),
-  );
+  const judgeRunner = Object.entries(runnerProfile?.runners ?? {}).find(
+    ([, runner]) => Array.isArray(runner.judgeArgs),
+  )?.[0];
+  const projectInstructionFiles =
+    runnerProfile?.projectInstructionFiles ??
+    (judgeRunner
+      ? [
+          {
+            path: `.${judgeRunner}/${judgeRunner.toUpperCase()}.md`,
+            heading: `# ${judgeRunner.toUpperCase()}`,
+          },
+        ]
+      : []);
+  for (const instructionFile of projectInstructionFiles) {
+    const destination = path.resolve(projectDir, instructionFile.path);
+    await fsp.mkdir(path.dirname(destination), {recursive: true});
+    await fsp.writeFile(
+      destination,
+      agentDocs.replace('# AGENTS', instructionFile.heading),
+    );
+  }
 }
 
 export function buildVanillaAgentDocs(publicDocs, spec) {

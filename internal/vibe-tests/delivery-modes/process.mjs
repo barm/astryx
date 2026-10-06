@@ -102,19 +102,25 @@ export async function runCommand(command, args, options = {}) {
   });
 }
 
-export async function createPrivateRunRoot(prefix = 'run-') {
+export async function createPrivateRunRoot(prefix = 'run-', profile = null) {
   const base = path.join(os.homedir(), '.astryx-vibe-private');
   await fs.promises.mkdir(base, {recursive: true, mode: 0o700});
   await fs.promises.chmod(base, 0o700);
   const root = await fs.promises.mkdtemp(path.join(base, prefix));
   await fs.promises.chmod(root, 0o700);
+  const judgeRunner = Object.entries(profile?.runners ?? {}).find(
+    ([, runner]) => Array.isArray(runner.judgeArgs),
+  )?.[0];
+  const privateDirectories =
+    profile?.sandbox?.privateDirectories ??
+    (judgeRunner ? [`home/.${judgeRunner}`] : []);
   for (const directory of [
     'project',
-    'home/.claude',
     'home/.config',
     'tmp',
     'bin',
     'browser-cache',
+    ...privateDirectories,
   ]) {
     await fs.promises.mkdir(path.join(root, directory), {
       recursive: true,
@@ -320,7 +326,7 @@ export function auditAgentContext(agent, stdout, stderr, profile) {
   }
   const records = parseTranscript(stdout, runner.transcript);
 
-  if (agent === 'claude') {
+  if (runner.audit.contextPolicies != null) {
     const audit = runner.audit;
     const init = records.find(
       value => value.type === 'system' && value.subtype === 'init',
@@ -328,7 +334,8 @@ export function auditAgentContext(agent, stdout, stderr, profile) {
     const hooks = records.filter(
       value => value.type === 'system' && value.subtype?.startsWith('hook_'),
     );
-    const version = init?.claude_code_version ?? null;
+    const version =
+      readPath(init, audit.versionPath ?? `${agent}_code_version`) ?? null;
     const policy = version ? audit.contextPolicies?.[version] : null;
     const plugins = init?.plugins ?? [];
     const pluginPolicyPassed =
@@ -342,17 +349,21 @@ export function auditAgentContext(agent, stdout, stderr, profile) {
     );
     const violations = [];
     if (!launcherPolicyConfirmed) {
-      violations.push('Claude did not confirm the configured launcher policy');
+      violations.push(
+        `${agent} did not confirm the configured launcher policy`,
+      );
     }
     if (!init) {
-      violations.push('missing Claude init event');
+      violations.push(`missing ${agent} init event`);
     }
     if (!policy) {
-      violations.push(`unsupported Claude context policy version: ${version}`);
+      violations.push(
+        `unsupported ${agent} context policy version: ${version}`,
+      );
     }
     if (!pluginPolicyPassed) {
       violations.push(
-        'Claude plugin set did not match the configured allowlist',
+        `${agent} plugin set did not match the configured allowlist`,
       );
     }
     if (
@@ -361,20 +372,20 @@ export function auditAgentContext(agent, stdout, stderr, profile) {
       !sameStringSet(agents, policy.agents)
     ) {
       violations.push(
-        'Claude agent set did not match the configured allowlist',
+        `${agent} agent set did not match the configured allowlist`,
       );
     }
     if (!Array.isArray(init?.skills) || skills.length > 0) {
-      violations.push('Claude skills were missing or non-empty');
+      violations.push(`${agent} skills were missing or non-empty`);
     }
     if (!Array.isArray(init?.slash_commands) || slashCommands.length > 0) {
-      violations.push('Claude slash commands were missing or non-empty');
+      violations.push(`${agent} slash commands were missing or non-empty`);
     }
     if (!Array.isArray(init?.mcp_servers) || mcpServers.length > 0) {
-      violations.push('Claude MCP servers were missing or non-empty');
+      violations.push(`${agent} MCP servers were missing or non-empty`);
     }
     if (hooks.length > 0) {
-      violations.push('Claude ran hooks');
+      violations.push(`${agent} ran hooks`);
     }
     const installMarker = audit.pluginInstallMarker ?? 'Installing ';
     const installAttempts = stderr.split(installMarker).length - 1;
@@ -414,13 +425,13 @@ export function auditAgentContext(agent, stdout, stderr, profile) {
   );
   const violations = [];
   if (!pluginGateOff) {
-    violations.push('Muse plugin gate was not off');
+    violations.push(`${agent} plugin gate was not off`);
   }
   if (pluginInstallAttempt) {
-    violations.push('Muse attempted to install external plugins');
+    violations.push(`${agent} attempted to install external plugins`);
   }
   if (externalContextEvents > 0) {
-    violations.push('Muse emitted MCP events');
+    violations.push(`${agent} emitted external context events`);
   }
   return {
     passed: violations.length === 0,

@@ -15,7 +15,6 @@ export const CONFIG_NAMES = [
   'vanilla',
   'web-components',
 ];
-export const AGENT_NAMES = ['claude', 'muse'];
 
 export function getDeliverySpecs(options = {}) {
   const reactVersion = options.reactVersion ?? DEFAULT_REACT_VERSION;

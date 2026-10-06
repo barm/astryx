@@ -13,7 +13,7 @@ import {
   runCommand,
   runIsolatedCommand,
 } from './process.mjs';
-import {runnerInvocation} from './runner-profile.mjs';
+import {judgeRunnerName, runnerInvocation} from './runner-profile.mjs';
 
 const fsp = fs.promises;
 
@@ -738,7 +738,7 @@ async function runBlindJudgeAttempt({
   screenshotPath,
   runnerProfile,
 }) {
-  const privateRun = await createPrivateRunRoot('judge-');
+  const privateRun = await createPrivateRunRoot('judge-', runnerProfile);
   const anonymousScreenshot = path.join(
     privateRun.projectDir,
     'screenshot.png',
@@ -746,13 +746,14 @@ async function runBlindJudgeAttempt({
   await fsp.copyFile(screenshotPath, anonymousScreenshot);
 
   try {
-    const invocation = runnerInvocation(runnerProfile, 'claude', 'judge', {
+    const judgeRunner = judgeRunnerName(runnerProfile);
+    const invocation = runnerInvocation(runnerProfile, judgeRunner, 'judge', {
       MCP_CONFIG: `${privateRun.sandboxProjectDir}/../empty-mcp.json`,
       TOOLS: 'Read',
       JSON_SCHEMA: JSON.stringify(schema),
       PROJECT: privateRun.sandboxProjectDir,
       TASK_FILE: `${privateRun.sandboxProjectDir}/TASK.md`,
-      MAX_MODEL_STEPS: runnerProfile.runners.claude.maxModelSteps ?? '',
+      MAX_MODEL_STEPS: runnerProfile.runners[judgeRunner].maxModelSteps ?? '',
     });
     const result = await runIsolatedCommand(
       privateRun.root,
@@ -771,9 +772,9 @@ async function runBlindJudgeAttempt({
         error: result.stderr || result.stdout || `Judge exited ${result.code}`,
       };
     }
-    const parsed = parseClaudeStructuredOutput(result.stdout);
+    const parsed = parseJudgeStructuredOutput(result.stdout);
     const contextAudit = auditAgentContext(
-      'claude',
+      judgeRunner,
       result.stdout,
       result.stderr,
       runnerProfile,
@@ -807,7 +808,7 @@ function judgeAttemptReceipt(judgment, index) {
   };
 }
 
-function parseClaudeStructuredOutput(text) {
+function parseJudgeStructuredOutput(text) {
   let outer;
   try {
     outer = JSON.parse(text);

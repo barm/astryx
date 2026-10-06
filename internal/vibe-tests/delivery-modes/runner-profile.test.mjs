@@ -36,7 +36,7 @@ test('missing profile configuration fails with an actionable message', () => {
 test('missing required fields fail with their schema path', () => {
   assert.throws(
     () => validateRunnerProfile({schema: 1, runners: {}}),
-    /runners\.claude/,
+    /runners must not be empty/,
   );
 });
 
@@ -54,14 +54,15 @@ test('transcript adapters reject invalid paths and decoders', () => {
     fs.readFileSync(path.join(here, 'runner-profile.example.json'), 'utf8'),
   );
   const invalidPath = structuredClone(example);
-  invalidPath.runners.claude.transcript.toolCalls[0].recordsPath =
+  invalidPath.runners['runner-a'].transcript.toolCalls[0].recordsPath =
     'message.items[]';
   assert.throws(
     () => validateRunnerProfile(invalidPath),
     /recordsPath must be a dotted JSON field path/,
   );
   const missingJsonPath = structuredClone(example);
-  delete missingJsonPath.runners.muse.transcript.commands[0].commandJsonPath;
+  delete missingJsonPath.runners['runner-b'].transcript.commands[0]
+    .commandJsonPath;
   assert.throws(
     () => validateRunnerProfile(missingJsonPath),
     /commandJsonPath must be a dotted JSON field path/,

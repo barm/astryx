@@ -7,7 +7,6 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {
-  AGENT_NAMES,
   CONFIG_NAMES,
   DEFAULT_REACT_VERSION,
   DEFAULT_VANILLA_CDN_REF,
@@ -29,7 +28,11 @@ import {
   runCommand,
   runIsolatedCommand,
 } from './process.mjs';
-import {loadRunnerProfile, runnerInvocation} from './runner-profile.mjs';
+import {
+  judgeRunnerName,
+  loadRunnerProfile,
+  runnerInvocation,
+} from './runner-profile.mjs';
 import {prepareProject} from './projects.mjs';
 import {buildReports} from './report.mjs';
 
@@ -40,8 +43,9 @@ const vibeTestsRoot = path.resolve(here, '..');
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   const runnerProfile = loadRunnerProfile();
+  options.agents ??= Object.keys(runnerProfile.runners);
   const specs = getDeliverySpecs(options);
-  validateSelections(options, specs);
+  validateSelections(options, specs, runnerProfile);
   const testSet = JSON.parse(
     await fsp.readFile(
       path.join(vibeTestsRoot, 'test-sets', 'default.json'),
@@ -165,7 +169,8 @@ async function main() {
   if (results.length === jobs.length) {
     manifest.completedAt = new Date().toISOString();
   }
-  manifest.runnerVersions.claude =
+  const judgeRunner = judgeRunnerName(runnerProfile);
+  manifest.runnerVersions[judgeRunner] =
     results.find(result => result.runner?.contextAudit?.runnerVersion)?.runner
       .contextAudit.runnerVersion ??
     results.find(
@@ -245,10 +250,10 @@ function jobId(promptId, config, agent) {
 }
 
 async function verifyStarter(spec, outputDir) {
-  const privateRun = await createPrivateRunRoot('starter-');
+  const privateRun = await createPrivateRunRoot('starter-', runnerProfile);
   const privateScreenshot = path.join(privateRun.root, 'starter.png');
   try {
-    await prepareProject(spec, privateRun.projectDir);
+    await prepareProject(spec, privateRun.projectDir, runnerProfile);
     const baselineSources = await captureAuthoredSources(privateRun.projectDir);
     const verification = await evaluateRun({
       config: 'react-nobuild',
@@ -289,7 +294,7 @@ async function runOne({
   const id = jobId(prompt.id, config, agent);
   const sharedRunDir = path.join(outputDir, 'runs', id);
   const sharedScreenshot = path.join(outputDir, 'screenshots', `${id}.png`);
-  const privateRun = await createPrivateRunRoot(`${id}-`);
+  const privateRun = await createPrivateRunRoot(`${id}-`, runnerProfile);
   const privateScreenshot = path.join(privateRun.root, 'screenshot.png');
   const taskPrompt = buildTaskPrompt(prompt, spec, SANDBOX_PROJECT, {
     timeoutMinutes: options.timeoutMinutes,
@@ -309,7 +314,7 @@ async function runOne({
   };
 
   try {
-    await prepareProject(spec, privateRun.projectDir);
+    await prepareProject(spec, privateRun.projectDir, runnerProfile);
     const baselineSources = await captureAuthoredSources(privateRun.projectDir);
     await fsp.writeFile(
       path.join(privateRun.projectDir, 'TASK.md'),
@@ -515,8 +520,8 @@ async function assertIsolationAvailable() {
 }
 
 async function probeIsolation(runnerProfile) {
-  const left = await createPrivateRunRoot('probe-left-');
-  const right = await createPrivateRunRoot('probe-right-');
+  const left = await createPrivateRunRoot('probe-left-', runnerProfile);
+  const right = await createPrivateRunRoot('probe-right-', runnerProfile);
   const nonce = `${process.pid}-${Date.now()}`;
   const varTmpSecret = `/var/tmp/astryx-vibe-${nonce}`;
   const sharedMemorySecret = `/dev/shm/astryx-vibe-${nonce}`;
@@ -639,7 +644,7 @@ function printDryRun(options, prompts, specs) {
 function parseArgs(args) {
   const options = {
     configs: [...CONFIG_NAMES],
-    agents: [...AGENT_NAMES],
+    agents: undefined,
     sample: undefined,
     prompts: undefined,
     seed: undefined,
@@ -714,14 +719,14 @@ function parseArgs(args) {
   return options;
 }
 
-function validateSelections(options, specs) {
+function validateSelections(options, specs, runnerProfile) {
   for (const config of options.configs) {
     if (!specs[config]) {
       throw new Error(`Unknown config: ${config}`);
     }
   }
   for (const agent of options.agents) {
-    if (!AGENT_NAMES.includes(agent)) {
+    if (!runnerProfile.runners[agent]) {
       throw new Error(`Unknown agent: ${agent}`);
     }
   }
@@ -740,7 +745,7 @@ function printHelp() {
 
 Options:
   --configs <names>              react-build,react-nobuild,vanilla,web-components
-  --agents <names>               claude,muse
+  --agents <names>               comma-separated runner names from the profile
   --sample <n>                   category-stratified sample
   --seed <value>                 stable sample order; recorded in the manifest
   --prompts <ids>                comma-separated prompt ids
@@ -754,7 +759,7 @@ Options:
   --react-version <version>      npm/CDN Astryx version (default 0.6.5)
   --vanilla-cdn-ref <sha>        commit pin used by Vanilla Astryx docs
   --vanilla-tarball-url <url>    preview CLI tarball
-  --skip-judge                   omit the blind Claude visual judge
+  --skip-judge                   omit the blind visual judge
 
 Environment:
   VIBE_RUNNER_PROFILE            required path to an uncommitted local profile

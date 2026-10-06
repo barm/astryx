@@ -20,7 +20,7 @@ function required(value, field, type) {
   return value;
 }
 
-function validateRunner(profile, name, {judge = false} = {}) {
+function validateRunner(profile, name) {
   const runner = required(profile.runners?.[name], `runners.${name}`, 'object');
   required(runner.command, `runners.${name}.command`, 'string');
   const agentArgs = required(
@@ -31,15 +31,7 @@ function validateRunner(profile, name, {judge = false} = {}) {
   if (agentArgs.length === 0) {
     throw new Error(`Runner profile field runners.${name}.agentArgs is empty`);
   }
-  required(runner.input, `runners.${name}.input`, 'string');
-  if (!['stdin', 'none'].includes(runner.input)) {
-    throw new Error(
-      `Runner profile field runners.${name}.input must be stdin or none`,
-    );
-  }
-  validateTranscript(runner.transcript, `runners.${name}.transcript`);
-  const audit = required(runner.audit, `runners.${name}.audit`, 'object');
-  if (judge) {
+  if (runner.judgeArgs != null) {
     const judgeArgs = required(
       runner.judgeArgs,
       `runners.${name}.judgeArgs`,
@@ -51,12 +43,28 @@ function validateRunner(profile, name, {judge = false} = {}) {
       );
     }
   }
-  if (name === 'claude') {
+  required(runner.input, `runners.${name}.input`, 'string');
+  if (!['stdin', 'none'].includes(runner.input)) {
+    throw new Error(
+      `Runner profile field runners.${name}.input must be stdin or none`,
+    );
+  }
+  validateTranscript(runner.transcript, `runners.${name}.transcript`);
+  const audit = required(runner.audit, `runners.${name}.audit`, 'object');
+  if (audit.contextPolicies != null) {
     const contextPolicies = required(
       audit.contextPolicies,
       `runners.${name}.audit.contextPolicies`,
       'object',
     );
+    if (audit.versionPath != null) {
+      required(
+        audit.versionPath,
+        `runners.${name}.audit.versionPath`,
+        'string',
+      );
+      validatePath(audit.versionPath, `runners.${name}.audit.versionPath`);
+    }
     for (const [version, policy] of Object.entries(contextPolicies)) {
       required(
         policy,
@@ -104,7 +112,7 @@ function validateRunner(profile, name, {judge = false} = {}) {
       'string',
     );
     required(audit.pathPolicy, `runners.${name}.audit.pathPolicy`, 'string');
-  } else {
+  } else if (audit.transcriptEvents != null) {
     required(
       audit.pluginGateOffMarker,
       `runners.${name}.audit.pluginGateOffMarker`,
@@ -129,6 +137,10 @@ function validateRunner(profile, name, {judge = false} = {}) {
     validateSelector(
       transcriptEvents.externalContext,
       `runners.${name}.audit.transcriptEvents.externalContext`,
+    );
+  } else {
+    throw new Error(
+      `Runner profile field runners.${name}.audit requires contextPolicies or transcriptEvents`,
     );
   }
   for (const [index, argument] of runner.agentArgs.entries()) {
@@ -276,6 +288,16 @@ function validatePath(value, label) {
   }
 }
 
+function validateRelativePath(value, label) {
+  required(value, label, 'string');
+  if (
+    path.isAbsolute(value) ||
+    value.split(/[\\/]/).some(part => part === '..')
+  ) {
+    throw new Error(`Runner profile field ${label} must be a relative path`);
+  }
+}
+
 export function validateRunnerProfile(profile) {
   required(profile, 'profile', 'object');
   if (profile.schema !== 1) {
@@ -283,29 +305,50 @@ export function validateRunnerProfile(profile) {
       `Runner profile schema must be 1; received ${profile.schema}`,
     );
   }
-  required(profile.runners, 'runners', 'object');
-  validateRunner(profile, 'claude', {judge: true});
-  validateRunner(profile, 'muse');
-  required(profile.sandbox, 'sandbox', 'object');
-  required(profile.sandbox.mountScript, 'sandbox.mountScript', 'string');
-  required(profile.sandbox.probeScript, 'sandbox.probeScript', 'string');
-  required(profile.sandbox.hostUserRoot, 'sandbox.hostUserRoot', 'string');
+  const runners = required(profile.runners, 'runners', 'object');
+  const runnerEntries = Object.entries(runners);
+  if (runnerEntries.length === 0) {
+    throw new Error('Runner profile field runners must not be empty');
+  }
+  for (const [name] of runnerEntries) {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name)) {
+      throw new Error(`Runner profile runner name is invalid: ${name}`);
+    }
+    validateRunner(profile, name);
+  }
+  judgeRunnerName(profile);
+  const sandbox = required(profile.sandbox, 'sandbox', 'object');
+  required(sandbox.mountScript, 'sandbox.mountScript', 'string');
+  required(sandbox.probeScript, 'sandbox.probeScript', 'string');
+  required(sandbox.hostUserRoot, 'sandbox.hostUserRoot', 'string');
+  const privateDirectories = sandbox.privateDirectories ?? [];
+  required(privateDirectories, 'sandbox.privateDirectories', 'array');
+  for (const [index, directory] of privateDirectories.entries()) {
+    validateRelativePath(directory, `sandbox.privateDirectories[${index}]`);
+  }
   const transcriptAuditPaths = required(
-    profile.sandbox.transcriptAuditPaths,
+    sandbox.transcriptAuditPaths,
     'sandbox.transcriptAuditPaths',
     'array',
   );
   for (const [index, pathname] of transcriptAuditPaths.entries()) {
     required(pathname, `sandbox.transcriptAuditPaths[${index}]`, 'string');
   }
-  const manifest = required(
-    profile.sandbox.manifest,
-    'sandbox.manifest',
-    'object',
-  );
+  const manifest = required(sandbox.manifest, 'sandbox.manifest', 'object');
   required(manifest.runnerContext, 'sandbox.manifest.runnerContext', 'object');
   required(manifest.isolation, 'sandbox.manifest.isolation', 'object');
-  required(profile.sandbox.probeReceipt, 'sandbox.probeReceipt', 'object');
+  required(sandbox.probeReceipt, 'sandbox.probeReceipt', 'object');
+  const projectInstructionFiles = profile.projectInstructionFiles ?? [];
+  required(projectInstructionFiles, 'projectInstructionFiles', 'array');
+  for (const [index, entry] of projectInstructionFiles.entries()) {
+    required(entry, `projectInstructionFiles[${index}]`, 'object');
+    validateRelativePath(entry.path, `projectInstructionFiles[${index}].path`);
+    required(
+      entry.heading,
+      `projectInstructionFiles[${index}].heading`,
+      'string',
+    );
+  }
   required(profile.versionCommands, 'versionCommands', 'object');
   for (const [name, entry] of Object.entries(profile.versionCommands)) {
     required(entry, `versionCommands.${name}`, 'object');
@@ -316,6 +359,18 @@ export function validateRunnerProfile(profile) {
     }
   }
   return profile;
+}
+
+export function judgeRunnerName(profile) {
+  const judgeRunners = Object.entries(profile.runners ?? {})
+    .filter(([, runner]) => Array.isArray(runner?.judgeArgs))
+    .map(([name]) => name);
+  if (judgeRunners.length !== 1) {
+    throw new Error(
+      `Runner profile must define judgeArgs on exactly one runner; found ${judgeRunners.length}`,
+    );
+  }
+  return judgeRunners[0];
 }
 
 export function loadRunnerProfile({env = process.env} = {}) {
