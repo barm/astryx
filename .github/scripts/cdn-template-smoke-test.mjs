@@ -4,8 +4,9 @@
 /**
  * CDN starter-page smoke test — scaffolds `astryx template --cdn` into a temp
  * directory, serves it, and opens it in headless Chromium. Fails on any console
- * error, page error, or failed request, and on a page that loaded without
- * rendering anything.
+ * error, page error, or failed request, on a page that loaded without
+ * rendering a button and its theme-provided semantic icon, or when the page
+ * fetched anything other than one distinct React implementation module.
  *
  * This is the one recipe we ship that runs entirely outside the repo: no
  * bundler resolves its imports, no test double stands in for jsDelivr or
@@ -43,6 +44,18 @@ function fail(message, detail) {
   console.log(`  FAIL  ${message}`);
   if (detail) console.log(detail);
   process.exitCode = 1;
+}
+
+function isReactImplementationRequest(rawUrl) {
+  try {
+    const parsed = new URL(rawUrl);
+    return (
+      parsed.hostname === 'esm.sh' &&
+      /\/react@[^/]+\/.*\/react\.mjs$/.test(parsed.pathname)
+    );
+  } catch {
+    return false;
+  }
 }
 
 // ── 1. Scaffold the page with the real CLI ───────────────────────────────────
@@ -99,6 +112,7 @@ async function render() {
   const consoleErrors = [];
   const pageErrors = [];
   const failedRequests = [];
+  const reactImplementationRequests = new Set();
 
   const browser = await chromium.launch();
   try {
@@ -107,6 +121,11 @@ async function render() {
       if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 300));
     });
     page.on('pageerror', e => pageErrors.push(String(e).slice(0, 300)));
+    page.on('request', request => {
+      if (isReactImplementationRequest(request.url())) {
+        reactImplementationRequests.add(request.url());
+      }
+    });
     page.on('requestfailed', r =>
       failedRequests.push(`${r.url()} :: ${r.failure()?.errorText}`),
     );
@@ -117,13 +136,24 @@ async function render() {
     await page.goto(url, {waitUntil: 'networkidle', timeout: 90_000});
     // A page that throws during render still reaches networkidle with an empty
     // root, so the render itself has to be asserted, not just the error streams.
-    const button = await page
-      .getByRole('button')
-      .first()
+    const buttonLocator = page.getByRole('button', {name: 'Try me'}).first();
+    const button = await buttonLocator
       .textContent({timeout: 15_000})
       .catch(() => null);
+    const themedIcon = await buttonLocator
+      .locator('svg')
+      .first()
+      .isVisible()
+      .catch(() => false);
 
-    return {consoleErrors, pageErrors, failedRequests, button};
+    return {
+      consoleErrors,
+      pageErrors,
+      failedRequests,
+      button,
+      themedIcon,
+      reactImplementationRequests: [...reactImplementationRequests],
+    };
   } finally {
     await browser.close();
   }
@@ -137,7 +167,9 @@ for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
     result.consoleErrors.length === 0 &&
     result.pageErrors.length === 0 &&
     result.failedRequests.length === 0 &&
-    result.button;
+    result.button &&
+    result.themedIcon &&
+    result.reactImplementationRequests.length === 1;
   if (clean) break;
   if (attempt < ATTEMPTS) console.log(`  retry ${attempt} of ${ATTEMPTS - 1}`);
 }
@@ -160,6 +192,19 @@ if (result.button) {
   console.log(`  ok    rendered a button: "${result.button.trim()}"`);
 } else {
   fail('the page loaded but rendered no button');
+}
+if (result.themedIcon) {
+  console.log('  ok    rendered the themed semantic icon');
+} else {
+  fail('the button rendered without its themed semantic icon');
+}
+if (result.reactImplementationRequests.length === 1) {
+  console.log('  ok    fetched exactly one React implementation module');
+} else {
+  fail(
+    `expected one React implementation module, fetched ${result.reactImplementationRequests.length}`,
+    result.reactImplementationRequests.map(request => `        ${request}`).join('\n'),
+  );
 }
 
 fs.rmSync(tmpDir, {recursive: true, force: true});

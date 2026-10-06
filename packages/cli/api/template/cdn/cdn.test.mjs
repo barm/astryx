@@ -6,11 +6,13 @@
  *
  * Two things matter here: it never destroys work (the page lands once, a second
  * run leaves an edited copy alone, a path that escapes the project is refused),
- * and the page it writes is pinned — a leftover version placeholder would ship
- * a file whose every CDN URL 404s.
+ * and every CDN recipe is pinned and reuses the import map's React. A leftover
+ * version placeholder would ship URLs that 404; an unexternalized Astryx module
+ * would bundle a second React and fail when a themed icon reads context.
  */
 
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
+import {spawnSync} from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
@@ -30,6 +32,22 @@ afterEach(() => {
 
 const written = () =>
   fs.readFileSync(path.join(tmpDir, CDN_TEMPLATE_DEFAULT_PATH), 'utf-8');
+const repoRoot = path.resolve(import.meta.dirname, '../../../../..');
+const trackedSurfacePaths = () => {
+  const listed = spawnSync(
+    'git',
+    ['ls-files', '-z', '--', '*.md', '*.html', '*.mjs'],
+    {cwd: repoRoot, encoding: 'utf-8'},
+  );
+  if (listed.status !== 0) {
+    throw new Error(`Could not list tracked CDN recipe surfaces: ${listed.stderr}`);
+  }
+  return listed.stdout.split('\0').filter(Boolean);
+};
+const astryxEsmImports = source =>
+  source.match(
+    /https:\/\/esm\.sh\/(?:v\d+\/)?@astryxdesign\/[^\s"'<>`]+/g,
+  ) ?? [];
 
 describe('templateCdn()', () => {
   it('writes the page and returns a template.cdn receipt', () => {
@@ -53,6 +71,36 @@ describe('templateCdn()', () => {
     for (const url of urls ?? []) {
       expect(url).toContain(`@${data.version}`);
     }
+  });
+
+  it('recognizes versioned esm.sh build paths', () => {
+    const url = [
+      'https://esm.sh/v135/',
+      '@astryxdesign/core@1.2.3?external=react,react-dom',
+    ].join('');
+
+    expect(astryxEsmImports(url)).toEqual([url]);
+  });
+
+  it('externalizes React for every tracked Astryx esm.sh import', () => {
+    templateCdn({cwd: tmpDir});
+    const surfaces = trackedSurfacePaths().map(filename => [
+      filename,
+      fs.readFileSync(path.join(repoRoot, filename), 'utf-8'),
+    ]);
+    surfaces.push(['generated CDN page', written()]);
+    let importCount = 0;
+
+    for (const [label, source] of surfaces) {
+      const urls = astryxEsmImports(source);
+      importCount += urls.length;
+      for (const url of urls) {
+        const external =
+          new URL(url).searchParams.get('external')?.split(',') ?? [];
+        expect(external, `${label}: ${url}`).toEqual(['react', 'react-dom']);
+      }
+    }
+    expect(importCount).toBeGreaterThan(0);
   });
 
   it('loads the font family the theme names', () => {
