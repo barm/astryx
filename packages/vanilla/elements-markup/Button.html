@@ -23,5 +23,15 @@ click:Native activation event from the inner button or link.
 </ax-button>
 <!-- variant: disabled-label -->
 <ax-button label="Continue" variant="primary" is-disabled></ax-button>
-<!-- variant: state-loading-success -->
-<ax-button label="Wait → Done" is-disabled></ax-button>
+<!-- state-recipes:start -->
+<!-- variant: state-loading -->
+<div>
+  <ax-button is-disabled aria-busy="true">Saving…</ax-button>
+  <p role="status" aria-live="polite">Saving changes…</p>
+</div>
+<!-- variant: state-success -->
+<div>
+  <ax-button>Saved</ax-button>
+  <p role="status" aria-live="polite">Changes saved successfully.</p>
+</div>
+<!-- state-recipes:end -->

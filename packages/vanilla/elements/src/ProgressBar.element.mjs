@@ -64,9 +64,39 @@ export default {
       html: '<ax-progress-bar label="Processing report" is-indeterminate></ax-progress-bar>',
     },
     {
-      name: 'upload-states',
+      name: 'upload-in-progress',
       gallery: false,
-      html: '<ax-progress-bar label="64%"></ax-progress-bar><ax-progress-bar label="OK" variant="success"></ax-progress-bar><ax-progress-bar label="Err" variant="error"></ax-progress-bar>',
+      recipe: true,
+      html: `<ax-progress-bar
+  label="Uploading files"
+  value="64"
+  max="100"
+  has-value-label
+></ax-progress-bar>`,
+    },
+    {
+      name: 'upload-done',
+      gallery: false,
+      recipe: true,
+      html: `<ax-progress-bar
+  label="Upload complete"
+  value="100"
+  max="100"
+  variant="success"
+  has-value-label
+></ax-progress-bar>`,
+    },
+    {
+      name: 'upload-error',
+      gallery: false,
+      recipe: true,
+      html: `<ax-progress-bar
+  label="Upload failed"
+  value="64"
+  max="100"
+  variant="error"
+  has-value-label
+></ax-progress-bar>`,
     },
   ],
   render(_host, h) {

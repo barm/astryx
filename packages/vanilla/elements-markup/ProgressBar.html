@@ -20,5 +20,28 @@ none
 <ax-progress-bar label="Uploading files" value="72" variant="success" has-value-label></ax-progress-bar>
 <!-- variant: indeterminate -->
 <ax-progress-bar label="Processing report" is-indeterminate></ax-progress-bar>
-<!-- variant: upload-states -->
-<ax-progress-bar label="64%"></ax-progress-bar><ax-progress-bar label="OK" variant="success"></ax-progress-bar><ax-progress-bar label="Err" variant="error"></ax-progress-bar>
+<!-- state-recipes:start -->
+<!-- variant: upload-in-progress -->
+<ax-progress-bar
+  label="Uploading files"
+  value="64"
+  max="100"
+  has-value-label
+></ax-progress-bar>
+<!-- variant: upload-done -->
+<ax-progress-bar
+  label="Upload complete"
+  value="100"
+  max="100"
+  variant="success"
+  has-value-label
+></ax-progress-bar>
+<!-- variant: upload-error -->
+<ax-progress-bar
+  label="Upload failed"
+  value="64"
+  max="100"
+  variant="error"
+  has-value-label
+></ax-progress-bar>
+<!-- state-recipes:end -->

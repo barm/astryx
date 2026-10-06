@@ -144,10 +144,10 @@ test('state recipes are discoverable in both component markup paths', async () =
   ]);
   const elementVariants = new Map([
     ['HoverCard', ['state-open']],
-    ['Button', ['state-loading-success']],
-    ['ProgressBar', ['upload-states']],
+    ['Button', ['state-loading', 'state-success']],
+    ['ProgressBar', ['upload-in-progress', 'upload-done', 'upload-error']],
     ['TextInput', ['password-strength-and-visibility']],
-    ['TopNav', ['responsive-states']],
+    ['TopNav', ['responsive-collapsed', 'responsive-expanded']],
   ]);
 
   for (const [directory, variants] of [
@@ -197,6 +197,17 @@ test('pseudo-elements stay outside :where() and :is() in source and dist', async
       `${path.relative(packageRoot, file)} contains a pseudo-element inside :where() or :is()`,
     );
   }
+});
+
+test('web-component state recipes pass the example lint and size cap', () => {
+  execFileSync(
+    process.execPath,
+    ['scripts/build-elements.mjs', '--validate-recipes'],
+    {
+      cwd: packageRoot,
+      stdio: 'pipe',
+    },
+  );
 });
 
 test('web-component templates match IDs and pass the element API validator', () => {

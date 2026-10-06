@@ -1,7 +1,7 @@
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 /**
  * @input Per-component .element.mjs definitions.
- * @output Validated registries, FOUC CSS, ESM/classic bundles, and API markup docs.
+ * @output Validated registries, bundles, and API markup with bounded recipe sections.
  * @position Build and drift-check entry point for Vanilla Astryx elements.
  */
 
@@ -465,10 +465,21 @@ function validateDefinitions(definitions) {
     }
 
     for (const example of definition.examples) {
+      const context = `${definition.name} example "${example.name}"`;
+      if (example.recipe) {
+        const bytes = Buffer.byteLength(example.html);
+        if (bytes > 2_500) {
+          throw new Error(
+            `${context} recipe must be at most 2500 bytes; received ${bytes}.`,
+          );
+        }
+        if (example.gallery !== false) {
+          throw new Error(`${context} recipe must set gallery: false.`);
+        }
+      }
       const body = new JSDOM(`<!doctype html><body>${example.html}</body>`)
         .window.document.body;
       const host = body.querySelector(definition.tag);
-      const context = `${definition.name} example "${example.name}"`;
       if (!host) {
         throw new Error(`${context} omits <${definition.tag}>.`);
       }
@@ -615,9 +626,17 @@ function renderMarkup(definition) {
       ? `;readonly:${delegatedProperties.join(',')}`
       : ''
   }`;
-  const examples = definition.examples
-    .map(example => `<!-- variant: ${example.name} -->\n${example.html}`)
-    .join('\n');
+  const renderExamples = examples =>
+    examples
+      .map(example => `<!-- variant: ${example.name} -->\n${example.html}`)
+      .join('\n');
+  const examples = renderExamples(
+    definition.examples.filter(example => !example.recipe),
+  );
+  const recipes = definition.examples.filter(example => example.recipe);
+  const recipesBlock = recipes.length
+    ? `\n<!-- state-recipes:start -->\n${renderExamples(recipes)}\n<!-- state-recipes:end -->`
+    : '';
   const methodsBlock = methods ? `<!-- methods:\n${methods}\n-->\n` : '';
   return `<!-- docs: ${definition.docs} -->
 <!-- attributes:
@@ -630,7 +649,7 @@ ${slots || 'none'}
 ${events}
 -->
 ${methodsBlock}<!-- properties:${properties} -->
-${examples}
+${examples}${recipesBlock}
 `;
 }
 
@@ -652,6 +671,16 @@ async function compare(pathname, expected) {
 
 async function main() {
   const definitions = await loadDefinitions();
+  if (process.argv.includes('--validate-recipes')) {
+    const recipes = definitions.flatMap(({definition}) =>
+      definition.examples.filter(example => example.recipe),
+    );
+    if (recipes.length === 0) throw new Error('No state recipes found.');
+    console.log(
+      `Validated ${recipes.length} state recipes with the example lint and 2500-byte cap.`,
+    );
+    return;
+  }
   if (process.argv.includes('--validate-templates')) {
     console.log('Validated canonical APIs in all web-component templates.');
     return;

@@ -48,9 +48,66 @@ export default {
 </ax-top-nav>`,
     },
     {
-      name: 'responsive-states',
+      name: 'responsive-collapsed',
       gallery: false,
-      html: `<ax-top-nav><b slot="heading">A</b><a hidden>H</a><button>Menu</button></ax-top-nav>`,
+      recipe: true,
+      html: `<ax-top-nav label="Primary navigation">
+  <span slot="heading">Astryx</span>
+  <span id="responsive-nav-items" slot="start-content" hidden>
+    <a href="#overview" aria-current="page">Overview</a>
+    <a href="#projects">Projects</a>
+  </span>
+  <button
+    id="responsive-nav-toggle"
+    slot="end-content"
+    type="button"
+    aria-controls="responsive-nav-items"
+    aria-expanded="false"
+  >Open menu</button>
+</ax-top-nav>
+<script>
+  (() => {
+    const toggle = document.querySelector('#responsive-nav-toggle');
+    const items = document.querySelector('#responsive-nav-items');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      toggle.textContent = expanded ? 'Open menu' : 'Close menu';
+      items.hidden = expanded;
+    });
+  })();
+</script>`,
+    },
+    {
+      name: 'responsive-expanded',
+      gallery: false,
+      recipe: true,
+      html: `<ax-top-nav label="Primary navigation">
+  <span slot="heading">Astryx</span>
+  <span id="responsive-nav-items-open" slot="start-content">
+    <a href="#overview" aria-current="page">Overview</a>
+    <a href="#projects">Projects</a>
+  </span>
+  <button
+    id="responsive-nav-toggle-open"
+    slot="end-content"
+    type="button"
+    aria-controls="responsive-nav-items-open"
+    aria-expanded="true"
+  >Close menu</button>
+</ax-top-nav>
+<script>
+  (() => {
+    const toggle = document.querySelector('#responsive-nav-toggle-open');
+    const items = document.querySelector('#responsive-nav-items-open');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      toggle.textContent = expanded ? 'Open menu' : 'Close menu';
+      items.hidden = expanded;
+    });
+  })();
+</script>`,
     },
   ],
   hooks: {

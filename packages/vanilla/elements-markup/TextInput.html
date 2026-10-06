@@ -37,5 +37,56 @@ change:Native change event; value is reflected to the host.
   status="error"
   status-message="Enter a valid email address."
 ></ax-text-input>
+<!-- state-recipes:start -->
 <!-- variant: password-strength-and-visibility -->
-<ax-text-input type="password" label="Pass"></ax-text-input><ax-button>Show</ax-button><ax-progress-bar label="S" value="60"></ax-progress-bar>
+<div>
+  <ax-text-input
+    id="password-recipe-field"
+    type="password"
+    label="Password"
+    html-name="password"
+    auto-complete="new-password"
+    description="Use at least twelve characters."
+  ></ax-text-input>
+  <button
+    id="password-recipe-toggle"
+    type="button"
+    aria-controls="password-recipe-field"
+    aria-pressed="false"
+  >Show password</button>
+  <ax-progress-bar
+    id="password-recipe-strength"
+    label="Password strength"
+    value="0"
+    max="100"
+    has-value-label
+  ></ax-progress-bar>
+  <p id="password-recipe-status" role="status" aria-live="polite">
+    Password not entered.
+  </p>
+</div>
+<script>
+  (() => {
+    const field = document.querySelector('#password-recipe-field');
+    const toggle = document.querySelector('#password-recipe-toggle');
+    const meter = document.querySelector('#password-recipe-strength');
+    const status = document.querySelector('#password-recipe-status');
+    const strength = value =>
+      value.length >= 12 ? [100, 'Strong'] : value.length >= 8 ? [60, 'Medium'] : value ? [25, 'Weak'] : [0, 'Not entered'];
+    const update = () => {
+      const [value, label] = strength(field.value ?? '');
+      meter.setAttribute('value', String(value));
+      meter.setAttribute('variant', value >= 100 ? 'success' : value >= 60 ? 'warning' : value ? 'error' : 'neutral');
+      status.textContent = 'Password strength: ' + label + '.';
+    };
+    field.addEventListener('input', update);
+    toggle.addEventListener('click', () => {
+      const visible = field.getAttribute('type') === 'text';
+      field.setAttribute('type', visible ? 'password' : 'text');
+      toggle.setAttribute('aria-pressed', String(!visible));
+      toggle.textContent = visible ? 'Show password' : 'Hide password';
+    });
+    update();
+  })();
+</script>
+<!-- state-recipes:end -->

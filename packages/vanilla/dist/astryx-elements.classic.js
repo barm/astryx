@@ -586,9 +586,22 @@ var AstryxElements = (() => {
         html: `<ax-button label="Continue" variant="primary" is-disabled></ax-button>`
       },
       {
-        name: "state-loading-success",
+        name: "state-loading",
         gallery: false,
-        html: `<ax-button label="Wait \u2192 Done" is-disabled></ax-button>`
+        recipe: true,
+        html: `<div>
+  <ax-button is-disabled aria-busy="true">Saving\u2026</ax-button>
+  <p role="status" aria-live="polite">Saving changes\u2026</p>
+</div>`
+      },
+      {
+        name: "state-success",
+        gallery: false,
+        recipe: true,
+        html: `<div>
+  <ax-button>Saved</ax-button>
+  <p role="status" aria-live="polite">Changes saved successfully.</p>
+</div>`
       }
     ],
     hooks: {
@@ -1919,7 +1932,14 @@ var AstryxElements = (() => {
       {
         name: "state-open",
         gallery: false,
-        html: `<ax-hover-card content="I" is-open><button>Open</button></ax-hover-card>`
+        recipe: true,
+        html: `<ax-hover-card label="Jordan Lee profile preview" is-open>
+  <button type="button">Jordan Lee</button>
+  <span slot="content">
+    <strong>Jordan Lee</strong>
+    <span>Product designer \xB7 New York</span>
+  </span>
+</ax-hover-card>`
       }
     ],
     render(_host, h) {
@@ -2618,9 +2638,39 @@ var AstryxElements = (() => {
         html: '<ax-progress-bar label="Processing report" is-indeterminate></ax-progress-bar>'
       },
       {
-        name: "upload-states",
+        name: "upload-in-progress",
         gallery: false,
-        html: '<ax-progress-bar label="64%"></ax-progress-bar><ax-progress-bar label="OK" variant="success"></ax-progress-bar><ax-progress-bar label="Err" variant="error"></ax-progress-bar>'
+        recipe: true,
+        html: `<ax-progress-bar
+  label="Uploading files"
+  value="64"
+  max="100"
+  has-value-label
+></ax-progress-bar>`
+      },
+      {
+        name: "upload-done",
+        gallery: false,
+        recipe: true,
+        html: `<ax-progress-bar
+  label="Upload complete"
+  value="100"
+  max="100"
+  variant="success"
+  has-value-label
+></ax-progress-bar>`
+      },
+      {
+        name: "upload-error",
+        gallery: false,
+        recipe: true,
+        html: `<ax-progress-bar
+  label="Upload failed"
+  value="64"
+  max="100"
+  variant="error"
+  has-value-label
+></ax-progress-bar>`
       }
     ],
     render(_host, h) {
@@ -4466,7 +4516,57 @@ var AstryxElements = (() => {
       {
         name: "password-strength-and-visibility",
         gallery: false,
-        html: `<ax-text-input type="password" label="Pass"></ax-text-input><ax-button>Show</ax-button><ax-progress-bar label="S" value="60"></ax-progress-bar>`
+        recipe: true,
+        html: `<div>
+  <ax-text-input
+    id="password-recipe-field"
+    type="password"
+    label="Password"
+    html-name="password"
+    auto-complete="new-password"
+    description="Use at least twelve characters."
+  ></ax-text-input>
+  <button
+    id="password-recipe-toggle"
+    type="button"
+    aria-controls="password-recipe-field"
+    aria-pressed="false"
+  >Show password</button>
+  <ax-progress-bar
+    id="password-recipe-strength"
+    label="Password strength"
+    value="0"
+    max="100"
+    has-value-label
+  ></ax-progress-bar>
+  <p id="password-recipe-status" role="status" aria-live="polite">
+    Password not entered.
+  </p>
+</div>
+<script>
+  (() => {
+    const field = document.querySelector('#password-recipe-field');
+    const toggle = document.querySelector('#password-recipe-toggle');
+    const meter = document.querySelector('#password-recipe-strength');
+    const status = document.querySelector('#password-recipe-status');
+    const strength = value =>
+      value.length >= 12 ? [100, 'Strong'] : value.length >= 8 ? [60, 'Medium'] : value ? [25, 'Weak'] : [0, 'Not entered'];
+    const update = () => {
+      const [value, label] = strength(field.value ?? '');
+      meter.setAttribute('value', String(value));
+      meter.setAttribute('variant', value >= 100 ? 'success' : value >= 60 ? 'warning' : value ? 'error' : 'neutral');
+      status.textContent = 'Password strength: ' + label + '.';
+    };
+    field.addEventListener('input', update);
+    toggle.addEventListener('click', () => {
+      const visible = field.getAttribute('type') === 'text';
+      field.setAttribute('type', visible ? 'password' : 'text');
+      toggle.setAttribute('aria-pressed', String(!visible));
+      toggle.textContent = visible ? 'Show password' : 'Hide password';
+    });
+    update();
+  })();
+<\/script>`
       }
     ],
     render(_host, h) {
@@ -5042,9 +5142,66 @@ var AstryxElements = (() => {
 </ax-top-nav>`
       },
       {
-        name: "responsive-states",
+        name: "responsive-collapsed",
         gallery: false,
-        html: `<ax-top-nav><b slot="heading">A</b><a hidden>H</a><button>Menu</button></ax-top-nav>`
+        recipe: true,
+        html: `<ax-top-nav label="Primary navigation">
+  <span slot="heading">Astryx</span>
+  <span id="responsive-nav-items" slot="start-content" hidden>
+    <a href="#overview" aria-current="page">Overview</a>
+    <a href="#projects">Projects</a>
+  </span>
+  <button
+    id="responsive-nav-toggle"
+    slot="end-content"
+    type="button"
+    aria-controls="responsive-nav-items"
+    aria-expanded="false"
+  >Open menu</button>
+</ax-top-nav>
+<script>
+  (() => {
+    const toggle = document.querySelector('#responsive-nav-toggle');
+    const items = document.querySelector('#responsive-nav-items');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      toggle.textContent = expanded ? 'Open menu' : 'Close menu';
+      items.hidden = expanded;
+    });
+  })();
+<\/script>`
+      },
+      {
+        name: "responsive-expanded",
+        gallery: false,
+        recipe: true,
+        html: `<ax-top-nav label="Primary navigation">
+  <span slot="heading">Astryx</span>
+  <span id="responsive-nav-items-open" slot="start-content">
+    <a href="#overview" aria-current="page">Overview</a>
+    <a href="#projects">Projects</a>
+  </span>
+  <button
+    id="responsive-nav-toggle-open"
+    slot="end-content"
+    type="button"
+    aria-controls="responsive-nav-items-open"
+    aria-expanded="true"
+  >Close menu</button>
+</ax-top-nav>
+<script>
+  (() => {
+    const toggle = document.querySelector('#responsive-nav-toggle-open');
+    const items = document.querySelector('#responsive-nav-items-open');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      toggle.textContent = expanded ? 'Open menu' : 'Close menu';
+      items.hidden = expanded;
+    });
+  })();
+<\/script>`
       }
     ],
     hooks: {

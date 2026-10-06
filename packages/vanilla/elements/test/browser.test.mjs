@@ -7,10 +7,10 @@
 
 import assert from 'node:assert/strict';
 import {createReadStream} from 'node:fs';
-import {stat} from 'node:fs/promises';
+import {readdir, stat} from 'node:fs/promises';
 import {createServer} from 'node:http';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 import AxeBuilder from '@axe-core/playwright';
 import {chromium} from 'playwright';
 
@@ -60,6 +60,23 @@ function startServer() {
     });
   });
 }
+
+const elementSourceRoot = path.join(repoRoot, 'packages/vanilla/elements/src');
+const definitions = await Promise.all(
+  (await readdir(elementSourceRoot))
+    .filter(file => file.endsWith('.element.mjs'))
+    .sort((left, right) => left.localeCompare(right))
+    .map(
+      async file =>
+        (await import(pathToFileURL(path.join(elementSourceRoot, file))))
+          .default,
+    ),
+);
+const stateRecipes = definitions.flatMap(definition =>
+  definition.examples
+    .filter(example => example.recipe)
+    .map(example => ({definition, example})),
+);
 
 const {server, baseURL} = await startServer();
 const browser = await chromium.launch({headless: true});
@@ -351,6 +368,137 @@ try {
   checks.push('axe reports zero serious or critical violations');
   assert.deepEqual(consoleErrors, []);
   checks.push('gallery emits zero console errors');
+
+  assert.equal(stateRecipes.length, 9);
+  const recipePage = await context.newPage();
+  const recipeMessages = [];
+  recipePage.on('console', message => {
+    if (['error', 'warning'].includes(message.type())) {
+      recipeMessages.push(`${message.type()}: ${message.text()}`);
+    }
+  });
+  recipePage.on('pageerror', error => recipeMessages.push(error.message));
+  await recipePage.goto(
+    `${baseURL}/packages/vanilla/examples/elements-gallery.html`,
+    {waitUntil: 'load'},
+  );
+  await recipePage.waitForFunction(() => customElements.get('ax-text-input'));
+  for (const {definition, example} of stateRecipes) {
+    recipeMessages.length = 0;
+    const label = `${definition.name}/${example.name}`;
+    await recipePage.evaluate(
+      ({html, label}) => {
+        document.title = `${label} recipe`;
+        document.body.replaceChildren();
+        const main = document.createElement('main');
+        const heading = document.createElement('h1');
+        heading.textContent = `${label} recipe`;
+        const recipe = document.createElement('section');
+        recipe.innerHTML = html;
+        main.append(heading, recipe);
+        document.body.append(main);
+        for (const script of [...recipe.querySelectorAll('script')]) {
+          const executable = document.createElement('script');
+          executable.textContent = script.textContent;
+          script.replaceWith(executable);
+        }
+      },
+      {html: example.html, label},
+    );
+    await recipePage.waitForTimeout(50);
+    if (definition.name === 'Button') {
+      assert.equal(
+        await recipePage.locator('[role="status"]').count(),
+        1,
+        label,
+      );
+      if (example.name === 'state-loading') {
+        assert.equal(
+          await recipePage.locator('ax-button').getAttribute('aria-busy'),
+          'true',
+          label,
+        );
+      }
+    }
+    if (definition.name === 'ProgressBar') {
+      const expectedValue = example.name === 'upload-done' ? '100' : '64';
+      assert.equal(
+        await recipePage
+          .locator('ax-progress-bar [role="progressbar"]')
+          .getAttribute('aria-valuenow'),
+        expectedValue,
+        label,
+      );
+    }
+    if (definition.name === 'TextInput') {
+      const input = recipePage.locator('ax-text-input input');
+      await input.fill('hunter2');
+      assert.equal(
+        await recipePage
+          .locator('#password-recipe-strength')
+          .getAttribute('value'),
+        '25',
+        label,
+      );
+      await recipePage.locator('#password-recipe-toggle').click();
+      assert.equal(
+        await recipePage.locator('#password-recipe-field').getAttribute('type'),
+        'text',
+        label,
+      );
+      assert.equal(await input.inputValue(), 'hunter2', label);
+    }
+    if (definition.name === 'TopNav') {
+      const toggle = recipePage.locator(
+        '[aria-controls^="responsive-nav-items"]',
+      );
+      const items = recipePage.locator(
+        `#${await toggle.getAttribute('aria-controls')}`,
+      );
+      const wasExpanded =
+        (await toggle.getAttribute('aria-expanded')) === 'true';
+      await toggle.click();
+      assert.equal(
+        await toggle.getAttribute('aria-expanded'),
+        String(!wasExpanded),
+        label,
+      );
+      assert.equal(await items.isHidden(), wasExpanded, label);
+    }
+    if (definition.name === 'HoverCard') {
+      assert.equal(
+        await recipePage
+          .locator('ax-hover-card [data-ax-hover-card-trigger]')
+          .getAttribute('aria-expanded'),
+        'true',
+        label,
+      );
+      assert.equal(
+        await recipePage.locator('[data-ax-hover-card-content]').isVisible(),
+        true,
+        label,
+      );
+    }
+    const recipeAxe = await new AxeBuilder({page: recipePage}).analyze();
+    const recipeViolations = recipeAxe.violations.filter(violation =>
+      ['serious', 'critical'].includes(violation.impact),
+    );
+    assert.deepEqual(
+      recipeViolations.map(violation => ({
+        id: violation.id,
+        nodes: violation.nodes.map(node => ({
+          target: node.target,
+          html: node.html,
+          summary: node.failureSummary,
+        })),
+      })),
+      [],
+      label,
+    );
+    assert.deepEqual(recipeMessages, [], label);
+  }
+  await recipePage.close();
+  checks.push('every state recipe passes axe and emits no browser warnings');
 
   for (const [kind, script] of [
     ['classic', 'astryx-elements.classic.js'],

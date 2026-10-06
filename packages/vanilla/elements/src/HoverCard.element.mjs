@@ -182,7 +182,14 @@ export default {
     {
       name: 'state-open',
       gallery: false,
-      html: `<ax-hover-card content="I" is-open><button>Open</button></ax-hover-card>`,
+      recipe: true,
+      html: `<ax-hover-card label="Jordan Lee profile preview" is-open>
+  <button type="button">Jordan Lee</button>
+  <span slot="content">
+    <strong>Jordan Lee</strong>
+    <span>Product designer · New York</span>
+  </span>
+</ax-hover-card>`,
     },
   ],
   render(_host, h) {

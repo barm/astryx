@@ -70,9 +70,22 @@ export default {
       html: `<ax-button label="Continue" variant="primary" is-disabled></ax-button>`,
     },
     {
-      name: 'state-loading-success',
+      name: 'state-loading',
       gallery: false,
-      html: `<ax-button label="Wait → Done" is-disabled></ax-button>`,
+      recipe: true,
+      html: `<div>
+  <ax-button is-disabled aria-busy="true">Saving…</ax-button>
+  <p role="status" aria-live="polite">Saving changes…</p>
+</div>`,
+    },
+    {
+      name: 'state-success',
+      gallery: false,
+      recipe: true,
+      html: `<div>
+  <ax-button>Saved</ax-button>
+  <p role="status" aria-live="polite">Changes saved successfully.</p>
+</div>`,
     },
   ],
   hooks: {

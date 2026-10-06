@@ -325,13 +325,21 @@ test('generated docs expose complete API contracts', async () => {
       path.join(packageRoot, 'elements-markup', file),
       'utf8',
     );
-    totalBytes += Buffer.byteLength(content);
-    assert.match(content, /^<!-- docs: /);
-    assert.match(content, /<!-- attributes:\n/);
-    assert.match(content, /<!-- slots:\n/);
-    assert.match(content, /<!-- events:\n/);
-    assert.match(content, /<!-- properties:attrs→camelCase/);
-    assert.ok((content.match(/<!-- variant:/g) ?? []).length >= 2);
+    const recipeSections = content.match(
+      /<!-- state-recipes:start -->[\s\S]*?<!-- state-recipes:end -->/g,
+    );
+    assert.ok((recipeSections?.length ?? 0) <= 1);
+    const referenceContent = content.replace(
+      /\n?<!-- state-recipes:start -->[\s\S]*?<!-- state-recipes:end -->/,
+      '',
+    );
+    totalBytes += Buffer.byteLength(referenceContent);
+    assert.match(referenceContent, /^<!-- docs: /);
+    assert.match(referenceContent, /<!-- attributes:\n/);
+    assert.match(referenceContent, /<!-- slots:\n/);
+    assert.match(referenceContent, /<!-- events:\n/);
+    assert.match(referenceContent, /<!-- properties:attrs→camelCase/);
+    assert.ok((referenceContent.match(/<!-- variant:/g) ?? []).length >= 2);
   }
   const averageBytes = totalBytes / definitions.length;
   assert.ok(
@@ -353,6 +361,31 @@ test('generated docs expose complete API contracts', async () => {
   assert.match(dialog, /is-open\/open:/);
   assert.match(dialog, /show\(\):/);
   assert.match(dialog, /data-ax-dialog-open/);
+});
+
+test('generated state recipe sections are delimited and capped independently', async () => {
+  let recipeCount = 0;
+  for (const definition of definitions) {
+    const recipes = definition.examples.filter(example => example.recipe);
+    const content = await readFile(
+      path.join(packageRoot, 'elements-markup', `${definition.name}.html`),
+      'utf8',
+    );
+    const section = content.match(
+      /<!-- state-recipes:start -->([\s\S]*?)<!-- state-recipes:end -->/,
+    );
+    assert.equal(Boolean(section), recipes.length > 0, definition.name);
+    for (const recipe of recipes) {
+      recipeCount += 1;
+      const bytes = Buffer.byteLength(recipe.html);
+      assert.ok(
+        bytes <= 2_500,
+        `${definition.name}/${recipe.name} exceeds 2500 bytes: ${bytes}`,
+      );
+      assert.match(section[1], new RegExp(`<!-- variant: ${recipe.name} -->`));
+    }
+  }
+  assert.equal(recipeCount, 9);
 });
 
 test('generated gallery includes every opted-in definition example', async () => {
