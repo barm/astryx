@@ -4435,6 +4435,7 @@ var TextInput_element_default = {
 };
 
 // elements/src/Theme.element.mjs
+var brandThemeStyle = `<style>@layer astryx-theme{[data-astryx-theme='brand']{--color-accent:light-dark(#6d28d9,#a78bfa);--color-on-accent:light-dark(#fff,#1f1235)}}</style>`;
 var Theme_element_default = {
   name: "Theme",
   tag: "ax-theme",
@@ -4456,11 +4457,11 @@ var Theme_element_default = {
   examples: [
     {
       name: "brand-section",
-      html: '<ax-theme theme="brand"><ax-card><ax-heading level="3">Brand workspace</ax-heading><ax-button variant="primary">Continue</ax-button></ax-card></ax-theme>'
+      html: `${brandThemeStyle}<ax-theme theme="brand"><ax-button variant="primary">Brand action</ax-button></ax-theme>`
     },
     {
       name: "nested-dark",
-      html: '<ax-theme theme="neutral" mode="dark"><ax-card><ax-heading level="3">Dark tools</ax-heading><ax-text>This subtree is dark inside a light page.</ax-text></ax-card></ax-theme>'
+      html: '<ax-theme theme="neutral" mode="dark"><ax-card><p>Loose dark text</p></ax-card></ax-theme>'
     }
   ],
   render(_host, h) {

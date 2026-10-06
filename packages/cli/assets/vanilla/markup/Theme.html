@@ -1,4 +1,17 @@
 <!-- docs: Scope a Vanilla Astryx subtree to a loaded theme name and color mode. -->
+<style>
+  @layer astryx-theme {
+    [data-astryx-theme='brand'] {
+      --color-accent: light-dark(#6d28d9, #a78bfa);
+      --color-accent-muted: light-dark(#ede9fe, #2e1a47);
+      --color-on-accent: light-dark(#ffffff, #1f1235);
+      --color-text-accent: light-dark(#5b21b6, #c4b5fd);
+      --color-icon-accent: light-dark(#5b21b6, #c4b5fd);
+      --color-background-body: light-dark(#f5f3ff, #171126);
+      --focus-outline-color: var(--color-accent);
+    }
+  }
+</style>
 <!-- variant: brand-section -->
 <div class="ax-theme" data-astryx-theme="brand">
   <div class="ax-card">
@@ -11,7 +24,7 @@
 <div class="ax-theme" data-astryx-theme="neutral" data-theme="dark">
   <div class="ax-card">
     <h2 class="ax-heading ax-heading--3">Dark tools</h2>
-    <p class="ax-text">This subtree is dark inside a light page.</p>
+    <p>This loose text inherits the dark text token.</p>
   </div>
 </div>
 
@@ -27,3 +40,9 @@
     <span class="ax-selector__indicator" aria-hidden="true"></span>
   </span>
 </label>
+<button
+  class="ax-button ax-button--secondary"
+  type="button"
+  data-ax-mode-toggle>
+  Toggle light or dark mode
+</button>

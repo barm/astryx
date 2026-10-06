@@ -68,11 +68,15 @@ A custom theme is a named `data-astryx-theme` scope with semantic token override
 </style>
 ```
 
-The base theme supplies every token not listed here.
+Redeclare `--focus-outline-color` because shipped theme output may resolve it from the base accent before a nested brand override applies. Keeping it in the same theme block makes focus rings follow the brand.
+
+Theme identity is not additive. A nested `brand` scope inherits every token it does not override from its shipped-theme ancestor. A `brand` value on `<html>` has no shipped-theme ancestor, so unspecified tokens and font families come from Vanilla's generated core defaults instead. To preserve Neutral, Butter, or another shipped theme as the base, keep that name on `<html>` and put `brand` on an `.ax-theme` or `<ax-theme>` wrapper. Use `brand` on `<html>` only when its definition supplies every token and font family the page relies on.
+
+Shipped-theme element resets also stop at nested theme boundaries. Use `ax-heading`, `ax-text`, and their web-component equivalents inside custom scopes to preserve Astryx typography sizing instead of relying on bare heading defaults.
 
 ## Recipe 1: scope the brand to one section
 
-The nearest `data-astryx-theme` scope wins. Content outside the scope keeps the page theme.
+The nearest `data-astryx-theme` scope wins. Content outside the scope keeps the page theme, while text and font inheritance are re-established inside the wrapper.
 
 ### HTML
 
@@ -110,7 +114,7 @@ The nearest `data-astryx-theme` scope wins. Content outside the scope keeps the 
 
 ## Recipe 2: nest dark mode inside a light page
 
-`data-theme` controls `color-scheme` at any Vanilla Theme scope, so `light-dark()` token values resolve independently in nested content.
+`data-theme` controls `color-scheme` at any Vanilla Theme scope, so `light-dark()` token values resolve independently in nested content. The wrapper also sets the semantic text color and body font, including for loose text that does not use an `ax-text` class.
 
 ### HTML
 
@@ -122,7 +126,7 @@ The nearest `data-astryx-theme` scope wins. Content outside the scope keeps the 
     <div class="ax-theme" data-astryx-theme="brand" data-theme="dark">
       <div class="ax-card">
         <h2 class="ax-heading ax-heading--3">Dark tools</h2>
-        <p class="ax-text">This subtree uses the brand dark tokens.</p>
+        <p>This loose text inherits the brand's dark text token.</p>
       </div>
     </div>
   </body>
@@ -138,7 +142,7 @@ The nearest `data-astryx-theme` scope wins. Content outside the scope keeps the 
   <ax-theme theme="brand" mode="dark">
     <ax-card>
       <ax-heading level="3">Dark tools</ax-heading>
-      <ax-text>This subtree uses the brand dark tokens.</ax-text>
+      <p>This loose text inherits the brand's dark text token.</p>
     </ax-card>
   </ax-theme>
 </ax-theme>
@@ -146,7 +150,31 @@ The nearest `data-astryx-theme` scope wins. Content outside the scope keeps the 
 
 ## Recipe 3: persist a three-theme switcher
 
-The Vanilla JavaScript bundle recognizes `data-ax-theme-switch` on a native `<select>`. It applies the selected slug to the document root, stores it under `astryx-vanilla-theme` in `localStorage`, restores it on reload, and accepts custom slugs. Load every shipped stylesheet and custom theme block named by an option.
+The Vanilla JavaScript bundle recognizes `data-ax-theme-switch` on a native `<select>`. It applies the selected slug to the document root, stores it under `astryx-vanilla-theme` in `localStorage`, restores only shipped themes and custom slugs present in the switcher's options, and accepts a custom option such as `brand`. Load every shipped stylesheet and custom theme block named by an option.
+
+Because the switcher targets `<html>`, the root custom-theme semantics above apply: `brand` uses generated core defaults for everything its block does not define. Use Recipe 1 and call `AstryxVanilla.setTheme(value, scope)` when a custom theme must inherit a shipped base.
+
+Restore a valid saved choice before stylesheets load to avoid a first-paint flash. Keep this known-theme list synchronized with the switcher options; an unknown saved value is removed before the deferred bundle runs:
+
+```html
+<script>
+  (() => {
+    const themes = new Set(['neutral', 'butter', 'brand']);
+    const modes = new Set(['light', 'dark']);
+    const root = document.documentElement;
+    try {
+      const theme = localStorage.getItem('astryx-vanilla-theme');
+      const mode = localStorage.getItem('astryx-vanilla-mode');
+      if (themes.has(theme)) root.dataset.astryxTheme = theme;
+      else if (theme) localStorage.removeItem('astryx-vanilla-theme');
+      if (modes.has(mode)) root.dataset.theme = mode;
+      else if (mode) localStorage.removeItem('astryx-vanilla-mode');
+    } catch {
+      // Storage can be unavailable in sandboxed and local-file contexts.
+    }
+  })();
+</script>
+```
 
 ### HTML
 
@@ -162,6 +190,12 @@ The Vanilla JavaScript bundle recognizes `data-ax-theme-switch` on a native `<se
     <span class="ax-selector__indicator" aria-hidden="true"></span>
   </span>
 </label>
+<button
+  class="ax-button ax-button--secondary"
+  type="button"
+  data-ax-mode-toggle>
+  Toggle light or dark mode
+</button>
 ```
 
 ### Web-component page
@@ -177,6 +211,9 @@ Behavior hooks remain native controls, so they work alongside `ax-*` components 
     <option value="brand">Brand</option>
   </select>
 </label>
+<ax-button variant="secondary" data-ax-mode-toggle>
+  Toggle light or dark mode
+</ax-button>
 
 <ax-card>
   <ax-heading level="3">Current theme</ax-heading>
@@ -184,7 +221,7 @@ Behavior hooks remain native controls, so they work alongside `ax-*` components 
 </ax-card>
 ```
 
-Use `data-ax-mode-switch` with `light` and `dark` options for a persisted page-wide mode control. `data-ax-theme-toggle` cycles shipped themes and `data-ax-mode-toggle` toggles modes. Storage failures are ignored, so controls still work in sandboxed and local-file contexts. Query parameters named `theme` and `mode` take precedence in the included templates and are remembered for later pages.
+Use `data-ax-mode-switch` with `light` and `dark` options for a persisted page-wide mode select. `data-ax-theme-toggle` cycles shipped themes and `data-ax-mode-toggle` toggles modes. Storage failures are ignored, so controls still work in sandboxed and local-file contexts. Query parameters named `theme` and `mode` take precedence in the included templates and are remembered for later pages.
 
 Copy the version-matched examples from a checkout with:
 

@@ -3000,6 +3000,8 @@
   /* Theme scopes only change inherited tokens and color mode; they add no box. */
   :where(.ax-theme) {
     display: contents;
+    color: var(--color-text-primary);
+    font-family: var(--font-family-body);
   }
 
   :where(.ax-theme[data-theme='light']) {

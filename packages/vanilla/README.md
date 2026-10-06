@@ -100,13 +100,13 @@ Then serve the repository root with any static file server. The canonical HTML d
 
 ## Theming
 
-Vanilla Astryx supports Neutral, Butter, Y2K, Stone, Matcha, Chocolate, and Gothic. Load the corresponding `@astryxdesign/theme-*` stylesheets, then switch themes by changing `data-astryx-theme`. Theme and mode attributes can live on the document root or a subtree; nested `data-theme="dark"` scopes resolve dark tokens inside a light page. Gothic is intentionally dark-only.
+Vanilla Astryx supports Neutral, Butter, Y2K, Stone, Matcha, Chocolate, and Gothic. Load the corresponding `@astryxdesign/theme-*` stylesheets, then switch themes by changing `data-astryx-theme`. Theme and mode attributes can live on the document root or a subtree; nested `data-theme="dark"` scopes resolve dark tokens and re-establish semantic text color and body typography. Gothic is intentionally dark-only.
 
-Custom themes override semantic CSS variables in one `astryx-theme` layer block. Keep literal brand values in that dedicated definition; templates and component styles should only consume semantic tokens. Use `.ax-theme` for HTML scopes or `<ax-theme theme="…" mode="…">` for web-component scopes.
+Custom themes override semantic CSS variables in one `astryx-theme` layer block. Keep literal brand values in that dedicated definition; templates and component styles should only consume semantic tokens. Use `.ax-theme` for HTML scopes or `<ax-theme theme="…" mode="…">` for web-component scopes. A nested custom scope inherits unspecified tokens and fonts from its shipped-theme ancestor; a custom name on `<html>` has no such ancestor and falls back to generated core defaults, so use a wrapper when the shipped theme must remain the base.
 
-The JavaScript bundle persists controls marked with `data-ax-theme-switch`, `data-ax-mode-switch`, `data-ax-theme-toggle`, or `data-ax-mode-toggle`. A theme `<select>` may offer shipped slugs and custom slugs together; the demo and templates restore the saved choice before styles load, and query parameters named `theme` and `mode` take precedence.
+The JavaScript bundle persists controls marked with `data-ax-theme-switch`, `data-ax-mode-switch`, `data-ax-theme-toggle`, or `data-ax-mode-toggle`. A theme `<select>` may offer shipped slugs and custom slugs together; saved custom names restore only when they appear in the switcher's options. The included templates restore saved choices before styles load, and query parameters named `theme` and `mode` take precedence.
 
-See [`docs/theming.md`](docs/theming.md) for complete HTML and web-component recipes for a scoped brand section, nested dark mode, and a persisted three-theme switcher. Copy the version-matched scope examples with:
+See [`docs/theming.md`](docs/theming.md) for complete HTML and web-component recipes, including the custom token block, focus-ring and heading guidance, a pre-paint validated restore script, scoped and root semantics, nested dark mode, and persisted theme/mode controls. Copy the version-matched scope examples with:
 
 ```sh
 node packages/cli/clients/cli/bin/astryx.mjs component Theme --framework html

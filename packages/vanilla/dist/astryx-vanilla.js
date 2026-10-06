@@ -1221,6 +1221,11 @@
   }
 
   // Copyright (c) Meta Platforms, Inc. and affiliates.
+  /**
+   * @input Theme and mode controls, their allowed options, and persisted choices.
+   * @output Validated document theme/mode attributes and interactive switchers.
+   * @position Progressive appearance-state behavior for Vanilla Astryx pages.
+   */
   /* global Element, HTMLSelectElement, Node, document */
 
 
@@ -1266,6 +1271,25 @@
     }
   }
 
+  function clearStored(root, key) {
+    try {
+      storageFor(root)?.removeItem(key);
+    } catch {
+      // Storage can be unavailable for sandboxed or local-file documents.
+    }
+  }
+
+  function knownThemes(doc) {
+    const themes = new Set(shippedThemes);
+    for (const select of doc.querySelectorAll('[data-ax-theme-switch]')) {
+      if (!(select instanceof HTMLSelectElement)) continue;
+      for (const option of select.options) {
+        if (isTheme(option.value)) themes.add(option.value);
+      }
+    }
+    return themes;
+  }
+
   function setTheme(value, root = document.documentElement) {
     if (!isTheme(value)) return;
     root.dataset.astryxTheme = value;
@@ -1282,11 +1306,14 @@
     return values[(Math.max(0, values.indexOf(current)) + 1) % values.length];
   }
 
-  function restoreThemeMode(root) {
+  function restoreThemeMode(root, doc) {
     const theme = readStored(root, themeStorageKey);
     const mode = readStored(root, modeStorageKey);
-    if (isTheme(theme)) root.dataset.astryxTheme = theme;
+    if (isTheme(theme) && knownThemes(doc).has(theme))
+      root.dataset.astryxTheme = theme;
+    else if (theme !== null) clearStored(root, themeStorageKey);
     if (modes.includes(mode)) root.dataset.theme = mode;
+    else if (mode !== null) clearStored(root, modeStorageKey);
   }
 
   function enhanceThemeModeSwitchers(root) {
@@ -1306,7 +1333,7 @@
   function setupThemeModeSwitchers(doc) {
     if (themeDocuments.has(doc)) return;
     themeDocuments.add(doc);
-    restoreThemeMode(doc.documentElement);
+    restoreThemeMode(doc.documentElement, doc);
     doc.addEventListener('change', event => {
       const target = event.target;
       if (!(target instanceof HTMLSelectElement)) return;

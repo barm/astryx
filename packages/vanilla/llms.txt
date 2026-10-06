@@ -109,18 +109,24 @@ multi-state manifests and the rule that every state must work from a fresh load.
 - Theme: set `data-astryx-theme` on `<html>` or one subtree to `neutral`,
   `butter`, `y2k`, `stone`, `matcha`, `chocolate`, `gothic`, or a loaded custom
   slug. Gothic is intentionally dark-only. Use `.ax-theme` for HTML scopes or
-  `<ax-theme theme="…" mode="…">` for web-component scopes.
+  `<ax-theme theme="…" mode="…">` for web-component scopes. A nested custom
+  scope inherits unspecified tokens and fonts from its shipped-theme ancestor;
+  a custom slug on `<html>` instead falls back to generated core defaults.
 - Mode: set `data-theme` to `light` or `dark` on the page or scope. A nested dark
-  scope resolves `light-dark()` tokens independently inside a light page.
+  scope resolves `light-dark()` tokens independently and re-establishes semantic
+  text color and body typography.
 - Switchers marked with `data-ax-theme-switch`, `data-ax-mode-switch`,
   `data-ax-theme-toggle`, or `data-ax-mode-toggle` persist across reloads. A
-  theme `<select>` can contain 3+ shipped and custom slugs together.
+  theme `<select>` can contain 3+ shipped and custom slugs together; saved custom
+  names restore only when present in its options.
 - Custom theme: define one named `[data-astryx-theme="brand"]` rule after the
   shipped styles in `@layer astryx-theme`. Keep all literal brand values in that
   one token-definition block; templates and components only consume semantic
-  variables such as `--color-accent`, `--color-on-accent`,
-  `--color-text-accent`, and `--color-background-body`.
-- Full scoped-brand, nested-dark, and persisted-switcher recipes for both paths:
+  variables. Redeclare `--focus-outline-color` from the custom accent. Inside a
+  nested theme boundary, use `ax-heading`/`ax-text` or their custom elements to
+  retain Astryx sizing.
+- Full scoped-brand, nested-dark, pre-paint validated restore, root-semantics,
+  and persisted theme/mode recipes for both paths:
   `packages/vanilla/docs/theming.md`. Version-matched snippets:
   `astryx component Theme --framework html` and
   `astryx component Theme --framework web-components`.
