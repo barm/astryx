@@ -22,6 +22,7 @@ import {
 import {
   auditAgentContext,
   auditTranscriptCommands,
+  claudeIsolatedArgs,
   countAstryxInvocations,
   countCliLookups,
   createPrivateRunRoot,
@@ -645,6 +646,22 @@ test('transcript audit flags every sensitive host-path command', () => {
   ]);
 });
 
+test('isolated Claude args always use secure internet mode', () => {
+  for (const tools of ['Bash,Read,Write,Edit', 'Read']) {
+    const args = claudeIsolatedArgs({
+      mcpConfig: '/mnt/run/empty-mcp.json',
+      tools,
+    });
+    assert.equal(args[0], '--secure-internet-mode');
+    assert.equal(
+      args.filter(argument => argument === '--secure-internet-mode').length,
+      1,
+    );
+    assert.equal(args.includes('--safe-mode'), true);
+    assert.equal(args.at(args.indexOf('--tools') + 1), tools);
+  }
+});
+
 test('context audit enforces the exact Claude 2.1.289 init policy', () => {
   const cleanInit = {
     type: 'system',
@@ -669,10 +686,26 @@ test('context audit enforces the exact Claude 2.1.289 init policy', () => {
       },
     ],
   };
-  const clean = auditAgentContext('claude', JSON.stringify(cleanInit), '');
+  const secureModeStderr = [
+    'Using --secure-internet-mode with restricted user data access.',
+    'Your session will not have access to user data.',
+  ].join('\n');
+  const clean = auditAgentContext(
+    'claude',
+    JSON.stringify(cleanInit),
+    secureModeStderr,
+  );
   assert.equal(clean.passed, true, JSON.stringify(clean.violations));
   assert.equal(clean.runnerVersion, '2.1.289');
   assert.equal(clean.plugins.length, 2);
+  const insecure = auditAgentContext('claude', JSON.stringify(cleanInit), '');
+  assert.equal(insecure.passed, false);
+  assert.equal(
+    insecure.violations.includes(
+      'Claude did not confirm secure internet mode with restricted user data',
+    ),
+    true,
+  );
 
   const pluginAuthoring = structuredClone(cleanInit);
   pluginAuthoring.plugins.push({

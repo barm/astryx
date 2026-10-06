@@ -13,6 +13,25 @@ export const CLAUDE_SAFE_SETTINGS = JSON.stringify({
   enabledPlugins: {'cc-plugin-plugin-authoring@builtin': false},
 });
 
+export function claudeIsolatedArgs({mcpConfig, tools}) {
+  return [
+    '--secure-internet-mode',
+    '--safe-mode',
+    '--settings',
+    CLAUDE_SAFE_SETTINGS,
+    '--strict-mcp-config',
+    '--mcp-config',
+    mcpConfig,
+    '--no-session-persistence',
+    '--permission-mode',
+    'bypassPermissions',
+    '--dangerously-skip-permissions',
+    '--disable-slash-commands',
+    '--tools',
+    tools,
+  ];
+}
+
 const CLAUDE_CONTEXT_POLICY = {
   '2.1.289': {
     agents: ['claude', 'Explore', 'general-purpose', 'Plan'],
@@ -438,7 +457,16 @@ export function auditAgentContext(agent, stdout, stderr) {
     const skills = init?.skills ?? [];
     const slashCommands = init?.slash_commands ?? [];
     const mcpServers = init?.mcp_servers ?? [];
+    const secureInternetMode =
+      stderr.includes(
+        'Using --secure-internet-mode with restricted user data access.',
+      ) && stderr.includes('Your session will not have access to user data.');
     const violations = [];
+    if (!secureInternetMode) {
+      violations.push(
+        'Claude did not confirm secure internet mode with restricted user data',
+      );
+    }
     if (!init) {
       violations.push('missing Claude init event');
     }
@@ -478,6 +506,10 @@ export function auditAgentContext(agent, stdout, stderr) {
       slashCommands,
       mcpServers,
       hookEvents: hooks.length,
+      secureInternetMode: {
+        enabled: secureInternetMode,
+        restrictedUserData: secureInternetMode,
+      },
       tools: init?.tools ?? [],
       cwd: init?.cwd ?? null,
       runnerVersion: version,
@@ -486,7 +518,7 @@ export function auditAgentContext(agent, stdout, stderr) {
       launcherPluginInstallBlocked:
         (stderr.match(/^Installing /gm) ?? []).length > 0 && pluginPolicyPassed,
       knownAsymmetry:
-        'Claude Code 2.1.289 seats cc-plugin-sec-default from host managed settings. It has no components, adds no context, cannot be disabled per run, and is identical across configs and runs.',
+        'Claude Code 2.1.289 runs in secure internet mode with restricted user-data access and seats cc-plugin-sec-default from host managed settings. The plugin has no components, adds no context, cannot be disabled per run, and both conditions are identical across configs and judges.',
       safeModeProjectInstructions:
         'Safe mode suppresses automatic project-instruction loading; Claude reads AGENTS.md with a tool call, while Muse auto-loads it. This is identical across configs.',
       pathPolicy:

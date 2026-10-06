@@ -19,10 +19,10 @@ import {
 } from './constants.mjs';
 import {captureAuthoredSources, evaluateRun} from './evaluator.mjs';
 import {
-  CLAUDE_SAFE_SETTINGS,
   SANDBOX_PROJECT,
   auditAgentContext,
   auditTranscriptCommands,
+  claudeIsolatedArgs,
   countCliLookups,
   countToolCalls,
   createPrivateRunRoot,
@@ -95,6 +95,8 @@ async function main() {
     },
     runnerContext: {
       claude: {
+        secureInternetMode:
+          'enabled uniformly for agents and judges; restricts user-data access and avoids the internet-to-non-internet attestation path without bypassing it',
         safeMode:
           'kept to block managed Meta context; AGENTS.md is read by a tool call instead of auto-loaded',
         managedPlugin:
@@ -407,19 +409,10 @@ async function runAgent({agent, privateRun, taskPrompt, timeoutMs}) {
   if (agent === 'claude') {
     command = '/usr/local/bin/claude_code/os/claude';
     args = [
-      '--safe-mode',
-      '--settings',
-      CLAUDE_SAFE_SETTINGS,
-      '--strict-mcp-config',
-      '--mcp-config',
-      '/mnt/run/empty-mcp.json',
-      '--no-session-persistence',
-      '--permission-mode',
-      'bypassPermissions',
-      '--dangerously-skip-permissions',
-      '--disable-slash-commands',
-      '--tools',
-      'Bash,Read,Write,Edit',
+      ...claudeIsolatedArgs({
+        mcpConfig: '/mnt/run/empty-mcp.json',
+        tools: 'Bash,Read,Write,Edit',
+      }),
       '-p',
       '--output-format',
       'stream-json',

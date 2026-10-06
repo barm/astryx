@@ -8,8 +8,8 @@ import * as path from 'node:path';
 import {AxeBuilder} from '@axe-core/playwright';
 import {chromium} from 'playwright';
 import {
-  CLAUDE_SAFE_SETTINGS,
   auditAgentContext,
+  claudeIsolatedArgs,
   createPrivateRunRoot,
   runCommand,
   runIsolatedCommand,
@@ -739,19 +739,10 @@ async function runBlindJudgeAttempt({judgePrompt, schema, screenshotPath}) {
       privateRun.root,
       '/usr/local/bin/claude_code/os/claude',
       [
-        '--safe-mode',
-        '--settings',
-        CLAUDE_SAFE_SETTINGS,
-        '--strict-mcp-config',
-        '--mcp-config',
-        `${privateRun.sandboxProjectDir}/../empty-mcp.json`,
-        '--no-session-persistence',
-        '--permission-mode',
-        'bypassPermissions',
-        '--dangerously-skip-permissions',
-        '--disable-slash-commands',
-        '--tools',
-        'Read',
+        ...claudeIsolatedArgs({
+          mcpConfig: `${privateRun.sandboxProjectDir}/../empty-mcp.json`,
+          tools: 'Read',
+        }),
         '-p',
         '--output-format',
         'stream-json',
