@@ -25,6 +25,8 @@ import * as os from 'node:os';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import jscodeshift from 'jscodeshift';
+import {AstryxError} from '../error.mjs';
+import {ERROR_CODES} from '../../foundation/response/error-codes.mjs';
 import {assertWithin} from '../../foundation/fs/path-safety.mjs';
 import {resolvePackageDir} from '../../foundation/integrations/integrations.mjs';
 import {
@@ -1047,12 +1049,11 @@ export async function integrationPackCheck(options = {}) {
     ]);
   }
   if (!found) {
-    return emptyReceipt(null, [
-      error(
-        'no_package',
-        'No package.json found. Run this command inside an integration package.',
-      ),
-    ]);
+    throw new AstryxError(
+      'No package.json found. Run this command inside an integration package.',
+      undefined,
+      ERROR_CODES.ERR_INVALID_ARGUMENT,
+    );
   }
   const {packageDir, pkg} = found;
   const pkgName = typeof pkg.name === 'string' ? pkg.name : '(unnamed package)';

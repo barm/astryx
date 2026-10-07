@@ -266,6 +266,9 @@ async function runIntegrationValidation(program, pkg) {
       ),
     );
   } else printIntegrationValidation(result.data);
+  // Exit 1 when nothing was validated — "I found no problems" when there was
+  // nothing to look at is not a passing check (IFIX-0008).
+  if (!result.data.validated) process.exitCode = 1;
   if (summarizeIssues(result.data.issues).errors > 0) process.exitCode = 1;
   return NO_RESULT_SET;
 }
