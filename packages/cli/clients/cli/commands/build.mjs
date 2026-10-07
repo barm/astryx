@@ -97,11 +97,10 @@ export function registerBuild(program) {
       }
 
       // Arg validation stays in the CLI.
-      // Parse --limit to a number; the API validates it (positive integer) and
-      // throws ERR_INVALID_ARGUMENT, so we pass NaN through rather than
-      // pre-rejecting with a generic code here (parity with `search`).
+      // Parse --limit: pass the raw value as a Number so the API can reject
+      // fractional values (parseInt silently truncates 2.5 to 2).
       const limit =
-        options.limit != null ? Number.parseInt(options.limit, 10) : 60;
+        options.limit != null ? Number(options.limit) : 60;
 
       /** @type {import('../../../api/build/build.type.mjs').BuildKitResponse} */
       let result;

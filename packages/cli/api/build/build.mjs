@@ -15,9 +15,14 @@
 
 import {buildHelp} from './help/help.mjs';
 import {buildKit} from './kit/kit.mjs';
+import {AstryxError} from '../error.mjs';
+import {ERROR_CODES} from '../../foundation/response/error-codes.mjs';
 
 // Barrel: surface the leaves alongside the dispatcher for the fractal shape.
 export {buildHelp, buildKit};
+
+/** @type {string[]} */
+const VALID_BUILD_TYPES = ['component', 'hook', 'template'];
 
 /**
  * The page-building assistant. No query → the playbook signal; a query → the
@@ -28,6 +33,20 @@ export {buildHelp, buildKit};
  * @returns {Promise<import('./build.type.mjs').BuildHelpResponse | import('./build.type.mjs').BuildKitResponse>}
  */
 export async function build(query, options = {}) {
+  if (options.type && !VALID_BUILD_TYPES.includes(options.type)) {
+    throw new AstryxError(
+      `Unknown build type "${options.type}". Valid types: ${VALID_BUILD_TYPES.join(', ')}.`,
+      VALID_BUILD_TYPES.map(t => ({name: t, reason: 'valid type'})),
+      ERROR_CODES.ERR_INVALID_ARGUMENT,
+    );
+  }
+  if (options.limit != null && (!Number.isInteger(options.limit) || options.limit <= 0)) {
+    throw new AstryxError(
+      `Invalid limit "${options.limit}". Must be a positive integer.`,
+      undefined,
+      ERROR_CODES.ERR_INVALID_ARGUMENT,
+    );
+  }
   if (!query || !String(query).trim()) {
     return buildHelp();
   }

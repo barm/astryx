@@ -10,6 +10,8 @@
  */
 
 import {pkgOf} from '../../../foundation/discovery/template-adapter.mjs';
+import {AstryxError} from '../../error.mjs';
+import {ERROR_CODES} from '../../../foundation/response/error-codes.mjs';
 
 /**
  * Project a discovered template set into the `template.list` envelope.
@@ -20,9 +22,28 @@ import {pkgOf} from '../../../foundation/discovery/template-adapter.mjs';
 export function templateList(templates, options = {}) {
   const {type, package: packageFilter} = options;
   let filtered = templates;
-  if (type) filtered = filtered.filter(t => t.type === type);
-  if (packageFilter)
+  if (type) {
+    filtered = filtered.filter(t => t.type === type);
+    if (filtered.length === 0) {
+      const validTypes = [...new Set(templates.map(t => t.type))].sort();
+      throw new AstryxError(
+        `Unknown template type "${type}". Valid types: ${validTypes.join(', ')}.`,
+        validTypes.map(t => ({name: t, reason: 'valid type'})),
+        ERROR_CODES.ERR_INVALID_ARGUMENT,
+      );
+    }
+  }
+  if (packageFilter) {
     filtered = filtered.filter(t => pkgOf(t) === packageFilter);
+    if (filtered.length === 0) {
+      const validPackages = [...new Set(templates.map(t => pkgOf(t)))].sort();
+      throw new AstryxError(
+        `No templates found in package "${packageFilter}".`,
+        validPackages.map(p => ({name: p, reason: 'has templates'})),
+        ERROR_CODES.ERR_INVALID_ARGUMENT,
+      );
+    }
+  }
   return {
     type: 'template.list',
     data: filtered.map(t => ({

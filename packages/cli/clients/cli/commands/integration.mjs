@@ -51,7 +51,18 @@ function showGroupOrUnknown(command, label, options, invoked) {
  * @param {import('commander').Command} program
  */
 async function verifyPackage(program) {
-  const result = await integrationPackCheck({cwd: process.cwd()});
+  /** @type {import('../../../api/integration/pack-check.type.mjs').IntegrationPackCheckResponse} */
+  let result;
+  try {
+    result = await integrationPackCheck({cwd: process.cwd()});
+  } catch (error) {
+    const err =
+      /** @type {import('../../../api/error.mjs').AstryxError} */ (error);
+    return cliError(err.message, {
+      suggestions: err.suggestions,
+      code: err.code,
+    });
+  }
   if (program.opts().json) {
     jsonOut(result);
   } else {
@@ -101,7 +112,7 @@ export function registerIntegration(program) {
   // still parses its own options.
   integration.allowUnknownOption(true);
 
-  defineCommand(integration, integrationAddCommand, {
+  const addCmd = defineCommand(integration, integrationAddCommand, {
     fn: integrationAddFn,
     action: async (kind, name, options) => {
       const json = program.opts().json || false;
@@ -157,6 +168,7 @@ export function registerIntegration(program) {
       return NO_RESULT_SET;
     },
   });
+  addCmd.allowExcessArguments(false);
 
   defineCommand(integration, integrationVerifyCommand, {
     fn: integrationPackCheckFn,

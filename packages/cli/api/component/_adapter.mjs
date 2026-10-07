@@ -291,7 +291,7 @@ export class ComponentAmbiguityError extends AstryxError {
     super(
       `Component "${dirName}" is provided by multiple packages. Re-run with --package <pkg> to choose one.`,
       owners.map(o => ({name: o.package, reason: 'provides this component'})),
-      ERROR_CODES.ERR_UNKNOWN_COMPONENT,
+      ERROR_CODES.ERR_AMBIGUOUS_COMPONENT,
     );
     this.candidates = owners.map(owner => ({
       package: owner.package,
