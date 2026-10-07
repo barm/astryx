@@ -53,6 +53,24 @@ export async function upgrade(options = {}, {cwd = process.cwd()} = {}) {
     throw new AstryxError(msg, undefined, ERROR_CODES.ERR_INVALID_ARGUMENT);
   }
 
+  // FR5: --list only lists codemods; the migration options are not used.
+  if (options.list) {
+    const ignored = [
+      options.from ? '--from' : null,
+      options.force ? '--force' : null,
+      options.codemod ? '--codemod' : null,
+      options.skipCodemod?.length ? '--skip-codemod' : null,
+      options.integration?.length ? '--integration' : null,
+      options.installDeps ? '--install-deps' : null,
+    ].filter(Boolean);
+    if (ignored.length > 0) {
+      const msg = `\`--list\` cannot be combined with ${ignored.join(', ')}: it lists available codemods and does not run a migration.`;
+      logger.error(msg);
+      logger.log('Aborted\n');
+      throw new AstryxError(msg, undefined, ERROR_CODES.ERR_INVALID_ARGUMENT);
+    }
+  }
+
   if (options.registry) {
     const incompatible = [
       options.from ? '--from' : null,

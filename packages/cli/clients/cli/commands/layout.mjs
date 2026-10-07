@@ -69,6 +69,15 @@ const MAX_EXPRESSION_BYTES = 5 * 1024 * 1024; // 5 MB
  * @returns {Promise<string>}
  */
 async function readExpression(expr, options = {}) {
+  // FR5: --file and a positional expression are the same input from two
+  // sources; using one and ignoring the other silently discards what the user
+  // typed. Refuse when both are given (stdin via '-' is already exclusive).
+  if (expr && expr !== '-' && options.file) {
+    cliError(
+      `An expression argument and \`--file\` cannot be used together: pass the expression as an argument or via --file, not both.`,
+      {code: ERROR_CODES.ERR_INVALID_ARGUMENT},
+    );
+  }
   if (options.file) {
     // Validate the file exists + is a regular file + is reasonably sized.
     // We intentionally do NOT confine the read path (the user running the CLI
