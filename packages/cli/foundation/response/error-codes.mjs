@@ -84,8 +84,6 @@
  *   | 'ERR_GH_CLI'
  *   | 'ERR_UNKNOWN_POST'
  *   | 'ERR_FETCH_FAILED'
- *   | 'ERR_LAYOUT_PARSE'
- *   | 'ERR_LAYOUT_INVALID'
  *   | 'ERR_UNCLASSIFIED_EXIT'
  *   | 'ERR_SIGNAL_TERMINATED'
  * )} ErrorCode
@@ -220,9 +218,7 @@ export const ERROR_CODES = Object.freeze({
 
   // ── Layout expressions (XLE/XLO) ─────────────────────────────────
   /** A layout expression failed to parse (syntax error, with line/col). */
-  ERR_LAYOUT_PARSE: 'ERR_LAYOUT_PARSE',
   /** A layout expression parsed but failed validation (unknown component/prop/enum/block). */
-  ERR_LAYOUT_INVALID: 'ERR_LAYOUT_INVALID',
 
   // ── Debug log ────────────────────────────────────────────────────
   /**

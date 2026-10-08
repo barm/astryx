@@ -97,7 +97,6 @@ export * from './gap-report/gap-report.type.mjs';
 export * from './upgrade/upgrade.type.mjs';
 export * from './init/init.type.mjs';
 export * from './doctor/doctor.type.mjs';
-export * from './layout/layout.type.mjs';
 export * from './integration/integration-authoring.type.mjs';
 export * from './integration/pack-check.type.mjs';
 export * from './integration/validate-integration.type.mjs';
