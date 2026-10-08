@@ -39,7 +39,7 @@ export const docs = {
           type: 'code',
           lang: 'bash',
           label: 'Quick start',
-          code: 'astryx theme template    # annotated starter file\nastryx theme add stone   # copy an existing theme\nastryx theme build ./src/themes/my-theme.ts',
+          code: 'astryx theme template      # annotated starter file\nastryx theme eject stone   # fork an existing theme\nastryx theme build ./src/themes/my-theme.ts',
         },
       ],
     },
@@ -64,7 +64,7 @@ export const docs = {
       content: [
         {
           type: 'prose',
-          text: 'Install an integration and Astryx discovers its themes automatically. Copy one into your project with `astryx theme add <name> --package <integration>`. For the full walkthrough, see {@link generic:use-a-theme}.',
+          text: 'Install an integration and Astryx discovers its themes automatically. Import one into the generated app module with `astryx theme add <name> --package <integration>`. Use `theme eject` only to fork editable source. For the full walkthrough, see {@link generic:use-a-theme}.',
         },
       ],
     },
